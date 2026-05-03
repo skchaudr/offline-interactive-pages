@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pi Harness Build Path</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-surface: #f8f9fa;
+    --bg-surface-elevated: #e9ecef;
+    --text-main: #212529;
+    --text-muted: #6c757d;
+    --accent: #0d6efd;
+    --accent-hover: #0b5ed7;
+    --border: #dee2e6;
+    --success: #198754;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --radius: 12px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #09090b;
+      --bg-surface: #18181b;
+      --bg-surface-elevated: #27272a;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --border: #3f3f46;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--bg);
+    color: var(--text-main);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+
+  header {
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+  }
+
+  h1, h2, h3, h4 {
+    margin-top: 0;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  h1 { font-size: 2.5rem; margin-bottom: var(--spacing-md); }
+  h2 { font-size: 1.75rem; margin-bottom: var(--spacing-md); border-bottom: 1px solid var(--border); padding-bottom: var(--spacing-sm); }
+  h3 { font-size: 1.25rem; }
+
+  p { margin-bottom: var(--spacing-md); }
+
+  .hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* Cards & Layout */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  @media(min-width: 768px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--spacing-lg);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+  }
+
+  /* Split Pane Compare */
+  .split-pane {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  @media(min-width: 768px) {
+    .split-pane { flex-direction: row; }
+  }
+
+  .pane {
+    flex: 1;
+    padding: var(--spacing-lg);
+  }
+
+  .pane:first-child { background: var(--bg-surface-elevated); border-bottom: 1px solid var(--border); }
+  @media(min-width: 768px) { .pane:first-child { border-bottom: none; border-right: 1px solid var(--border); } }
+
+  .pane-header { font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: 8px;}
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+  .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+
+  /* Diagram */
+  .diagram-container {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--spacing-xl);
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    overflow-x: auto;
+  }
+
+  svg { max-width: 100%; height: auto; }
+
+  /* Accordion / Expandable */
+  .accordion {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .accordion-header {
+    background: var(--bg-surface);
+    padding: var(--spacing-md) var(--spacing-lg);
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+
+  .accordion-header:hover { background: var(--bg-surface-elevated); }
+
+  .accordion-content {
+    padding: 0 var(--spacing-lg);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    background: var(--bg);
+  }
+
+  .accordion.open .accordion-content {
+    padding: var(--spacing-md) var(--spacing-lg);
+    max-height: 1000px;
+    border-top: 1px solid var(--border);
+  }
+
+  .accordion-icon {
+    transition: transform 0.3s ease;
+  }
+  .accordion.open .accordion-icon {
+    transform: rotate(180deg);
+  }
+
+  /* Tabs */
+  .tabs { margin-bottom: var(--spacing-xl); }
+  .tab-list {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--spacing-md);
+    gap: var(--spacing-sm);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tab-list::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn:hover { color: var(--text-main); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Code Blocks & Copy Button */
+  .code-block {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--spacing-md);
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    overflow-x: auto;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { background: var(--bg-surface); color: var(--text-main); }
+  .copy-btn.copied { color: var(--success); border-color: var(--success); }
+
+  /* Decision Tree */
+  .decision-tree {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+  }
+  .decision-step { display: none; text-align: center; }
+  .decision-step.active { display: block; animation: fadeIn 0.3s ease; }
+  .options { display: flex; gap: var(--spacing-md); justify-content: center; flex-wrap: wrap; margin-top: var(--spacing-md); }
+  .btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-hover); color: #fff; }
+
+  /* Quiz */
+  .quiz-container {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+  }
+  .quiz-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+    color: var(--text-main);
+  }
+  .quiz-option:hover { background: var(--bg-surface-elevated); }
+  .quiz-option.correct { background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: var(--success); }
+  .quiz-option.wrong { background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: var(--danger); }
+  .quiz-feedback { margin-top: var(--spacing-md); font-weight: 500; display: none; padding: var(--spacing-md); border-radius: 8px; }
+  .quiz-feedback.show { display: block; animation: fadeIn 0.3s ease; }
+
+  .chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+
+  .skip-list {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid var(--warning);
+    border-radius: var(--radius);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+  }
+  .skip-list h3 { color: var(--warning); margin-bottom: var(--spacing-sm); display: flex; align-items: center; gap: 8px; }
+  .skip-list ul { margin: 0; padding-left: var(--spacing-lg); }
+
+  .traps {
+    margin-bottom: var(--spacing-xl);
+  }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Pi Harness Build Path</h1>
+    <p class="hero-subtitle">A practical architecture roadmap: how to grow pi-coding-agent into a robust personal coding/automation agent by encoding behavior in deterministic Pi extensions instead of expanding prompt files.</p>
+  </header>
+
+  <section class="core-framing">
+    <h2>Core Framing: What this is (and isn't)</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>The Anti-Goals</h3>
+        <ul>
+          <li><strong>This is not a Claude Code clone.</strong> We aren't building a monolithic CLI wrapper.</li>
+          <li><strong>This is not OpenClaw round two.</strong> We aren't building a heavy agent framework.</li>
+          <li><strong>Personal context files are just a contract.</strong> <code>SOUL.md</code>, <code>USER.md</code>, <code>AGENTS.md</code>, <code>MEMORY.md</code>, and <code>TOOLS.md</code> define operating bounds, not infrastructure.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>The Key Inversion</h3>
+        <p><strong>More behavior in extension code, less prompt structure.</strong></p>
+        <p>Stop trying to make the LLM follow complex control flows via prompts. Instead, write deterministic runtime hooks (extensions) that enforce behavior programmatically.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="compare-contrast">
+    <h2>The Paradigm Shift</h2>
+    <div class="split-pane">
+      <div class="pane">
+        <div class="pane-header">
+          <span class="badge danger">Anti-Pattern</span> Prompt Sprawl
+        </div>
+        <p>Trying to teach the model every rule in <code>AGENTS.md</code>.</p>
+        <div class="code-block">
+          // Bloated Prompt Rule
+          "Before you run a command, you must check if it is destructive. If it is destructive, you must ask the user for permission. If the user says no, you must stop. Also, remember to read the context files before doing anything..."
+        </div>
+        <ul>
+          <li>High token cost</li>
+          <li>Unreliable compliance</li>
+          <li>Hard to test or debug</li>
+        </ul>
+      </div>
+      <div class="pane">
+        <div class="pane-header">
+          <span class="badge success">Target State</span> Extension Code
+        </div>
+        <p>Encoding behavior in deterministic API hooks.</p>
+        <div class="code-block">
+          // Runtime Hook (Deterministic)
+          export function preToolHook(toolCall) {
+            if (isDestructive(toolCall)) {
+              return requirePermission(toolCall);
+            }
+            return continueExecution();
+          }
+        </div>
+        <ul>
+          <li>Zero prompt bloat</li>
+          <li>100% reliable execution</li>
+          <li>Standard software testing</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="architecture">
+    <h2>Architecture Overview</h2>
+    <div class="diagram-container">
+      <svg width="800" height="300" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+        <style>
+          .text { font-family: -apple-system, sans-serif; font-size: 14px; fill: var(--text-main); }
+          .title { font-weight: bold; font-size: 16px; }
+          .box { fill: var(--bg-surface); stroke: var(--border); stroke-width: 2; rx: 8; }
+          .agent { fill: rgba(59, 130, 246, 0.1); stroke: var(--accent); }
+          .hook { fill: rgba(16, 185, 129, 0.1); stroke: var(--success); stroke-dasharray: 4; }
+          .line { stroke: var(--text-muted); stroke-width: 2; marker-end: url(#arrow); }
+        </style>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--text-muted)" />
+          </marker>
+        </defs>
+
+        <!-- Operator -->
+        <rect x="50" y="120" width="100" height="60" class="box" />
+        <text x="100" y="155" text-anchor="middle" class="text title">Operator</text>
+
+        <!-- Pi Agent Core -->
+        <rect x="250" y="80" width="150" height="140" class="box agent" />
+        <text x="325" y="110" text-anchor="middle" class="text title">Pi Agent Core</text>
+        <text x="325" y="140" text-anchor="middle" class="text">LLM Engine</text>
+        <text x="325" y="160" text-anchor="middle" class="text">Tool Dispatch</text>
+
+        <!-- Hooks -->
+        <rect x="450" y="40" width="140" height="220" class="box hook" />
+        <text x="520" y="70" text-anchor="middle" class="text title">Extension Hooks</text>
+        <rect x="470" y="90" width="100" height="30" class="box" fill="var(--bg)" />
+        <text x="520" y="110" text-anchor="middle" class="text" font-size="12px">Pre-Tool</text>
+        <rect x="470" y="130" width="100" height="30" class="box" fill="var(--bg)" />
+        <text x="520" y="150" text-anchor="middle" class="text" font-size="12px">Context Inject</text>
+        <rect x="470" y="170" width="100" height="30" class="box" fill="var(--bg)" />
+        <text x="520" y="190" text-anchor="middle" class="text" font-size="12px">Post-Response</text>
+
+        <!-- Tools/Providers -->
+        <rect x="650" y="80" width="120" height="140" class="box" />
+        <text x="710" y="110" text-anchor="middle" class="text title">Providers</text>
+        <text x="710" y="140" text-anchor="middle" class="text">Bash Shell</text>
+        <text x="710" y="160" text-anchor="middle" class="text">File System</text>
+        <text x="710" y="180" text-anchor="middle" class="text">Sub-Agents</text>
+
+        <!-- Lines -->
+        <path d="M 150 150 L 240 150" class="line" />
+        <path d="M 400 150 L 440 150" class="line" />
+        <path d="M 590 150 L 640 150" class="line" />
+      </svg>
+    </div>
+    <p>The Pi extension API mental model is straightforward: wrap the agent's core loop with lifecycle hooks. Instead of asking the agent to remember context, inject it automatically via a Pre-Request hook. Instead of asking the agent to verify destructive commands, catch them in a Pre-Tool hook.</p>
+  </section>
+
+  <section class="extension-patterns">
+    <h2>Extension Patterns</h2>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3>Permission Classifier</h3>
+        <p>Intercepts tool calls to classify commands. If <code>rm -rf</code> is detected, pauses execution and prompts the Operator for approval.</p>
+        <span class="chip">Hook: Pre-Tool</span>
+      </div>
+      <div class="card">
+        <h3>Live Repo Context</h3>
+        <p>Automatically scans the repository root for <code>AGENTS.md</code> or similar files and invisibly injects them into the system prompt.</p>
+        <span class="chip">Hook: Pre-Request</span>
+      </div>
+      <div class="card">
+        <h3>Sub-agent Fork</h3>
+        <p>Provides an <code>Explore Tool</code> that lets the main agent spawn a lightweight sub-agent to traverse code and return a summary.</p>
+        <span class="chip">Custom Tool</span>
+      </div>
+      <div class="card">
+        <h3>Multi-model Routing</h3>
+        <p>Dynamically switches LLM providers (e.g., Haiku for exploration, Opus for complex refactoring) based on task parameters.</p>
+        <span class="chip">Hook: Router</span>
+      </div>
+      <div class="card">
+        <h3>GDD Orchestration</h3>
+        <p>Goal-Driven Development integration. Parses <code>.plan</code> files and tracks progress systematically outside of the LLM context window.</p>
+        <span class="chip">Hook: Lifecycle</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="roadmap">
+    <h2>Build Stages</h2>
+
+    <div class="skip-list">
+      <h3>⚠️ The Skip List</h3>
+      <p>Do not build these features early on. They are distractions:</p>
+      <ul>
+        <li>Complex vector databases (use ripgrep/grep first)</li>
+        <li>Custom UI dashboards (CLI is fine)</li>
+        <li>Over-engineered memory systems (write to a markdown file instead)</li>
+      </ul>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-list">
+        <button class="tab-btn active" data-target="stage-0">Stage 0: Baseline</button>
+        <button class="tab-btn" data-target="stage-1">Stage 1: Safety</button>
+        <button class="tab-btn" data-target="stage-2">Stage 2: Context</button>
+        <button class="tab-btn" data-target="stage-3">Stage 3: Sub-Agents</button>
+        <button class="tab-btn" data-target="stage-4">Stage 4: Routing</button>
+        <button class="tab-btn" data-target="stage-5">Stage 5: Orchestration</button>
+      </div>
+
+      <div class="tab-panel active" id="stage-0">
+        <h3>Stage 0: Operator Contract</h3>
+        <p>Establish the foundation. Create your personal context files without any agent code changes. These are the "operating contract".</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy Packet</button>
+          <pre><code># Task Packet: Stage 0
+1. Create `USER.md` defining your preferences.
+2. Create `SOUL.md` defining the agent's persona.
+3. Add a basic `AGENTS.md` to your workspace.
+4. Verify the agent can read them manually.</code></pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="stage-1">
+        <h3>Stage 1: Safety & Permissions (Permission Classifier)</h3>
+        <p>Build the first extension. Intercept bash commands and require operator approval for destructive actions.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy Packet</button>
+          <pre><code># Task Packet: Stage 1
+1. Scaffold a Pi extension: `safety-guard`.
+2. Implement `preToolHook`.
+3. Regex match `rm`, `drop`, `delete`.
+4. If matched, prompt user in CLI.
+5. Return modified tool call or abort.</code></pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="stage-2">
+        <h3>Stage 2: Invisible Context (Live Repo Injection)</h3>
+        <p>Stop asking the LLM to "read the README". Inject it via extension automatically.</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy Packet</button>
+          <pre><code># Task Packet: Stage 2
+1. Create extension `repo-context`.
+2. Implement `preRequestHook`.
+3. Check for `AGENTS.md` in `process.cwd()`.
+4. Append contents to system prompt invisibly.</code></pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="stage-3">
+        <h3>Stage 3: Sub-agent Fork (Explore Tool)</h3>
+        <p>Give the agent a dedicated tool to spawn a cheaper model to read large codebases.</p>
+      </div>
+      <div class="tab-panel" id="stage-4">
+        <h3>Stage 4: Multi-model Routing</h3>
+        <p>Optimize costs by routing specific tool calls or tasks to specialized models.</p>
+      </div>
+      <div class="tab-panel" id="stage-5">
+        <h3>Stage 5: GDD Orchestration Integration</h3>
+        <p>Implement formal state machines for task planning and execution outside the prompt window.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="traps">
+    <h2>Common Traps</h2>
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        Recreating OpenClaw <span class="accordion-icon">▼</span>
+      </div>
+      <div class="accordion-content">
+        <p>Don't build heavy, generic agent frameworks. Keep extensions small, single-purpose, and tied strictly to your personal workflow needs.</p>
+      </div>
+    </div>
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        Bloating AGENTS.md <span class="accordion-icon">▼</span>
+      </div>
+      <div class="accordion-content">
+        <p>If your <code>AGENTS.md</code> becomes a 500-line script of conditional rules ("If X happens, do Y, unless Z"), you are doing it wrong. Move that logic into a deterministic extension hook.</p>
+      </div>
+    </div>
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        Turning Claude Code’s prompt structure into the target <span class="accordion-icon">▼</span>
+      </div>
+      <div class="accordion-content">
+        <p>Claude Code relies heavily on massive prompt structures for behavior. The Pi Build Path aims to invert this: thin prompts, thick extension logic.</p>
+      </div>
+    </div>
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        Letting LLMs sit in control-flow seats <span class="accordion-icon">▼</span>
+      </div>
+      <div class="accordion-content">
+        <p>LLMs are reasoning engines, not reliable state machines. Do not ask the LLM to manage complex application state or loops. Let the host code (extensions) handle the while-loops and conditional execution paths.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="decision-tree">
+    <h2>What to build first? (Decision Flow)</h2>
+    <div id="step-1" class="decision-step active">
+      <h3>Do you frequently run dangerous commands by accident?</h3>
+      <div class="options">
+        <button class="btn btn-primary" onclick="goToStep('step-1-yes')">Yes, safety is an issue.</button>
+        <button class="btn" onclick="goToStep('step-1-no')">No, I'm careful.</button>
+      </div>
+    </div>
+
+    <div id="step-1-yes" class="decision-step">
+      <h3>👉 Build the Permission Classifier Extension (Stage 1)</h3>
+      <p>Protect your workspace before scaling automation.</p>
+      <button class="btn" onclick="goToStep('step-1')">Start Over</button>
+    </div>
+
+    <div id="step-1-no" class="decision-step">
+      <h3>Are you tired of telling the agent to "read the README"?</h3>
+      <div class="options">
+        <button class="btn btn-primary" onclick="goToStep('step-2-yes')">Yes, context is annoying.</button>
+        <button class="btn" onclick="goToStep('step-2-no')">No, I need it to do more complex tasks.</button>
+      </div>
+    </div>
+
+    <div id="step-2-yes" class="decision-step">
+      <h3>👉 Build the Live Repo Context Injection (Stage 2)</h3>
+      <p>Automate context loading so every session starts smart.</p>
+      <button class="btn" onclick="goToStep('step-1')">Start Over</button>
+    </div>
+
+    <div id="step-2-no" class="decision-step">
+      <h3>👉 Look into Sub-agent Forks (Stage 3)</h3>
+      <p>If baseline context and safety are good, expand capabilities with multi-agent delegation.</p>
+      <button class="btn" onclick="goToStep('step-1')">Start Over</button>
+    </div>
+  </section>
+
+  <section class="quiz-container">
+    <h2>Checkpoint Quiz</h2>
+    <div id="quiz-q1">
+      <p><strong>Question:</strong> What is the primary difference between Prompt Sprawl and Extension Code?</p>
+      <button class="quiz-option" onclick="checkAnswer(this, false)">A. Prompt sprawl uses more Python, while extensions use JSON.</button>
+      <button class="quiz-option" onclick="checkAnswer(this, true)">B. Extension code enforces behavior deterministically via runtime hooks, while prompts rely on LLM compliance.</button>
+      <button class="quiz-option" onclick="checkAnswer(this, false)">C. Extensions are only for UI changes, prompts handle all logic.</button>
+
+      <div class="quiz-feedback" id="feedback-q1"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Tabs Logic
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Remove active from all
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+      // Add active to clicked
+      btn.classList.add('active');
+      document.getElementById(btn.getAttribute('data-target')).classList.add('active');
+    });
+  });
+
+  // Accordion Logic
+  function toggleAccordion(header) {
+    const accordion = header.parentElement;
+    accordion.classList.toggle('open');
+  }
+
+  // Copy Code Logic
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const originalText = btn.innerText;
+      btn.innerText = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.innerText = originalText;
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // Decision Tree Logic
+  function goToStep(stepId) {
+    document.querySelectorAll('.decision-step').forEach(step => step.classList.remove('active'));
+    document.getElementById(stepId).classList.add('active');
+  }
+
+  // Quiz Logic
+  function checkAnswer(btn, isCorrect) {
+    const parent = btn.parentElement;
+
+    // Reset options
+    parent.querySelectorAll('.quiz-option').forEach(opt => {
+      opt.classList.remove('correct', 'wrong');
+      opt.disabled = true;
+      opt.style.pointerEvents = 'none';
+    });
+
+    const feedback = parent.querySelector('.quiz-feedback');
+
+    if (isCorrect) {
+      btn.classList.add('correct');
+      feedback.textContent = 'Correct! Deterministic runtime hooks guarantee execution, whereas prompt instructions are mere suggestions to the LLM.';
+      feedback.style.background = 'rgba(16, 185, 129, 0.1)';
+      feedback.style.color = 'var(--success)';
+    } else {
+      btn.classList.add('wrong');
+      // Highlight correct answer
+      parent.querySelectorAll('.quiz-option').forEach(opt => {
+        if(opt.getAttribute('onclick').includes('true')) {
+          opt.classList.add('correct');
+        }
+      });
+      feedback.textContent = 'Incorrect. The key inversion is moving logic from probabilistic prompts into deterministic extension code.';
+      feedback.style.background = 'rgba(239, 68, 68, 0.1)';
+      feedback.style.color = 'var(--danger)';
+    }
+
+    feedback.classList.add('show');
+  }
+</script>
+
+</body>
+</html>
