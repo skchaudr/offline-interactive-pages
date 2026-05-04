@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Modal Editor Navigation Lab</title>
+  <style>
+    :root {
+      /* Base Variables */
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+      --spacing-3xl: 64px;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+
+      /* Light Mode Colors */
+      --bg-body: #fbfbfd;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f5f5f7;
+      --bg-code: #f5f5f7;
+      --bg-chip: #e8e8ed;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --border-color: #d2d2d7;
+      --accent: #0071e3;
+      --accent-hover: #0077ed;
+      --success: #34c759;
+      --error: #ff3b30;
+
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        /* Dark Mode Colors */
+        --bg-body: #000000;
+        --bg-card: #1c1c1e;
+        --bg-card-hover: #2c2c2e;
+        --bg-code: #151516;
+        --bg-chip: #3a3a3c;
+        --text-primary: #f5f5f7;
+        --text-secondary: #a1a1a6;
+        --border-color: #38383a;
+        --accent: #2997ff;
+        --accent-hover: #147ce5;
+        --success: #32d74b;
+        --error: #ff453a;
+
+        --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+        --shadow-lg: 0 10px 15px rgba(0,0,0,0.5);
+      }
+    }
+
+    /* Reset & Base Setup */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      background-color: var(--bg-body);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding: var(--spacing-xl) var(--spacing-md);
+    }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3, h4 {
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    h1 { font-size: 2.5rem; margin-bottom: var(--spacing-sm); }
+    h2 { font-size: 1.8rem; margin-top: var(--spacing-2xl); margin-bottom: var(--spacing-md); border-bottom: 1px solid var(--border-color); padding-bottom: var(--spacing-sm); }
+    h3 { font-size: 1.3rem; margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm); }
+
+    p { margin-bottom: var(--spacing-md); color: var(--text-primary); }
+    p.subtitle { color: var(--text-secondary); font-size: 1.2rem; margin-bottom: var(--spacing-2xl); }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      background: var(--bg-code);
+      padding: 0.2em 0.4em;
+      border-radius: var(--radius-sm);
+    }
+
+    kbd.chip {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--bg-chip);
+      border: 1px solid var(--border-color);
+      border-bottom-width: 2px;
+      border-radius: var(--radius-sm);
+      padding: 2px 6px;
+      margin: 0 2px;
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Layout & Components */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--spacing-md);
+    }
+
+    @media (min-width: 600px) {
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: var(--spacing-md);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-size: 1rem;
+      font-family: var(--font-ui);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Interactive Demo Area */
+    .editor-demo {
+      font-family: var(--font-mono);
+      background: var(--bg-code);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: var(--spacing-md);
+      white-space: pre-wrap;
+      overflow-x: auto;
+      margin-bottom: var(--spacing-md);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .cursor {
+      background: var(--text-primary);
+      color: var(--bg-body);
+      animation: blink 1s step-end infinite;
+    }
+
+    .selection { background: var(--accent); color: white; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Quiz Component */
+    .quiz-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin-top: var(--spacing-xl);
+    }
+
+    .quiz-question { font-weight: 600; margin-bottom: var(--spacing-md); }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .quiz-option {
+      background: var(--bg-body);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      color: var(--text-primary);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .quiz-option:hover { background: var(--bg-card-hover); }
+
+    .quiz-option.selected.correct {
+      background: rgba(52, 199, 89, 0.1);
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .quiz-option.selected.incorrect {
+      background: rgba(255, 59, 48, 0.1);
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .quiz-feedback {
+      margin-top: var(--spacing-md);
+      padding: var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      display: none;
+    }
+
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.correct { background: rgba(52, 199, 89, 0.1); color: var(--success); }
+    .quiz-feedback.incorrect { background: rgba(255, 59, 48, 0.1); color: var(--error); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Modal Editor Navigation</h1>
+    <p class="subtitle">Mastering movement, selection, and editing workflows.</p>
+
+    <div class="card">
+      <h2>Modal Philosophy</h2>
+      <p>Traditional text editors are always in <strong>Insert Mode</strong>. Every keystroke types a character. Modal editors (like Vim or Helix) separate <em>editing</em> from <em>navigation</em>.</p>
+
+      <div class="grid-2">
+        <div class="card" style="margin-bottom: 0;">
+          <h3>Normal Mode</h3>
+          <p>The default mode. Keys act as commands. <kbd class="chip">w</kbd> moves forward a word, <kbd class="chip">d</kbd> deletes.</p>
+          <p><em>Focus: Movement as intent.</em></p>
+        </div>
+        <div class="card" style="margin-bottom: 0;">
+          <h3>Insert Mode</h3>
+          <p>Entered via commands like <kbd class="chip">i</kbd> (insert) or <kbd class="chip">a</kbd> (append). Keys type characters.</p>
+          <p><em>Focus: Inputting text.</em></p>
+        </div>
+      </div>
+      <p style="margin-top: var(--spacing-md);">Press <kbd class="chip">Esc</kbd> to return to Normal mode.</p>
+    </div>
+
+    <div class="card">
+      <h2>Basic Navigation (Vim Motions)</h2>
+      <p>Keep your hands on the home row. Movement commands are designed to be composable.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-target="tab-chars">Characters</button>
+        <button class="tab-btn" data-target="tab-words">Words</button>
+        <button class="tab-btn" data-target="tab-lines">Lines</button>
+      </div>
+
+      <div id="tab-chars" class="tab-content active">
+        <ul>
+          <li><kbd class="chip">h</kbd> Left</li>
+          <li><kbd class="chip">j</kbd> Down</li>
+          <li><kbd class="chip">k</kbd> Up</li>
+          <li><kbd class="chip">l</kbd> Right</li>
+        </ul>
+      </div>
+      <div id="tab-words" class="tab-content">
+        <ul>
+          <li><kbd class="chip">w</kbd> Next word (start)</li>
+          <li><kbd class="chip">e</kbd> Next word (end)</li>
+          <li><kbd class="chip">b</kbd> Previous word (start)</li>
+          <li><kbd class="chip">W</kbd>, <kbd class="chip">E</kbd>, <kbd class="chip">B</kbd> Same, but delimited by whitespace only.</li>
+        </ul>
+      </div>
+      <div id="tab-lines" class="tab-content">
+        <ul>
+          <li><kbd class="chip">0</kbd> Start of line</li>
+          <li><kbd class="chip">^</kbd> First non-blank character of line</li>
+          <li><kbd class="chip">$</kbd> End of line</li>
+          <li><kbd class="chip">gg</kbd> First line of file</li>
+          <li><kbd class="chip">G</kbd> Last line of file</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Action → Object vs Selection-First</h2>
+      <p>A key difference in modern modal editors is the order of operations.</p>
+
+      <div class="grid-2">
+        <div>
+          <h3>Vim Model (Verb + Noun)</h3>
+          <p><code>Action -> Text Object</code></p>
+          <p>To delete a word: <kbd class="chip">d</kbd> then <kbd class="chip">i</kbd> <kbd class="chip">w</kbd></p>
+          <p><em>Feedback:</em> Invisible until the action completes.</p>
+        </div>
+        <div>
+          <h3>Helix/Kakoune Model (Noun + Verb)</h3>
+          <p><code>Select Text Object -> Action</code></p>
+          <p>To delete a word: <kbd class="chip">m</kbd> <kbd class="chip">i</kbd> <kbd class="chip">w</kbd> then <kbd class="chip">d</kbd></p>
+          <p><em>Feedback:</em> Text highlights before you delete it.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Text Objects</h2>
+      <p>Text objects allow you to operate on semantic chunks of text rather than character by character. They are structured as <code>i</code> (inner) or <code>a</code> (around), followed by a boundary.</p>
+      <ul>
+        <li><kbd class="chip">iw</kbd> inner word</li>
+        <li><kbd class="chip">aw</kbd> around word (includes following space)</li>
+        <li><kbd class="chip">i(</kbd> or <kbd class="chip">i)</kbd> inner parentheses</li>
+        <li><kbd class="chip">i"</kbd> inner quotes</li>
+        <li><kbd class="chip">ip</kbd> inner paragraph</li>
+      </ul>
+      <p style="margin-top: 8px;"><strong>Example:</strong> Changing text inside quotes. Use <kbd class="chip">c</kbd><kbd class="chip">i</kbd><kbd class="chip">"</kbd> (change inner quote). This deletes the content and drops you into Insert Mode.</p>
+    </div>
+
+    <div class="card">
+      <h2>Advanced Workflows</h2>
+
+      <h3>Marks and Jumps</h3>
+      <p>Navigate large files efficiently.</p>
+      <ul>
+        <li><kbd class="chip">m</kbd><kbd class="chip">a</kbd> Set mark 'a'</li>
+        <li><kbd class="chip">'</kbd><kbd class="chip">a</kbd> Jump to mark 'a'</li>
+        <li><kbd class="chip">Ctrl</kbd>+<kbd class="chip">o</kbd> Jump back in jumplist</li>
+        <li><kbd class="chip">Ctrl</kbd>+<kbd class="chip">i</kbd> Jump forward in jumplist</li>
+      </ul>
+
+      <h3>Search Navigation</h3>
+      <ul>
+        <li><kbd class="chip">/</kbd> Search forward</li>
+        <li><kbd class="chip">?</kbd> Search backward</li>
+        <li><kbd class="chip">n</kbd> Next match</li>
+        <li><kbd class="chip">N</kbd> Previous match</li>
+        <li><kbd class="chip">*</kbd> Search word under cursor</li>
+      </ul>
+
+      <h3>The Dot Command</h3>
+      <p><kbd class="chip">.</kbd> repeats the last edit. This is incredibly powerful when combined with search. Search for a word, change it with <kbd class="chip">c</kbd><kbd class="chip">w</kbd>, then press <kbd class="chip">n</kbd><kbd class="chip">.</kbd> to find the next occurrence and repeat the change.</p>
+    </div>
+
+    <div class="quiz-container" id="quiz1">
+      <div class="quiz-question">Which sequence would you use in Vim to change the word under the cursor, deleting it and placing you in insert mode?</div>
+      <div class="quiz-options">
+        <button class="quiz-option" data-correct="false">d i w</button>
+        <button class="quiz-option" data-correct="true">c i w</button>
+        <button class="quiz-option" data-correct="false">v w x</button>
+        <button class="quiz-option" data-correct="false">m i w c</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+    <div class="quiz-container" id="quiz2">
+      <div class="quiz-question">In a Selection-First editor like Helix, what is the primary benefit of selecting before acting?</div>
+      <div class="quiz-options">
+        <button class="quiz-option" data-correct="false">It requires fewer keystrokes.</button>
+        <button class="quiz-option" data-correct="true">Visual feedback guarantees you act on the right text.</button>
+        <button class="quiz-option" data-correct="false">It disables Insert mode entirely.</button>
+        <button class="quiz-option" data-correct="false">It automatically copies to the system clipboard.</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+  </main>
+
+  <script>
+    // Tab Logic
+    document.querySelectorAll('.tabs').forEach(tabGroup => {
+      const btns = tabGroup.querySelectorAll('.tab-btn');
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Reset active states in this group
+          btns.forEach(b => b.classList.remove('active'));
+
+          // Find content wrapper
+          const card = tabGroup.closest('.card');
+          card.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+
+          // Set new active
+          btn.classList.add('active');
+          const targetId = btn.getAttribute('data-target');
+          document.getElementById(targetId).classList.add('active');
+        });
+      });
+    });
+
+    // Quiz Logic
+    document.querySelectorAll('.quiz-container').forEach(quiz => {
+      const options = quiz.querySelectorAll('.quiz-option');
+      const feedback = quiz.querySelector('.quiz-feedback');
+
+      options.forEach(option => {
+        option.addEventListener('click', () => {
+          // Reset previous selection
+          options.forEach(o => {
+            o.classList.remove('selected', 'correct', 'incorrect');
+            o.disabled = true; // Lock after one guess for simplicity
+          });
+
+          const isCorrect = option.getAttribute('data-correct') === 'true';
+          option.classList.add('selected');
+
+          if (isCorrect) {
+            option.classList.add('correct');
+            feedback.textContent = 'Correct! Great job.';
+            feedback.className = 'quiz-feedback show correct';
+          } else {
+            option.classList.add('incorrect');
+            feedback.textContent = 'Incorrect. Try reviewing the concepts above.';
+            feedback.className = 'quiz-feedback show incorrect';
+
+            // Highlight the correct one
+            options.forEach(o => {
+              if (o.getAttribute('data-correct') === 'true') {
+                o.classList.add('correct');
+              }
+            });
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
