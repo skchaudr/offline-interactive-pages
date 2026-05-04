@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoVim & LazyVim Interactive Lab</title>
+    <style>
+        :root {
+            /* Light mode variables */
+            --bg-color: #fcfcfc;
+            --text-color: #333333;
+            --surface-color: #ffffff;
+            --border-color: #e5e7eb;
+            --primary-color: #0ea5e9;
+            --secondary-color: #64748b;
+            --accent-color: #8b5cf6;
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --code-bg: #f1f5f9;
+            --font-sys: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                /* Dark mode variables */
+                --bg-color: #0f172a;
+                --text-color: #f8fafc;
+                --surface-color: #1e293b;
+                --border-color: #334155;
+                --primary-color: #38bdf8;
+                --secondary-color: #94a3b8;
+                --accent-color: #a78bfa;
+                --danger-color: #f87171;
+                --success-color: #4ade80;
+                --code-bg: #0f172a;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sys);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        h1 { font-size: 2.5rem; letter-spacing: -0.02em; }
+        h2 { font-size: 1.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.3rem; }
+
+        p { margin-bottom: 1rem; }
+
+        code {
+            font-family: var(--font-mono);
+            background-color: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            border: none;
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .chip {
+            display: inline-block;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-family: var(--font-mono);
+        }
+
+        /* Accordion Styles */
+        .accordion {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 1rem;
+            width: 100%;
+            text-align: left;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            outline: none;
+            transition: 0.2s;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .accordion:hover {
+            background-color: var(--code-bg);
+        }
+
+        .accordion:after {
+            content: '\002B'; /* Plus sign */
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        .active:after {
+            content: "\2212"; /* Minus sign */
+        }
+
+        .panel {
+            padding: 0 1rem;
+            background-color: var(--surface-color);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border: 1px solid transparent;
+            border-top: none;
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            margin-bottom: 1rem;
+            margin-top: -0.6rem;
+        }
+
+        .panel.show {
+            border-color: var(--border-color);
+            padding: 1rem;
+        }
+
+        /* Quiz & Interactive Styles */
+        .interactive-section {
+            background-color: var(--code-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .option-btn {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            text-align: left;
+            font-family: var(--font-sys);
+            font-size: 1rem;
+            transition: 0.2s;
+            color: var(--text-color);
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(14, 165, 233, 0.05);
+        }
+
+        .option-btn.correct {
+            background-color: rgba(34, 197, 94, 0.1);
+            border-color: var(--success-color);
+        }
+
+        .option-btn.wrong {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger-color);
+        }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            display: none;
+            font-weight: 500;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.success {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .feedback.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>NeoVim & LazyVim Interactive Lab</h1>
+        <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
+    </header>
+
+    <main id="content">
+        <section id="mental-model" class="card">
+            <h2>The NeoVim Mental Model</h2>
+            <p>Unlike many modern editors that use a simple "one file = one tab" model, NeoVim separates the concepts of what you are editing from how you are viewing it.</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-color);">
+                    <h3>Buffers</h3>
+                    <p style="font-size: 0.9rem;">An in-memory representation of a file. When you open a file, it loads into a buffer. You can have many buffers open without seeing them.</p>
+                    <div class="chip"><code>:ls</code> List buffers</div>
+                    <div class="chip"><code>:b &lt;N&gt;</code> Go to buffer</div>
+                </div>
+
+                <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-color);">
+                    <h3>Windows</h3>
+                    <p style="font-size: 0.9rem;">A viewport onto a buffer. You can split a window to view multiple buffers at once, or the same buffer in multiple windows.</p>
+                    <div class="chip"><code>&lt;C-w&gt; s</code> Split horiz</div>
+                    <div class="chip"><code>&lt;C-w&gt; v</code> Split vert</div>
+                </div>
+
+                <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-color);">
+                    <h3>Tabs</h3>
+                    <p style="font-size: 0.9rem;">A collection of windows. Think of them as workspaces or layouts, rather than file tabs in Chrome.</p>
+                    <div class="chip"><code>:tabnew</code> New tab</div>
+                    <div class="chip"><code>gt</code> Next tab</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="lazyvim-layer" class="card">
+            <h2>LazyVim as a Distribution Layer</h2>
+            <p><strong>LazyVim</strong> is a Neovim setup powered by <code>lazy.nvim</code> to make it easy to customize and extend your configuration. It provides a solid default configuration for modern development.</p>
+            <ul>
+                <li><strong>Plugin Manager:</strong> Uses <code>lazy.nvim</code> to lazy-load plugins only when needed, making startup blazing fast.</li>
+                <li><strong>Leader Key Workflows:</strong> LazyVim maps many powerful actions behind the <code>&lt;Space&gt;</code> key (the default leader). Pressing Space opens a helpful menu (which key).</li>
+                <li><strong>LSP & formatting pre-configured:</strong> Out of the box, you get auto-completion, diagnostics, and code formatting hooks.</li>
+            </ul>
+        </section>
+
+        <section id="workflows" class="card">
+            <h2>Core Workflows & Navigation</h2>
+
+            <h3>File Navigation & Fuzzy Finding</h3>
+            <p>With Telescope built-in, navigating your project is intuitive.</p>
+            <div class="chip"><code>&lt;Space&gt; &lt;Space&gt;</code> Find Files</div>
+            <div class="chip"><code>&lt;Space&gt; s g</code> Live Grep (Search Text)</div>
+            <div class="chip"><code>&lt;Space&gt; e</code> Toggle File Explorer (Neo-tree)</div>
+
+            <h3 style="margin-top: 1.5rem;">LSP Basics, Diagnostics, & Formatting</h3>
+            <p>The Language Server Protocol (LSP) powers intelligent code features.</p>
+            <div class="chip"><code>K</code> Hover Documentation</div>
+            <div class="chip"><code>g d</code> Go to Definition</div>
+            <div class="chip"><code>&lt;Space&gt; c a</code> Code Actions</div>
+            <div class="chip"><code>&lt;Space&gt; x x</code> Show Diagnostics</div>
+            <div class="chip"><code>&lt;Space&gt; c f</code> Format Document</div>
+
+            <h3 style="margin-top: 1.5rem;">Treesitter</h3>
+            <p>Treesitter builds a syntax tree for better highlighting, text objects, and folding.</p>
+            <div class="chip"><code>v i p</code> Select inner paragraph</div>
+            <div class="chip"><code>v a f</code> Select around function</div>
+
+            <h3 style="margin-top: 1.5rem;">Git & Terminal Integration</h3>
+            <div class="chip"><code>&lt;Space&gt; g g</code> Open LazyGit</div>
+            <div class="chip"><code>&lt;Space&gt; f t</code> Open Terminal</div>
+        </section>
+
+        <section id="friction-points" class="card">
+            <h2>Common Friction Points & Solutions</h2>
+            <p>We've all been there. Here is how to solve the most frequent issues.</p>
+
+            <button class="accordion">Root Directory Confusion / Losing Track of CWD</button>
+            <div class="panel">
+                <p><strong>The Problem:</strong> You open a file, but your fuzzy finder or LSP isn't picking up your project root properly.</p>
+                <p><strong>The Solution:</strong> LazyVim has a concept of a "root directory". Check your current root with <code>:pwd</code>. You can also press <code>&lt;Space&gt; f R</code> to explore files from the project root. If you need to manually change it, use <code>:cd %:p:h</code> to change directory to the current file's folder.</p>
+            </div>
+
+            <button class="accordion">File Explorer Drift</button>
+            <div class="panel">
+                <p><strong>The Problem:</strong> You navigate to a deeply nested file, but Neo-tree (the file explorer) is still showing the top-level directory and hasn't expanded to your current file.</p>
+                <p><strong>The Solution:</strong> Press <code>&lt;Space&gt; e</code> to open/focus Neo-tree. If it hasn't focused the current file, use <code>&lt;Space&gt; f E</code> to open Neo-tree specifically at the current file.</p>
+            </div>
+
+            <button class="accordion">Keybinding Discovery</button>
+            <div class="panel">
+                <p><strong>The Problem:</strong> You forgot the keybinding to format a file, run a test, or toggle the terminal.</p>
+                <p><strong>The Solution:</strong> The <code>which-key</code> plugin is your best friend. Just press <code>&lt;Space&gt;</code> and <em>wait half a second</em>. A menu will appear at the bottom of the screen showing all available commands. You can also search for keymaps using Telescope: <code>&lt;Space&gt; s k</code>.</p>
+            </div>
+
+            <button class="accordion">LSP Not Attaching / Formatting Not Running</button>
+            <div class="panel">
+                <p><strong>The Problem:</strong> You open a Python/TS/Rust file and get no autocomplete, diagnostics, or formatting.</p>
+                <p><strong>The Solution:</strong> First, run <code>:LspInfo</code> to check if the language server is attached to the current buffer. If not, you might be missing the server. Open <strong>Mason</strong> with <code>:Mason</code> (or <code>&lt;Space&gt; c m</code>) to easily install LSPs, formatters, and linters.</p>
+            </div>
+
+            <button class="accordion">Confusing Buffer/Window/Tab Model</button>
+            <div class="panel">
+                <p><strong>The Problem:</strong> You opened 10 files, closed one window, and now you have no idea where your files went.</p>
+                <p><strong>The Solution:</strong> Remember that closing a window (<code>:q</code>) does <em>not</em> close the buffer. To see all open buffers, press <code>&lt;Space&gt; ,</code> (switch buffers) or <code>&lt;Space&gt; b b</code>. To actually close a buffer and remove it from memory, use <code>&lt;Space&gt; b d</code> (buffer delete).</p>
+            </div>
+
+            <button class="accordion">Plugin Conflicts</button>
+            <div class="panel">
+                <p><strong>The Problem:</strong> After adding a custom plugin snippet, LazyVim throws errors on startup.</p>
+                <p><strong>The Solution:</strong> Run <code>:Lazy</code> to open the lazy.nvim dashboard. Check for errors, updates, or perform a <code>Shift+S</code> to sync/install plugins. Review your <code>lua/plugins/*.lua</code> files to ensure you're returning a valid table format.</p>
+            </div>
+        </section>
+
+        <section id="interactive-troubleshooting" class="interactive-section">
+            <h2>Interactive: "What Broke?"</h2>
+            <p>Test your knowledge! Read the scenario below and select the correct action to fix the issue.</p>
+
+            <div id="quiz-container">
+                <h3 style="margin-top: 0;" id="question-text">Scenario: You pressed a wrong key combination and now your cursor is stuck in a terminal buffer at the bottom of the screen. Pressing `Esc` just types `^[`. How do you get back to normal mode?</h3>
+
+                <div class="options-grid" id="options-container">
+                    <button class="option-btn" data-correct="false">Type `exit` and hit Enter</button>
+                    <button class="option-btn" data-correct="true">Press `&lt;C-\&gt; &lt;C-n&gt;`</button>
+                    <button class="option-btn" data-correct="false">Press `&lt;C-c&gt;` repeatedly</button>
+                    <button class="option-btn" data-correct="false">Close the window with `:q`</button>
+                </div>
+
+                <div id="quiz-feedback" class="feedback"></div>
+                <button id="next-btn" class="chip" style="margin-top: 1rem; display: none; cursor: pointer; background: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem;">Next Scenario</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Accordion Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const accordions = document.querySelectorAll('.accordion');
+            accordions.forEach(acc => {
+                acc.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                        panel.classList.remove('show');
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + "px";
+                        panel.classList.add('show');
+                    }
+                });
+            });
+
+            // Quiz Logic
+            const scenarios = [
+                {
+                    question: "Scenario: You pressed a wrong key combination and now your cursor is stuck in a terminal buffer at the bottom of the screen. Pressing Esc just types ^[. How do you get back to normal mode?",
+                    options: [
+                        { text: "Type `exit` and hit Enter", correct: false },
+                        { text: "Press `<C-\\> <C-n>`", correct: true },
+                        { text: "Press `<C-c>` repeatedly", correct: false },
+                        { text: "Close the window with `:q`", correct: false }
+                    ],
+                    explanation: "In NeoVim, to escape terminal mode and go back to normal mode, the default binding is `<C-\\> <C-n>`."
+                },
+                {
+                    question: "Scenario: You are editing a deeply nested file in `src/components/ui/button.tsx`, but you need to find a file relative to the project root. Your fuzzy finder only shows files in `src/components/ui`.",
+                    options: [
+                        { text: "Use `:cd ..` until you are at the root", correct: false },
+                        { text: "Press `<Space> f R` (Find Files from Root)", correct: true },
+                        { text: "Close NeoVim and reopen it at the root", correct: false },
+                        { text: "Use Neo-tree to manually click up the tree", correct: false }
+                    ],
+                    explanation: "LazyVim tracks root directories. Use `<Space> f R` to find files starting from the defined project root, bypassing the local CWD."
+                },
+                {
+                    question: "Scenario: You opened a `.rs` (Rust) file but your LSP features (like `gd` for go to definition) are not working.",
+                    options: [
+                        { text: "Run `:Mason` to install `rust-analyzer`", correct: true },
+                        { text: "Run `:Lazy sync`", correct: false },
+                        { text: "The file is too large", correct: false },
+                        { text: "Press `<Space> c f` to format it first", correct: false }
+                    ],
+                    explanation: "If an LSP isn't attaching, the server might not be installed. `:Mason` is the UI for installing language servers like `rust-analyzer`."
+                }
+            ];
+
+            let currentScenario = 0;
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const feedbackBox = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-btn');
+
+            function loadScenario(index) {
+                const scenario = scenarios[index];
+                questionText.textContent = scenario.question;
+                optionsContainer.innerHTML = '';
+                feedbackBox.className = 'feedback';
+                feedbackBox.style.display = 'none';
+                nextBtn.style.display = 'none';
+
+                scenario.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    // Sanitize html tags for display
+                    btn.innerHTML = opt.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    btn.dataset.correct = opt.correct;
+                    btn.addEventListener('click', handleOptionClick);
+                    optionsContainer.appendChild(btn);
+                });
+            }
+
+            function handleOptionClick(e) {
+                // Prevent multiple clicks
+                if (feedbackBox.style.display === 'block') return;
+
+                const isCorrect = e.target.dataset.correct === 'true';
+                const buttons = optionsContainer.querySelectorAll('.option-btn');
+
+                buttons.forEach(btn => {
+                    if (btn.dataset.correct === 'true') {
+                        btn.classList.add('correct');
+                    } else if (btn === e.target) {
+                        btn.classList.add('wrong');
+                    }
+                });
+
+                feedbackBox.style.display = 'block';
+                if (isCorrect) {
+                    feedbackBox.textContent = "Correct! " + scenarios[currentScenario].explanation;
+                    feedbackBox.className = 'feedback show success';
+                } else {
+                    feedbackBox.textContent = "Incorrect. " + scenarios[currentScenario].explanation;
+                    feedbackBox.className = 'feedback show error';
+                }
+
+                if (currentScenario < scenarios.length - 1) {
+                    nextBtn.style.display = 'inline-block';
+                }
+            }
+
+            nextBtn.addEventListener('click', () => {
+                currentScenario++;
+                loadScenario(currentScenario);
+            });
+
+            // Init
+            loadScenario(0);
+        });
+    </script>
+</body>
+</html>
