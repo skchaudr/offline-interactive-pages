@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTTP & API Playground</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #151515;
+      --bg-hover: #222;
+      --border: #2e2e2e;
+      --text: #ededed;
+      --text-muted: #888;
+      --accent: #5e6ad2;
+      --accent-hover: #7b88ff;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding: 0 16px 64px 16px;
+    }
+
+    header {
+      max-width: 800px;
+      margin: 48px auto;
+      text-align: left;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      overflow: hidden;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin: 24px 0 12px 0;
+      color: var(--text);
+    }
+
+    p {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .demo-container {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin: 24px 0;
+      overflow: hidden;
+    }
+
+    .demo-header {
+      display: flex;
+      background: #111;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .demo-body {
+      padding: 16px;
+    }
+
+    .pill {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .pill.get { background: rgba(88, 166, 255, 0.1); color: #58a6ff; }
+    .pill.post { background: rgba(63, 185, 80, 0.1); color: #3fb950; }
+    .pill.put { background: rgba(210, 153, 34, 0.1); color: #d29922; }
+    .pill.patch { background: rgba(210, 153, 34, 0.1); color: #d29922; }
+    .pill.delete { background: rgba(248, 81, 73, 0.1); color: #f85149; }
+
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    button.secondary:hover {
+      background: var(--bg-hover);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    pre {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      background: #111;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      color: #c9d1d9;
+    }
+
+    .split-pane {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .split-pane {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      overflow-x: auto;
+    }
+
+    .tab {
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .tab.active {
+      background: var(--bg-hover);
+      color: var(--text);
+    }
+
+    /* URL Anatomy */
+    .url-parts {
+      display: flex;
+      flex-wrap: wrap;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      background: var(--bg);
+      padding: 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .url-part {
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .url-part:hover, .url-part.active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .url-desc {
+      background: #111;
+      padding: 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      min-height: 80px;
+    }
+
+    /* Status Grid */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .status-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .status-card:hover, .status-card.active {
+      border-color: var(--accent);
+      background: var(--bg-hover);
+    }
+
+    .status-code {
+      font-size: 1.2rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      margin-bottom: 4px;
+    }
+
+    .status-card[data-type="2"] .status-code { color: var(--success); }
+    .status-card[data-type="3"] .status-code { color: #58a6ff; }
+    .status-card[data-type="4"] .status-code { color: var(--warning); }
+    .status-card[data-type="5"] .status-code { color: var(--error); }
+
+    .status-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Quiz */
+    .quiz-card {
+      background: #1a1a24;
+      border: 1px solid #3d4470;
+      margin-top: 32px;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .quiz-option {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .quiz-option:hover {
+      background: var(--bg-hover);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(63, 185, 80, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(248, 81, 73, 0.1);
+    }
+
+    /* Interactive Console */
+    .console-line {
+      display: flex;
+      margin-bottom: 4px;
+    }
+    .console-prompt {
+      color: var(--accent);
+      margin-right: 8px;
+      user-select: none;
+    }
+
+    /* Utility */
+    .hidden { display: none !important; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .gap-2 { gap: 8px; }
+    .gap-4 { gap: 16px; }
+    .mt-4 { margin-top: 16px; }
+    .mb-2 { margin-bottom: 8px; }
+    .text-sm { font-size: 0.85rem; }
+    .mono { font-family: var(--font-mono); }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>HTTP & API Playground</h1>
+    <p>An interactive guide to the fundamentals of web communication. Learn by sending requests, inspecting responses, and breaking things.</p>
+  </header>
+
+  <main id="content-root">
+
+    <!-- URL Anatomy Section -->
+    <section id="url-anatomy">
+      <h2>1. Anatomy of a URL</h2>
+      <p>A Uniform Resource Locator (URL) is the address of a resource on the web. Click the parts below to understand what they do.</p>
+
+      <div class="url-parts" id="url-interactive">
+        <span class="url-part" data-part="protocol" style="color: #58a6ff;">https://</span>
+        <span class="url-part" data-part="host" style="color: #3fb950;">api.example.com</span>
+        <span class="url-part" data-part="port" style="color: #d29922;">:443</span>
+        <span class="url-part" data-part="path" style="color: #bc8cff;">/v1/users/123</span>
+        <span class="url-part" data-part="query" style="color: #f85149;">?include_profile=true</span>
+      </div>
+
+      <div class="url-desc" id="url-description">
+        <div class="text-sm mono text-muted mb-2">Hover or click a URL part above</div>
+        <p>A complete URL provides the protocol to use, the server's location, and the specific resource being requested.</p>
+      </div>
+    </section>
+
+    <!-- REST Methods Section -->
+    <section id="rest-methods">
+      <h2>2. HTTP Methods (REST)</h2>
+      <p>HTTP defines a set of request methods to indicate the desired action to be performed for a given resource.</p>
+
+      <div class="tabs" id="method-tabs">
+        <button class="tab active" data-method="GET">GET</button>
+        <button class="tab" data-method="POST">POST</button>
+        <button class="tab" data-method="PUT">PUT</button>
+        <button class="tab" data-method="PATCH">PATCH</button>
+        <button class="tab" data-method="DELETE">DELETE</button>
+      </div>
+
+      <div class="split-pane">
+        <!-- Request Pane -->
+        <div class="demo-container">
+          <div class="demo-header">
+            <span class="pill get" id="req-method-pill">GET</span>
+            <span class="mono text-sm">/api/users</span>
+          </div>
+          <div class="demo-body">
+            <div class="mb-2 text-sm text-muted">Headers</div>
+            <pre class="mb-4">Content-Type: application/json
+Accept: application/json</pre>
+
+            <div id="req-body-container" class="hidden">
+              <div class="mb-2 text-sm text-muted">Request Body</div>
+              <textarea id="req-body" rows="4" class="mono text-sm">{
+  "name": "Alex",
+  "role": "developer"
+}</textarea>
+            </div>
+
+            <button id="btn-send-method" class="mt-4">Send Request</button>
+          </div>
+        </div>
+
+        <!-- Response Pane -->
+        <div class="demo-container">
+          <div class="demo-header">
+            <span class="mono text-sm text-muted">Response</span>
+            <span class="pill" id="res-status-pill" style="margin-left: auto;">...</span>
+          </div>
+          <div class="demo-body">
+            <pre id="res-body" style="min-height: 180px;">// Click 'Send Request' to see response</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Authentication Section -->
+    <section id="authentication">
+      <h2>3. Authentication & Headers</h2>
+      <p>APIs use HTTP headers to pass additional context. The <code>Authorization</code> header is commonly used to prove your identity.</p>
+
+      <div class="demo-container">
+        <div class="demo-header">
+          <span class="pill get">GET</span>
+          <span class="mono text-sm">/api/billing/invoices</span>
+        </div>
+        <div class="demo-body flex gap-4" style="align-items: flex-start;">
+          <div style="flex: 1;">
+            <label class="text-sm text-muted mb-2 block">Authorization Header</label>
+            <div class="flex gap-2">
+              <input type="text" id="auth-token" placeholder="Bearer <token>" value="" class="mono">
+              <button id="btn-auth-send" style="white-space: nowrap;">Send</button>
+            </div>
+            <div class="text-sm mt-2 text-muted">Hint: The valid token is <code>Bearer secret_123</code></div>
+          </div>
+
+          <div style="flex: 1;">
+            <label class="text-sm text-muted mb-2 block">Result</label>
+            <pre id="auth-res-body" style="min-height: 80px;">// Awaiting request</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Status Codes Section -->
+    <section id="status-codes">
+      <h2>4. Status Codes</h2>
+      <p>Every HTTP response includes a 3-digit status code that indicates whether the request was successful, and if not, why.</p>
+
+      <div class="status-grid" id="status-grid">
+        <!-- 2xx -->
+        <div class="status-card" data-code="200" data-type="2">
+          <div class="status-code">200</div>
+          <div class="status-label">OK</div>
+        </div>
+        <div class="status-card" data-code="201" data-type="2">
+          <div class="status-code">201</div>
+          <div class="status-label">Created</div>
+        </div>
+        <div class="status-card" data-code="204" data-type="2">
+          <div class="status-code">204</div>
+          <div class="status-label">No Content</div>
+        </div>
+
+        <!-- 3xx -->
+        <div class="status-card" data-code="301" data-type="3">
+          <div class="status-code">301</div>
+          <div class="status-label">Moved Perm</div>
+        </div>
+        <div class="status-card" data-code="304" data-type="3">
+          <div class="status-code">304</div>
+          <div class="status-label">Not Modified</div>
+        </div>
+
+        <!-- 4xx -->
+        <div class="status-card" data-code="400" data-type="4">
+          <div class="status-code">400</div>
+          <div class="status-label">Bad Request</div>
+        </div>
+        <div class="status-card" data-code="401" data-type="4">
+          <div class="status-code">401</div>
+          <div class="status-label">Unauthorized</div>
+        </div>
+        <div class="status-card" data-code="403" data-type="4">
+          <div class="status-code">403</div>
+          <div class="status-label">Forbidden</div>
+        </div>
+        <div class="status-card" data-code="404" data-type="4">
+          <div class="status-code">404</div>
+          <div class="status-label">Not Found</div>
+        </div>
+
+        <!-- 5xx -->
+        <div class="status-card" data-code="500" data-type="5">
+          <div class="status-code">500</div>
+          <div class="status-label">Server Error</div>
+        </div>
+        <div class="status-card" data-code="502" data-type="5">
+          <div class="status-code">502</div>
+          <div class="status-label">Bad Gateway</div>
+        </div>
+        <div class="status-card" data-code="503" data-type="5">
+          <div class="status-code">503</div>
+          <div class="status-label">Maintenance</div>
+        </div>
+      </div>
+
+      <div class="demo-container mt-4">
+        <div class="demo-body">
+          <pre id="status-desc" style="min-height: 80px;">Select a status code above to simulate a response.</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pagination & Query Params Section -->
+    <section id="pagination">
+      <h2>5. Pagination</h2>
+      <p>When returning lists, APIs use query parameters to paginate results, preventing massive responses.</p>
+
+      <div class="demo-container">
+        <div class="demo-header flex items-center">
+          <span class="pill get">GET</span>
+          <span class="mono text-sm">/api/events?</span>
+          <input type="text" id="pag-query" value="limit=5&offset=0" class="mono text-sm mb-0" style="width: 200px; padding: 4px 8px; margin-left: 4px;">
+          <button id="btn-pag-send" style="padding: 4px 12px; margin-left: auto;">Send</button>
+        </div>
+        <div class="demo-body flex gap-4">
+          <div style="flex: 1;">
+            <div class="flex gap-2 mb-4">
+              <button class="secondary text-sm" id="btn-pag-prev" disabled>← Previous</button>
+              <button class="secondary text-sm" id="btn-pag-next">Next →</button>
+            </div>
+            <pre id="pag-res-body" style="height: 250px; overflow-y: auto;">// Awaiting request</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rate Limiting Section -->
+    <section id="rate-limiting">
+      <h2>6. Rate Limiting</h2>
+      <p>APIs protect themselves from abuse by limiting how many requests a client can make in a time window.</p>
+
+      <div class="demo-container">
+        <div class="demo-header">
+          <span class="pill post">POST</span>
+          <span class="mono text-sm">/api/comments</span>
+          <button id="btn-spam" style="margin-left: auto; background: var(--warning);">Send Rapid Requests</button>
+        </div>
+        <div class="demo-body">
+          <div class="flex items-center gap-4 mb-4">
+            <div style="flex: 1;">
+              <div class="text-sm text-muted mb-2">Rate Limit Status</div>
+              <div class="flex items-center gap-2">
+                <div style="height: 8px; background: var(--bg-hover); border-radius: 4px; flex: 1; overflow: hidden;">
+                  <div id="rate-bar" style="height: 100%; width: 0%; background: var(--success); transition: width 0.1s, background 0.3s;"></div>
+                </div>
+                <span id="rate-text" class="mono text-sm">0/5</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="text-sm text-muted mb-2">Response Headers</div>
+              <pre id="rate-headers" style="min-height: 120px;">X-RateLimit-Limit: 5
+X-RateLimit-Remaining: 5
+X-RateLimit-Reset: 1718290000</pre>
+            </div>
+            <div>
+              <div class="text-sm text-muted mb-2">Body</div>
+              <pre id="rate-body" style="min-height: 120px;">// Awaiting request</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Knowledge Check -->
+    <section id="quiz" class="quiz-card">
+      <h2>7. Knowledge Check</h2>
+      <p>Test your understanding of HTTP fundamentals.</p>
+
+      <div id="quiz-container">
+        <h3 id="quiz-question" class="mt-0">If you want to update an existing user's email address, which HTTP method should you use?</h3>
+        <div class="quiz-options" id="quiz-options">
+          <div class="quiz-option" data-correct="false">
+            <span class="mono">GET</span>
+            <span class="text-sm text-muted">Retrieves the user.</span>
+          </div>
+          <div class="quiz-option" data-correct="false">
+            <span class="mono">POST</span>
+            <span class="text-sm text-muted">Creates a new user entirely.</span>
+          </div>
+          <div class="quiz-option" data-correct="true">
+            <span class="mono">PATCH</span>
+            <span class="text-sm text-muted">Applies partial modifications.</span>
+          </div>
+          <div class="quiz-option" data-correct="false">
+            <span class="mono">DELETE</span>
+            <span class="text-sm text-muted">Removes the user.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // 1. URL Anatomy
+    const urlParts = document.querySelectorAll('.url-part');
+    const urlDesc = document.getElementById('url-description');
+
+    const urlExplanations = {
+      protocol: "<p><strong>Protocol (https://)</strong></p><p>Defines how the browser should communicate with the server. HTTPS means the connection is encrypted.</p>",
+      host: "<p><strong>Host (api.example.com)</strong></p><p>The domain name or IP address of the server hosting the resource.</p>",
+      port: "<p><strong>Port (:443)</strong></p><p>The specific endpoint on the server. HTTPS defaults to 443, HTTP to 80. Usually omitted.</p>",
+      path: "<p><strong>Path (/v1/users/123)</strong></p><p>The specific resource you want to access on the server.</p>",
+      query: "<p><strong>Query Parameters (?include_profile=true)</strong></p><p>Extra key-value pairs used to filter, sort, or modify the response.</p>"
+    };
+
+    urlParts.forEach(part => {
+      part.addEventListener('click', () => {
+        urlParts.forEach(p => p.classList.remove('active'));
+        part.classList.add('active');
+        urlDesc.innerHTML = urlExplanations[part.dataset.part];
+      });
+    });
+
+    // 2. REST Methods
+    const methodTabs = document.querySelectorAll('#method-tabs .tab');
+    const reqMethodPill = document.getElementById('req-method-pill');
+    const reqBodyContainer = document.getElementById('req-body-container');
+    const reqBody = document.getElementById('req-body');
+    const resBody = document.getElementById('res-body');
+    const resStatusPill = document.getElementById('res-status-pill');
+    const btnSendMethod = document.getElementById('btn-send-method');
+
+    let currentMethod = 'GET';
+
+    methodTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        methodTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentMethod = tab.dataset.method;
+
+        reqMethodPill.textContent = currentMethod;
+        reqMethodPill.className = `pill ${currentMethod.toLowerCase()}`;
+
+        if (['POST', 'PUT', 'PATCH'].includes(currentMethod)) {
+          reqBodyContainer.classList.remove('hidden');
+        } else {
+          reqBodyContainer.classList.add('hidden');
+        }
+
+        resBody.textContent = "// Click 'Send Request' to see response";
+        resStatusPill.textContent = "...";
+        resStatusPill.style.color = "inherit";
+      });
+    });
+
+    btnSendMethod.addEventListener('click', () => {
+      let responseText = "";
+      let statusText = "200 OK";
+      let statusColor = "var(--success)";
+
+      switch (currentMethod) {
+        case 'GET':
+          responseText = JSON.stringify({
+            users: [
+              { id: 1, name: "Alice" },
+              { id: 2, name: "Bob" }
+            ]
+          }, null, 2);
+          break;
+        case 'POST':
+          try {
+            const bodyObj = JSON.parse(reqBody.value);
+            responseText = JSON.stringify({
+              message: "User created successfully",
+              user: { id: 3, ...bodyObj }
+            }, null, 2);
+            statusText = "201 Created";
+          } catch (e) {
+            responseText = JSON.stringify({ error: "Invalid JSON body" }, null, 2);
+            statusText = "400 Bad Request";
+            statusColor = "var(--warning)";
+          }
+          break;
+        case 'PUT':
+          responseText = JSON.stringify({
+            message: "User 123 completely replaced",
+            updated_fields: ["name", "role"]
+          }, null, 2);
+          break;
+        case 'PATCH':
+          responseText = JSON.stringify({
+            message: "User 123 partially updated",
+            updated_fields: ["role"]
+          }, null, 2);
+          break;
+        case 'DELETE':
+          responseText = "";
+          statusText = "204 No Content";
+          break;
+      }
+
+      resBody.textContent = responseText || "// (Empty Body)";
+      resStatusPill.textContent = statusText;
+      resStatusPill.style.color = statusColor;
+    });
+
+    // 3. Authentication
+    const btnAuthSend = document.getElementById('btn-auth-send');
+    const authToken = document.getElementById('auth-token');
+    const authResBody = document.getElementById('auth-res-body');
+
+    btnAuthSend.addEventListener('click', () => {
+      const token = authToken.value.trim();
+      if (token === 'Bearer secret_123') {
+        authResBody.innerHTML = `<span style="color:var(--success)">200 OK</span>\n\n` + JSON.stringify({
+          invoices: [{ id: "inv_1", amount: 49.99, status: "paid" }]
+        }, null, 2);
+      } else if (!token) {
+        authResBody.innerHTML = `<span style="color:var(--warning)">401 Unauthorized</span>\n\n` + JSON.stringify({
+          error: "Missing Authorization header"
+        }, null, 2);
+      } else {
+        authResBody.innerHTML = `<span style="color:var(--error)">403 Forbidden</span>\n\n` + JSON.stringify({
+          error: "Invalid token"
+        }, null, 2);
+      }
+    });
+
+    // 4. Status Codes
+    const statusCards = document.querySelectorAll('.status-card');
+    const statusDesc = document.getElementById('status-desc');
+
+    const statusExamples = {
+      200: { text: "200 OK", body: '{\n  "status": "success",\n  "data": { ... }\n}' },
+      201: { text: "201 Created", body: '{\n  "message": "Resource created",\n  "id": "123"\n}' },
+      204: { text: "204 No Content", body: '// Successful request, but no body returned.' },
+      301: { text: "301 Moved Permanently", body: 'Location: https://new-api.example.com/v2' },
+      304: { text: "304 Not Modified", body: '// Resource hasn\'t changed since last request.\n// Use cached version.' },
+      400: { text: "400 Bad Request", body: '{\n  "error": "Validation failed",\n  "fields": {"email": "invalid format"}\n}' },
+      401: { text: "401 Unauthorized", body: '{\n  "error": "Authentication required. Please provide a valid token."\n}' },
+      403: { text: "403 Forbidden", body: '{\n  "error": "You do not have permission to perform this action."\n}' },
+      404: { text: "404 Not Found", body: '{\n  "error": "The requested resource /v1/users/999 does not exist."\n}' },
+      500: { text: "500 Internal Server Error", body: '{\n  "error": "An unexpected error occurred on our end."\n}' },
+      502: { text: "502 Bad Gateway", body: '{\n  "error": "Upstream service is unreachable."\n}' },
+      503: { text: "503 Service Unavailable", body: '{\n  "error": "API is down for maintenance. Try again in 5 minutes."\n}' }
+    };
+
+    statusCards.forEach(card => {
+      card.addEventListener('click', () => {
+        statusCards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+
+        const code = card.dataset.code;
+        const info = statusExamples[code];
+        statusDesc.innerHTML = `<strong>${info.text}</strong>\n\n${info.body}`;
+      });
+    });
+
+    // 5. Pagination
+    const btnPagSend = document.getElementById('btn-pag-send');
+    const pagQuery = document.getElementById('pag-query');
+    const pagResBody = document.getElementById('pag-res-body');
+    const btnPagPrev = document.getElementById('btn-pag-prev');
+    const btnPagNext = document.getElementById('btn-pag-next');
+
+    let currentOffset = 0;
+    const limit = 5;
+    const totalItems = 12;
+
+    function renderPagination() {
+      const start = currentOffset;
+      const end = Math.min(start + limit, totalItems);
+      const items = Array.from({length: end - start}, (_, i) => ({
+        id: start + i + 1,
+        event: `Event #${start + i + 1}`
+      }));
+
+      pagQuery.value = `limit=${limit}&offset=${currentOffset}`;
+
+      pagResBody.textContent = JSON.stringify({
+        metadata: {
+          total: totalItems,
+          limit: limit,
+          offset: currentOffset,
+          has_more: end < totalItems
+        },
+        data: items
+      }, null, 2);
+
+      btnPagPrev.disabled = currentOffset === 0;
+      btnPagNext.disabled = end >= totalItems;
+    }
+
+    btnPagSend.addEventListener('click', () => {
+      // Parse query string for simple demo
+      const q = pagQuery.value;
+      const offsetMatch = q.match(/offset=(\d+)/);
+      if (offsetMatch) {
+        currentOffset = parseInt(offsetMatch[1]);
+        if (currentOffset < 0) currentOffset = 0;
+        if (currentOffset >= totalItems) currentOffset = totalItems - limit;
+      }
+      renderPagination();
+    });
+
+    btnPagPrev.addEventListener('click', () => {
+      currentOffset = Math.max(0, currentOffset - limit);
+      renderPagination();
+    });
+
+    btnPagNext.addEventListener('click', () => {
+      currentOffset = Math.min(totalItems - limit, currentOffset + limit);
+      renderPagination();
+    });
+
+    // 6. Rate Limiting
+    const btnSpam = document.getElementById('btn-spam');
+    const rateBar = document.getElementById('rate-bar');
+    const rateText = document.getElementById('rate-text');
+    const rateHeaders = document.getElementById('rate-headers');
+    const rateBody = document.getElementById('rate-body');
+
+    let requestsMade = 0;
+    const maxRequests = 5;
+    let rateResetTimer = null;
+
+    function updateRateLimitUI() {
+      const remaining = Math.max(0, maxRequests - requestsMade);
+      const pct = (requestsMade / maxRequests) * 100;
+
+      rateBar.style.width = `${Math.min(pct, 100)}%`;
+      rateText.textContent = `${requestsMade}/${maxRequests}`;
+
+      if (requestsMade >= maxRequests) {
+        rateBar.style.background = 'var(--error)';
+        rateHeaders.innerHTML = `X-RateLimit-Limit: ${maxRequests}
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: ${Math.floor(Date.now() / 1000) + 5}`;
+        rateBody.innerHTML = `<span style="color:var(--error)">429 Too Many Requests</span>\n\n` + JSON.stringify({
+          error: "Rate limit exceeded. Please try again in 5 seconds."
+        }, null, 2);
+      } else {
+        if (pct > 60) rateBar.style.background = 'var(--warning)';
+        else rateBar.style.background = 'var(--success)';
+
+        rateHeaders.innerHTML = `X-RateLimit-Limit: ${maxRequests}
+X-RateLimit-Remaining: ${remaining}
+X-RateLimit-Reset: ${Math.floor(Date.now() / 1000) + 5}`;
+        rateBody.innerHTML = `<span style="color:var(--success)">201 Created</span>\n\n` + JSON.stringify({
+          id: `comment_${Math.floor(Math.random() * 1000)}`,
+          status: "saved"
+        }, null, 2);
+      }
+    }
+
+    btnSpam.addEventListener('click', () => {
+      requestsMade++;
+      updateRateLimitUI();
+
+      if (rateResetTimer) clearTimeout(rateResetTimer);
+
+      rateResetTimer = setTimeout(() => {
+        requestsMade = 0;
+        updateRateLimitUI();
+        rateHeaders.innerHTML = "X-RateLimit-Limit: 5\nX-RateLimit-Remaining: 5\nX-RateLimit-Reset: " + (Math.floor(Date.now() / 1000) + 5);
+        rateBody.innerHTML = "// Reset. Awaiting request";
+      }, 5000);
+    });
+
+    // 7. Quiz
+    const quizOptions = document.querySelectorAll('.quiz-option');
+    quizOptions.forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (opt.parentElement.classList.contains('answered')) return;
+
+        opt.parentElement.classList.add('answered');
+        opt.classList.add('selected');
+
+        const isCorrect = opt.dataset.correct === 'true';
+        if (isCorrect) {
+          opt.classList.add('correct');
+        } else {
+          opt.classList.add('incorrect');
+          // highlight correct one
+          quizOptions.forEach(o => {
+            if (o.dataset.correct === 'true') o.classList.add('correct');
+          });
+        }
+      });
+    });
+
+  </script>
+</body>
+</html>
