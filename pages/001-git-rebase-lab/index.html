@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git Rebase Lab</title>
+  <style>
+    :root {
+      /* Light Theme Variables */
+      --bg-color: #fbfbfa;
+      --surface-color: #ffffff;
+      --text-main: #1a1a1a;
+      --text-muted: #666666;
+      --border-color: #eaeaea;
+      --primary-color: #007aff; /* Apple-like blue */
+      --primary-hover: #005bb5;
+      --accent-color: #f5f5f5;
+      --code-bg: #f0f0f0;
+      --code-color: #d13232;
+      --chip-bg: #e0e0e0;
+      --success-color: #34c759;
+      --warning-color: #ffcc00;
+      --error-color: #ff3b30;
+
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+
+      --transition: 0.2s ease;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #0d0d0d;
+        --surface-color: #1a1a1a;
+        --text-main: #f5f5f5;
+        --text-muted: #a1a1a1;
+        --border-color: #333333;
+        --primary-color: #0a84ff;
+        --primary-hover: #409cff;
+        --accent-color: #2a2a2a;
+        --code-bg: #2d2d2d;
+        --code-color: #ff6b6b;
+        --chip-bg: #333333;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-stack);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Layout */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .sidebar {
+      width: 250px;
+      padding: 2rem 1.5rem;
+      border-right: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-color);
+    }
+
+    .sidebar-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      color: var(--text-main);
+    }
+
+    .nav-menu {
+      list-style: none;
+    }
+
+    .nav-item {
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .nav-link:hover {
+      background-color: var(--accent-color);
+      color: var(--text-main);
+    }
+
+    .nav-link.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 3rem 4rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .view-section {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Typography */
+    h1 { font-size: 2.5rem; margin-bottom: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+    h2 { font-size: 1.75rem; margin-top: 2rem; margin-bottom: 1rem; font-weight: 600; }
+    p { margin-bottom: 1.5rem; font-size: 1.05rem; }
+
+    code {
+      font-family: var(--font-mono);
+      background-color: var(--code-bg);
+      color: var(--code-color);
+      padding: 0.2em 0.4em;
+      border-radius: var(--radius-sm);
+      font-size: 0.9em;
+    }
+
+    /* Components */
+    .card {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      background-color: var(--chip-bg);
+      padding: 0.25rem 0.75rem;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-color);
+      color: var(--text-main);
+    }
+
+    .copy-btn code {
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Accordion */
+    .accordion {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 1rem;
+      background: var(--surface-color);
+    }
+
+    .accordion-header {
+      padding: 1rem 1.5rem;
+      background: var(--surface-color);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      user-select: none;
+      transition: var(--transition);
+    }
+
+    .accordion-header:hover {
+      background: var(--accent-color);
+    }
+
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, padding 0.3s ease;
+      padding: 0 1.5rem;
+      background: var(--surface-color);
+      border-top: 1px solid transparent;
+    }
+
+    .accordion.open .accordion-content {
+      max-height: 500px; /* arbitrary max height */
+      padding: 1.5rem;
+      border-top-color: var(--border-color);
+    }
+
+    .accordion-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .accordion.open .accordion-icon {
+      transform: rotate(180deg);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .app-container {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem;
+      }
+      .main-content {
+        padding: 2rem 1.5rem;
+      }
+      .nav-menu {
+        display: flex;
+        overflow-x: auto;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+      }
+      .nav-item {
+        margin-bottom: 0;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-title">Git Rebase Lab</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><a class="nav-link active" data-target="overview">Overview</a></li>
+        <li class="nav-item"><a class="nav-link" data-target="vocabulary">Vocabulary</a></li>
+        <li class="nav-item"><a class="nav-link" data-target="rebase-vs-merge">Rebase vs Merge</a></li>
+        <li class="nav-item"><a class="nav-link" data-target="interactive">Interactive Rebase</a></li>
+        <li class="nav-item"><a class="nav-link" data-target="conflict">Conflict Flow</a></li>
+        <li class="nav-item"><a class="nav-link" data-target="reflog">Reflog Recovery</a></li>
+        <li class="nav-item"><a class="nav-link" data-target="practice">Practice Drills</a></li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <!-- Overview View -->
+      <section id="overview" class="view-section active">
+        <h1>Git Rebase</h1>
+        <p>A rebase essentially takes a set of commits, "copies" them, and drops them down somewhere else. While it sounds scary, it's just a way to rewrite your commit history to make it cleaner and more linear.</p>
+        <div class="card">
+          <h3>Why Rebase?</h3>
+          <p>Instead of merging changes and creating a "merge commit" that clutters history, rebasing rewrites the project history by creating brand new commits for each commit in the original branch.</p>
+          <div class="chip">Linear History</div>
+          <div class="chip">Cleaner Commits</div>
+          <div class="chip">Easier Debugging</div>
+        </div>
+        <p>In this lab, you'll learn the core concepts, visualize how the commit graph changes, and practice recovering from mistakes.</p>
+      </section>
+
+      <!-- Vocabulary View -->
+      <section id="vocabulary" class="view-section">
+        <h1>Vocabulary</h1>
+        <p>Key terms you need to know before rewriting history.</p>
+
+        <div class="accordion">
+          <div class="accordion-header">
+            <span>HEAD</span>
+            <span class="accordion-icon">▼</span>
+          </div>
+          <div class="accordion-content">
+            <p>A pointer to the current commit you are viewing or working on. Usually, it points to the latest commit of your current branch.</p>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion-header">
+            <span>Rebase</span>
+            <span class="accordion-icon">▼</span>
+          </div>
+          <div class="accordion-content">
+            <p>The process of moving or combining a sequence of commits to a new base commit. It rewrites history by creating new commits.</p>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion-header">
+            <span>Merge</span>
+            <span class="accordion-icon">▼</span>
+          </div>
+          <div class="accordion-content">
+            <p>Combining multiple sequences of commits into one unified history, typically preserving the history of both branches via a "merge commit."</p>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion-header">
+            <span>Fast-forward</span>
+            <span class="accordion-icon">▼</span>
+          </div>
+          <div class="accordion-content">
+            <p>A type of merge where the target branch has no additional commits compared to the source branch. Git simply moves the branch pointer forward without creating a new merge commit.</p>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion-header">
+            <span>Reflog</span>
+            <span class="accordion-icon">▼</span>
+          </div>
+          <div class="accordion-content">
+            <p>A mechanism to record when the tip of branches are updated. It's your safety net to recover lost commits after a bad rebase or reset.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Rebase vs Merge View -->
+      <section id="rebase-vs-merge" class="view-section">
+        <h1>Rebase vs Merge</h1>
+        <p>Compare how the commit history changes when integrating the <code>feature</code> branch into <code>main</code>.</p>
+
+        <div class="tabs" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+          <button class="tab-btn active" data-graph="initial" style="background: none; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--primary-color);">Initial State</button>
+          <button class="tab-btn" data-graph="merge" style="background: none; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-muted);">After Merge</button>
+          <button class="tab-btn" data-graph="rebase" style="background: none; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-muted);">After Rebase</button>
+        </div>
+
+        <div class="card" style="text-align: center; background: #fafafa; overflow-x: auto;">
+          <svg id="graph-svg" width="600" height="200" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,-5L10,0L0,5" fill="#999" />
+              </marker>
+            </defs>
+
+            <!-- Graph Initial State -->
+            <g id="g-initial">
+              <!-- Lines -->
+              <line x1="100" y1="100" x2="200" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="200" y1="100" x2="300" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="200" y1="100" x2="300" y2="40" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="300" y1="40" x2="400" y2="40" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+
+              <!-- Nodes Main -->
+              <circle cx="100" cy="100" r="16" fill="#34c759" />
+              <text x="100" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">C1</text>
+              <circle cx="200" cy="100" r="16" fill="#34c759" />
+              <text x="200" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">C2</text>
+              <circle cx="300" cy="100" r="16" fill="#34c759" />
+              <text x="300" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">C3</text>
+              <text x="300" y="135" text-anchor="middle" font-family="monospace" font-size="14" fill="#34c759">main</text>
+
+              <!-- Nodes Feature -->
+              <circle cx="300" cy="40" r="16" fill="#007aff" />
+              <text x="300" y="45" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">F1</text>
+              <circle cx="400" cy="40" r="16" fill="#007aff" />
+              <text x="400" y="45" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">F2</text>
+              <text x="400" y="75" text-anchor="middle" font-family="monospace" font-size="14" fill="#007aff">feature</text>
+            </g>
+
+            <!-- Graph Merge State (Hidden by default) -->
+            <g id="g-merge" style="display: none;">
+              <!-- Lines -->
+              <line x1="50" y1="100" x2="150" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="150" y1="100" x2="250" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="150" y1="100" x2="250" y2="40" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="250" y1="40" x2="350" y2="40" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <!-- Merge commits arrows -->
+              <line x1="250" y1="100" x2="450" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="350" y1="40" x2="450" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+
+              <!-- Nodes Main -->
+              <circle cx="50" cy="100" r="16" fill="#34c759" />
+              <text x="50" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">C1</text>
+              <circle cx="150" cy="100" r="16" fill="#34c759" />
+              <text x="150" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">C2</text>
+              <circle cx="250" cy="100" r="16" fill="#34c759" />
+              <text x="250" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">C3</text>
+              <circle cx="450" cy="100" r="16" fill="#ff9500" />
+              <text x="450" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">M1</text>
+              <text x="450" y="135" text-anchor="middle" font-family="monospace" font-size="14" fill="#34c759">main</text>
+
+              <!-- Nodes Feature -->
+              <circle cx="250" cy="40" r="16" fill="#007aff" />
+              <text x="250" y="45" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">F1</text>
+              <circle cx="350" cy="40" r="16" fill="#007aff" />
+              <text x="350" y="45" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">F2</text>
+            </g>
+
+            <!-- Graph Rebase State (Hidden by default) -->
+            <g id="g-rebase" style="display: none;">
+              <!-- Lines -->
+              <line x1="50" y1="100" x2="150" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="150" y1="100" x2="250" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="250" y1="100" x2="350" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+              <line x1="350" y1="100" x2="450" y2="100" stroke="#999" stroke-width="3" marker-end="url(#arrow)" />
+
+              <!-- Original Feature Nodes (Greyed out) -->
+              <circle cx="250" cy="40" r="16" fill="#e0e0e0" stroke="#999" stroke-dasharray="2" />
+              <text x="250" y="45" text-anchor="middle" fill="#999" font-family="monospace" font-size="12">F1</text>
+              <circle cx="350" cy="40" r="16" fill="#e0e0e0" stroke="#999" stroke-dasharray="2" />
+              <text x="350" y="45" text-anchor="middle" fill="#999" font-family="monospace" font-size="12">F2</text>
+              <line x1="150" y1="100" x2="250" y2="40" stroke="#e0e0e0" stroke-width="3" stroke-dasharray="4" marker-end="url(#arrow)" />
+              <line x1="250" y1="40" x2="350" y2="40" stroke="#e0e0e0" stroke-width="3" stroke-dasharray="4" marker-end="url(#arrow)" />
+
+              <!-- Nodes Main/Rebased -->
+              <circle cx="50" cy="100" r="16" fill="#34c759" />
+              <text x="50" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">C1</text>
+              <circle cx="150" cy="100" r="16" fill="#34c759" />
+              <text x="150" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">C2</text>
+              <circle cx="250" cy="100" r="16" fill="#34c759" />
+              <text x="250" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">C3</text>
+              <circle cx="350" cy="100" r="16" fill="#007aff" />
+              <text x="350" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">F1'</text>
+              <circle cx="450" cy="100" r="16" fill="#007aff" />
+              <text x="450" y="105" text-anchor="middle" fill="#fff" font-family="monospace" font-size="12">F2'</text>
+
+              <text x="450" y="135" text-anchor="middle" font-family="monospace" font-size="14" fill="#007aff">feature</text>
+            </g>
+          </svg>
+        </div>
+
+        <div id="graph-description" class="card">
+          <p><strong>Initial State:</strong> The <code>feature</code> branch diverged from <code>main</code> at commit C2.</p>
+        </div>
+      </section>
+
+      <!-- Interactive Rebase View -->
+      <section id="interactive" class="view-section">
+        <h1>Interactive Rebase</h1>
+        <p>Interactive rebase (<code>git rebase -i</code>) is the swiss army knife of Git. It lets you alter commits as they are being moved to the new base.</p>
+
+        <div class="card">
+          <h3>Common Commands</h3>
+          <ul style="list-style-type: none; padding-left: 0;">
+            <li style="margin-bottom: 0.5rem;"><span class="chip">pick</span> Use the commit as is.</li>
+            <li style="margin-bottom: 0.5rem;"><span class="chip">reword</span> Use the commit, but edit the commit message.</li>
+            <li style="margin-bottom: 0.5rem;"><span class="chip">squash</span> Use the commit, but meld it into previous commit.</li>
+            <li style="margin-bottom: 0.5rem;"><span class="chip">drop</span> Remove the commit entirely.</li>
+          </ul>
+        </div>
+
+        <h3>Interactive Rebase Example</h3>
+        <p>Imagine you have three messy commits you want to clean up before merging.</p>
+        <div class="card" style="background: var(--code-bg); color: var(--text-main); font-family: var(--font-mono); font-size: 0.9rem;">
+          <div>pick 1a2b3c4 Add login feature</div>
+          <div><span style="color: var(--primary-hover);">reword</span> 5d6e7f8 Fix typo in login</div>
+          <div><span style="color: var(--error-color);">drop</span> 9a8b7c6 WIP testing stuff</div>
+        </div>
+        <p>When you save and close the editor, Git will process these commands from top to bottom.</p>
+      </section>
+
+      <!-- Conflict Flow View -->
+      <section id="conflict" class="view-section">
+        <h1>Conflict Flow</h1>
+        <p>Conflicts happen during a rebase when the changes you made in your branch overlap with the changes made in the new base.</p>
+
+        <div class="card" style="border-left: 4px solid var(--error-color);">
+          <h3>When a conflict occurs:</h3>
+          <p>Git will pause the rebase and ask you to fix the conflict manually. The process stops at the specific commit causing the issue.</p>
+          <div style="background: var(--code-bg); padding: 1rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.9rem; margin-bottom: 1rem;">
+            CONFLICT (content): Merge conflict in index.html<br>
+            error: could not apply f2... Update header
+          </div>
+        </div>
+
+        <h3>Resolution Steps</h3>
+        <div class="stepper" style="margin-top: 1.5rem;">
+          <div class="step" style="margin-bottom: 1.5rem;">
+            <strong>1. Open the conflicting files and resolve the markers.</strong>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">Remove the <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, and <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> markers, leaving only the desired code.</p>
+          </div>
+          <div class="step" style="margin-bottom: 1.5rem;">
+            <strong>2. Stage the resolved files.</strong>
+            <button class="copy-btn" data-cmd="git add index.html">
+              <code>git add index.html</code>
+              <span>Copy</span>
+            </button>
+          </div>
+          <div class="step" style="margin-bottom: 1.5rem;">
+            <strong>3. Continue the rebase.</strong>
+            <button class="copy-btn" data-cmd="git rebase --continue">
+              <code>git rebase --continue</code>
+              <span>Copy</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card" style="background: #fff8e6; border-color: var(--warning-color); margin-top: 1rem;">
+          <strong>Pro Tip:</strong> If you get overwhelmed, you can always abort the rebase and return to your original state.
+          <button class="copy-btn" data-cmd="git rebase --abort" style="margin-top: 0.5rem; background: var(--surface-color);">
+            <code>git rebase --abort</code>
+            <span>Copy</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Reflog Recovery View -->
+      <section id="reflog" class="view-section">
+        <h1>Reflog Recovery</h1>
+        <p>Messed up a rebase? Don't panic. Git never truly deletes commits immediately. You can find them using the reflog.</p>
+
+        <div class="card">
+          <h3>1. Find the old state</h3>
+          <p>Run <code>git reflog</code> to see a history of where HEAD has been.</p>
+          <div style="background: var(--code-bg); padding: 1rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 1rem; color: var(--text-muted);">
+            <span style="color: var(--warning-color);">a1b2c3d</span> HEAD@{0}: rebase finished: returning to refs/heads/feature<br>
+            <span style="color: var(--warning-color);">d4e5f6g</span> HEAD@{1}: rebase: checkout main<br>
+            <span style="color: var(--primary-color);">9a8b7c6</span> HEAD@{2}: commit: WIP testing stuff <span style="font-style: italic;">(Before rebase!)</span>
+          </div>
+          <button class="copy-btn" data-cmd="git reflog">
+            <code>git reflog</code>
+            <span>Copy</span>
+          </button>
+        </div>
+
+        <div class="card">
+          <h3>2. Reset back to safety</h3>
+          <p>Once you find the hash from before the rebase started (e.g., <code>9a8b7c6</code> or <code>HEAD@{2}</code>), hard reset to it.</p>
+          <button class="copy-btn" data-cmd="git reset --hard HEAD@{2}">
+            <code>git reset --hard HEAD@{2}</code>
+            <span>Copy</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Practice Drills View -->
+      <section id="practice" class="view-section">
+        <h1>Practice Drills</h1>
+        <p>Test your understanding of rebasing concepts.</p>
+
+        <div id="quiz-container">
+          <!-- Drill 1 -->
+          <div class="card quiz-card" data-drill="1">
+            <h3 style="margin-bottom: 1rem;">Drill 1: What Happens Next?</h3>
+            <p>You are on branch <code>feature</code>. You run <code>git rebase main</code>. What happens to the commits on <code>feature</code>?</p>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+              <button class="quiz-option" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">They are moved exactly as they are to the tip of main.</button>
+              <button class="quiz-option" data-correct="true" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">New commits are created at the tip of main with the same changes.</button>
+              <button class="quiz-option" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">A merge commit is created combining main and feature.</button>
+            </div>
+            <div class="quiz-feedback" style="display: none; padding: 1rem; border-radius: var(--radius-sm); font-weight: 500;"></div>
+          </div>
+
+          <!-- Drill 2 -->
+          <div class="card quiz-card" data-drill="2">
+            <h3 style="margin-bottom: 1rem;">Drill 2: Recovering</h3>
+            <p>You accidentally dropped a commit during an interactive rebase. The rebase finished. How do you get it back?</p>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+              <button class="quiz-option" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">git revert HEAD</button>
+              <button class="quiz-option" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">It is gone forever.</button>
+              <button class="quiz-option" data-correct="true" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">Use git reflog to find the old state and reset to it.</button>
+            </div>
+            <div class="quiz-feedback" style="display: none; padding: 1rem; border-radius: var(--radius-sm); font-weight: 500;"></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; align-items: center; justify-content: space-between;">
+          <span>Progress: <span id="progress-text">0/2</span></span>
+          <button id="reset-progress" style="padding: 0.5rem 1rem; background: var(--chip-bg); border: none; border-radius: var(--radius-sm); cursor: pointer; color: var(--text-main);">Reset Progress</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Navigation Logic
+      const navLinks = document.querySelectorAll('.nav-link');
+      const viewSections = document.querySelectorAll('.view-section');
+
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+
+          // Update active nav
+          navLinks.forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+
+          // Update active section
+          const targetId = link.getAttribute('data-target');
+          viewSections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === targetId) {
+              section.classList.add('active');
+            }
+          });
+
+          // Scroll to top on mobile
+          if (window.innerWidth <= 768) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        });
+      });
+
+      // 2. Accordion Logic
+      const accordions = document.querySelectorAll('.accordion-header');
+      accordions.forEach(header => {
+        header.addEventListener('click', () => {
+          const accordion = header.parentElement;
+          accordion.classList.toggle('open');
+        });
+      });
+
+      // 3. Copy Button Logic
+      const copyBtns = document.querySelectorAll('.copy-btn');
+      copyBtns.forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const cmd = btn.getAttribute('data-cmd');
+          const span = btn.querySelector('span');
+
+          try {
+            await navigator.clipboard.writeText(cmd);
+            span.textContent = 'Copied!';
+            span.style.color = 'var(--success-color)';
+            setTimeout(() => {
+              span.textContent = 'Copy';
+              span.style.color = '';
+            }, 2000);
+          } catch (err) {
+            span.textContent = 'Error';
+            span.style.color = 'var(--error-color)';
+          }
+        });
+      });
+
+      // 4. Graph Tabs Logic
+      const graphTabs = document.querySelectorAll('.tab-btn');
+      const graphGroups = {
+        'initial': document.getElementById('g-initial'),
+        'merge': document.getElementById('g-merge'),
+        'rebase': document.getElementById('g-rebase')
+      };
+      const graphDesc = document.querySelector('#graph-description p');
+
+      const descriptions = {
+        'initial': '<strong>Initial State:</strong> The <code>feature</code> branch diverged from <code>main</code> at commit C2.',
+        'merge': '<strong>After Merge:</strong> A new merge commit (M1) is created, tying the two histories together.',
+        'rebase': '<strong>After Rebase:</strong> The commits F1 and F2 are replayed as new commits (F1\', F2\') on top of C3, creating a linear history.'
+      };
+
+      graphTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // Update active tab
+          graphTabs.forEach(t => {
+            t.classList.remove('active');
+            t.style.color = 'var(--text-muted)';
+          });
+          tab.classList.add('active');
+          tab.style.color = 'var(--primary-color)';
+
+          // Hide all, show selected
+          const target = tab.getAttribute('data-graph');
+          Object.values(graphGroups).forEach(g => {
+            if(g) g.style.display = 'none';
+          });
+          if (graphGroups[target]) {
+            graphGroups[target].style.display = 'block';
+          }
+
+          // Update description
+          if (graphDesc && descriptions[target]) {
+            graphDesc.innerHTML = descriptions[target];
+          }
+        });
+      });
+
+      // 5. Quiz and Progress Logic
+      const STORAGE_KEY = 'gitRebaseLabProgress';
+      let progress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      const totalDrills = document.querySelectorAll('.quiz-card').length;
+      const progressText = document.getElementById('progress-text');
+
+      function updateProgressUI() {
+        const completedCount = Object.keys(progress).length;
+        if(progressText) {
+            progressText.textContent = `${completedCount}/${totalDrills}`;
+            if (completedCount === totalDrills) {
+                progressText.style.color = 'var(--success-color)';
+                progressText.style.fontWeight = 'bold';
+            } else {
+                progressText.style.color = '';
+                progressText.style.fontWeight = '';
+            }
+        }
+      }
+
+      function applySavedProgress() {
+        document.querySelectorAll('.quiz-card').forEach(card => {
+          const drillId = card.getAttribute('data-drill');
+          if (progress[drillId]) {
+            const correctBtn = card.querySelector('.quiz-option[data-correct="true"]');
+            if(correctBtn) {
+                correctBtn.style.backgroundColor = '#e6ffe6';
+                correctBtn.style.borderColor = 'var(--success-color)';
+            }
+            const feedback = card.querySelector('.quiz-feedback');
+            if(feedback) {
+                feedback.textContent = 'Correct! You have completed this drill.';
+                feedback.style.display = 'block';
+                feedback.style.backgroundColor = '#e6ffe6';
+                feedback.style.color = '#006600';
+            }
+            // Disable all buttons in this card
+            card.querySelectorAll('.quiz-option').forEach(btn => btn.disabled = true);
+          }
+        });
+        updateProgressUI();
+      }
+
+      document.querySelectorAll('.quiz-option').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const card = e.target.closest('.quiz-card');
+          const drillId = card.getAttribute('data-drill');
+          const isCorrect = e.target.getAttribute('data-correct') === 'true';
+          const feedback = card.querySelector('.quiz-feedback');
+
+          // Reset styles for siblings
+          card.querySelectorAll('.quiz-option').forEach(b => {
+            b.style.backgroundColor = 'var(--surface-color)';
+            b.style.borderColor = 'var(--border-color)';
+          });
+
+          if (isCorrect) {
+            e.target.style.backgroundColor = '#e6ffe6';
+            e.target.style.borderColor = 'var(--success-color)';
+            feedback.textContent = 'Correct! Great job.';
+            feedback.style.backgroundColor = '#e6ffe6';
+            feedback.style.color = '#006600';
+            feedback.style.display = 'block';
+
+            // Save progress
+            progress[drillId] = true;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+            updateProgressUI();
+
+            // Disable options
+            card.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+          } else {
+            e.target.style.backgroundColor = '#ffe6e6';
+            e.target.style.borderColor = 'var(--error-color)';
+            feedback.textContent = 'Not quite. Try again!';
+            feedback.style.backgroundColor = '#ffe6e6';
+            feedback.style.color = '#cc0000';
+            feedback.style.display = 'block';
+          }
+        });
+      });
+
+      const resetBtn = document.getElementById('reset-progress');
+      if(resetBtn) {
+          resetBtn.addEventListener('click', () => {
+            if(confirm('Are you sure you want to reset your progress?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                progress = {};
+
+                // Reset UI
+                document.querySelectorAll('.quiz-card').forEach(card => {
+                    card.querySelectorAll('.quiz-option').forEach(btn => {
+                        btn.disabled = false;
+                        btn.style.backgroundColor = 'var(--surface-color)';
+                        btn.style.borderColor = 'var(--border-color)';
+                    });
+                    const feedback = card.querySelector('.quiz-feedback');
+                    if(feedback) feedback.style.display = 'none';
+                });
+
+                updateProgressUI();
+            }
+          });
+      }
+
+      // Initialize
+      applySavedProgress();
+    });
+  </script>
+</body>
+</html>
