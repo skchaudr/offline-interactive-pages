@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Distributed Systems Lab</title>
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --surface-color: #1a1a1a;
+            --border-color: #333;
+            --text-primary: #f2f2f2;
+            --text-secondary: #a1a1aa;
+            --accent-color: #5e6ad2;
+            --accent-hover: #7380e6;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 4rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .section {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        ul {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            color: var(--text-secondary);
+        }
+
+        /* Demo area */
+        .demo-area {
+            background-color: #111;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: var(--border-color);
+        }
+
+        button.primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        button.primary:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .canvas-container {
+            width: 100%;
+            height: 200px;
+            background-color: #000;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .quiz-option {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--accent-color);
+        }
+
+        .quiz-option.correct {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: var(--success-color);
+        }
+
+        .quiz-option.incorrect {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: var(--error-color);
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .section { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Distributed Systems Lab</h1>
+            <p>Interactive playground for learning distributed systems concepts.</p>
+        </header>
+
+        <!-- Content goes here -->
+        <div id="content-mount">
+
+        <div class="section">
+            <h2>1. Latency vs Throughput</h2>
+            <p><strong>Latency</strong> is the time it takes for one request to complete. <strong>Throughput</strong> is how many requests can be processed over a given period of time.</p>
+            <p>Imagine a highway: Latency is the speed limit. Throughput is the number of lanes.</p>
+
+            <div class="demo-area" id="demo-latency">
+                <div class="controls">
+                    <button class="primary" onclick="window.sendLatencyRequest()">Send Request</button>
+                    <button onclick="window.sendThroughputRequests()">Send Batch (High Throughput)</button>
+                    <button onclick="window.toggleLatency()">Toggle High/Low Latency</button>
+                </div>
+                <div class="canvas-container" id="canvas-latency"></div>
+                <div id="stats-latency" style="color: var(--text-secondary); font-family: monospace; font-size: 0.9rem;">
+                    Latency: <span id="val-latency">100</span>ms | Completed: <span id="val-completed">0</span>
+                </div>
+            </div>
+
+            <div class="quiz-section">
+                <p><strong>Checkpoint:</strong> You add more web servers behind your load balancer. What are you primarily improving?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="window.checkAnswer(this, 0)">Latency</div>
+                    <div class="quiz-option" onclick="window.checkAnswer(this, 1)">Throughput</div>
+                    <div class="quiz-option" onclick="window.checkAnswer(this, 0)">Both equally</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. Queues and Workers</h2>
+            <p>When clients send requests faster than servers can process them, we need to decouple them. A <strong>Queue</strong> acts as a buffer. <strong>Workers</strong> pull from the queue at their own pace.</p>
+
+            <div class="demo-area" id="demo-queue">
+                <div class="controls">
+                    <button class="primary" onclick="window.enqueueJob()">Add Job</button>
+                    <button onclick="window.spamJobs()">Spam Jobs</button>
+                    <button onclick="window.addWorker()">Add Worker</button>
+                    <button onclick="window.removeWorker()">Remove Worker</button>
+                </div>
+                <div class="canvas-container" id="canvas-queue"></div>
+                <div id="stats-queue" style="color: var(--text-secondary); font-family: monospace; font-size: 0.9rem;">
+                    Queue Length: <span id="val-queue">0</span> | Active Workers: <span id="val-workers">1</span>
+                </div>
+            </div>
+
+            <div class="quiz-section">
+                <p><strong>Checkpoint:</strong> What happens to the queue if the incoming request rate consistently exceeds the combined processing rate of all workers?</p>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="window.checkAnswer(this, 0)">The workers process faster automatically.</div>
+                    <div class="quiz-option" onclick="window.checkAnswer(this, 1)">The queue grows infinitely until memory is exhausted (OOM).</div>
+                    <div class="quiz-option" onclick="window.checkAnswer(this, 0)">The queue automatically drops old messages without configuration.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3. Retries, Backoff, and Idempotency</h2>
+            <p>Network calls fail. When they do, we should <strong>retry</strong>. But retrying immediately can overwhelm a struggling server, so we use <strong>exponential backoff</strong> (waiting longer between each try).</p>
+            <p>Crucially, retries require the operation to be <strong>idempotent</strong>: doing it multiple times has the same effect as doing it once (e.g., "set x to 5" is idempotent, "add 1 to x" is not).</p>
+
+            <div class="demo-area" id="demo-retry">
+                <div class="controls">
+                    <button class="primary" onclick="window.sendRetryRequest()">Send with Retry</button>
+                    <button onclick="window.toggleServerHealth()">Toggle Server Health</button>
+                </div>
+                <div class="canvas-container" id="canvas-retry" style="height: 100px;"></div>
+                <div id="log-retry" style="color: var(--text-secondary); font-family: monospace; font-size: 0.8rem; height: 100px; overflow-y: auto; background: #000; padding: 0.5rem; border-radius: 4px;">
+                    > System ready. Server is healthy.<br>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>4. Leader/Follower Replication</h2>
+            <p>To prevent data loss if a database crashes, we replicate data. In <strong>Leader/Follower</strong> (Primary/Replica), writes go to the Leader, which then streams the changes to Followers. Reads can optionally go to followers to increase read throughput.</p>
+            <p>If the leader dies, a follower must be promoted to the new leader.</p>
+
+            <div class="demo-area" id="demo-replication">
+                <div class="controls">
+                    <button class="primary" onclick="window.writeToLeader()">Write Data</button>
+                    <button onclick="window.killLeader()">Kill Leader</button>
+                </div>
+                <div class="canvas-container" id="canvas-replication" style="height: 250px;"></div>
+                <div id="log-repl" style="color: var(--text-secondary); font-family: monospace; font-size: 0.8rem; height: 60px; overflow-y: auto; background: #000; padding: 0.5rem; border-radius: 4px; margin-top: 10px;">
+                    > Cluster ready.<br>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>5. Consistency vs Availability (CAP Theorem Intro)</h2>
+            <p>In a distributed system, a network partition (communication break) forces a choice:</p>
+            <ul>
+                <li><strong>Consistency:</strong> Wait for all nodes to agree (might timeout/fail = unavailable).</li>
+                <li><strong>Availability:</strong> Return whatever local data a node has (might be stale = inconsistent).</li>
+            </ul>
+            <p>Many modern systems choose <strong>Eventual Consistency</strong>: nodes will return stale data to remain available, but will eventually sync up once the network recovers.</p>
+
+            <div class="demo-area" id="demo-cap">
+                <div class="controls">
+                    <button class="primary" onclick="window.capWrite()">Write New Value</button>
+                    <button onclick="window.capTogglePartition()">Toggle Network Partition</button>
+                    <button onclick="window.capReadNode1()">Read Node 1</button>
+                    <button onclick="window.capReadNode2()">Read Node 2</button>
+                </div>
+                <div class="canvas-container" id="canvas-cap" style="height: 200px;"></div>
+                <div id="log-cap" style="color: var(--text-secondary); font-family: monospace; font-size: 0.8rem; height: 60px; overflow-y: auto; background: #000; padding: 0.5rem; border-radius: 4px; margin-top: 10px;">
+                    > Nodes synced. Value is 'A'.<br>
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        // Helpers
+        function log(elementId, msg) {
+            const el = document.getElementById(elementId);
+            el.innerHTML += `> ${msg}<br>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        // Quiz Logic
+        window.checkAnswer = function(el, isCorrect) {
+            const parent = el.parentElement;
+            Array.from(parent.children).forEach(child => {
+                child.classList.remove('correct', 'incorrect');
+            });
+            if (isCorrect) {
+                el.classList.add('correct');
+            } else {
+                el.classList.add('incorrect');
+            }
+        };
+
+        // --- 1. Latency vs Throughput ---
+        let latencyMs = 100;
+        let completedReqs = 0;
+        const latencyCanvas = document.getElementById('canvas-latency');
+
+        window.toggleLatency = function() {
+            latencyMs = latencyMs === 100 ? 500 : 100;
+            document.getElementById('val-latency').innerText = latencyMs;
+        };
+
+        window.sendLatencyRequest = function() {
+            createPacket(latencyCanvas, 10, 100, 800, 100, latencyMs, () => {
+                completedReqs++;
+                document.getElementById('val-completed').innerText = completedReqs;
+            });
+        };
+
+        window.sendThroughputRequests = function() {
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    createPacket(latencyCanvas, 10, 20 + (i*15), 800, 20 + (i*15), latencyMs, () => {
+                        completedReqs++;
+                        document.getElementById('val-completed').innerText = completedReqs;
+                    });
+                }, i * 20);
+            }
+        };
+
+        function createPacket(canvas, startX, startY, endX, endY, durationMs, onComplete) {
+            const el = document.createElement('div');
+            el.style.width = '12px';
+            el.style.height = '12px';
+            el.style.backgroundColor = 'var(--accent-color)';
+            el.style.borderRadius = '50%';
+            el.style.position = 'absolute';
+            el.style.left = startX + 'px';
+            el.style.top = startY + 'px';
+            el.style.transition = `all ${durationMs}ms linear`;
+
+            canvas.appendChild(el);
+
+            // Trigger reflow
+            void el.offsetWidth;
+
+            el.style.left = endX + 'px';
+            el.style.top = endY + 'px';
+
+            setTimeout(() => {
+                if (canvas.contains(el)) {
+                    canvas.removeChild(el);
+                }
+                if (onComplete) onComplete();
+            }, durationMs);
+        }
+
+        // --- 2. Queues and Workers ---
+        const queueCanvas = document.getElementById('canvas-queue');
+        let queue = [];
+        let workers = [createWorkerUI(1)];
+        let processing = false;
+
+        function createWorkerUI(id) {
+            const el = document.createElement('div');
+            el.style.width = '40px';
+            el.style.height = '40px';
+            el.style.backgroundColor = 'var(--surface-color)';
+            el.style.border = '2px solid var(--border-color)';
+            el.style.borderRadius = '8px';
+            el.style.position = 'absolute';
+            el.style.right = '20px';
+            el.style.top = `${20 + (id-1)*50}px`;
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+            el.style.color = 'var(--text-secondary)';
+            el.style.fontWeight = 'bold';
+            el.innerText = 'W';
+            queueCanvas.appendChild(el);
+            return { id, el, busy: false };
+        }
+
+        function updateQueueUI() {
+            document.getElementById('val-queue').innerText = queue.length;
+            document.getElementById('val-workers').innerText = workers.length;
+
+            // draw queue items
+            document.querySelectorAll('.q-item').forEach(e => e.remove());
+            queue.forEach((job, i) => {
+                const el = document.createElement('div');
+                el.className = 'q-item';
+                el.style.width = '16px';
+                el.style.height = '16px';
+                el.style.backgroundColor = 'var(--success-color)';
+                el.style.position = 'absolute';
+                el.style.left = `${10 + i * 20}px`;
+                el.style.top = '90px';
+                queueCanvas.appendChild(el);
+            });
+        }
+
+        window.enqueueJob = function() {
+            queue.push(Date.now());
+            updateQueueUI();
+            processQueue();
+        };
+
+        window.spamJobs = function() {
+            for(let i=0; i<15; i++) {
+                queue.push(Date.now());
+            }
+            updateQueueUI();
+            processQueue();
+        };
+
+        window.addWorker = function() {
+            if (workers.length < 4) {
+                workers.push(createWorkerUI(workers.length + 1));
+                updateQueueUI();
+                processQueue();
+            }
+        };
+
+        window.removeWorker = function() {
+            if (workers.length > 0) {
+                const w = workers.pop();
+                w.el.remove();
+                updateQueueUI();
+            }
+        };
+
+        function processQueue() {
+            workers.forEach(w => {
+                if (!w.busy && queue.length > 0) {
+                    w.busy = true;
+                    w.el.style.borderColor = 'var(--success-color)';
+                    w.el.style.color = 'var(--success-color)';
+                    queue.shift(); // take job
+                    updateQueueUI();
+
+                    setTimeout(() => {
+                        w.busy = false;
+                        w.el.style.borderColor = 'var(--border-color)';
+                        w.el.style.color = 'var(--text-secondary)';
+                        processQueue(); // check for more
+                    }, 1000); // Process time
+                }
+            });
+        }
+
+        // --- 3. Retries & Backoff ---
+        const retryCanvas = document.getElementById('canvas-retry');
+        let serverHealthy = true;
+
+        // draw server
+        const srvEl = document.createElement('div');
+        srvEl.style.width = '40px'; srvEl.style.height = '40px';
+        srvEl.style.position = 'absolute'; srvEl.style.right = '20px'; srvEl.style.top = '30px';
+        srvEl.style.border = '2px solid var(--success-color)';
+        srvEl.style.borderRadius = '8px'; srvEl.style.backgroundColor = 'var(--surface-color)';
+        srvEl.style.display = 'flex'; srvEl.style.alignItems = 'center'; srvEl.style.justifyContent = 'center';
+        srvEl.innerText = 'S';
+        retryCanvas.appendChild(srvEl);
+
+        window.toggleServerHealth = function() {
+            serverHealthy = !serverHealthy;
+            srvEl.style.borderColor = serverHealthy ? 'var(--success-color)' : 'var(--error-color)';
+            log('log-retry', `Server health: ${serverHealthy ? 'Healthy' : 'Failing'}`);
+        };
+
+        window.sendRetryRequest = function() {
+            let attempt = 1;
+            function tryReq() {
+                log('log-retry', `Attempt ${attempt}...`);
+                createPacket(retryCanvas, 10, 50, srvEl.offsetLeft, 50, 300, () => {
+                    if (serverHealthy) {
+                        log('log-retry', `<span style="color:var(--success-color)">Success!</span>`);
+                    } else {
+                        log('log-retry', `<span style="color:var(--error-color)">Failed.</span>`);
+                        if (attempt < 4) {
+                            const delay = Math.pow(2, attempt) * 500; // 1s, 2s, 4s...
+                            log('log-retry', `Backing off for ${delay}ms...`);
+                            attempt++;
+                            setTimeout(tryReq, delay);
+                        } else {
+                            log('log-retry', `Max retries reached. Giving up.`);
+                        }
+                    }
+                });
+            }
+            tryReq();
+        };
+
+        // --- 4. Leader / Follower ---
+        const replCanvas = document.getElementById('canvas-replication');
+        let leaderAlive = true;
+
+        function makeNode(canvas, id, x, y, label, isLeader) {
+            const n = document.createElement('div');
+            n.id = id;
+            n.style.width = '60px'; n.style.height = '60px';
+            n.style.position = 'absolute'; n.style.left = x + 'px'; n.style.top = y + 'px';
+            n.style.border = `2px solid ${isLeader ? 'var(--accent-color)' : 'var(--border-color)'}`;
+            n.style.borderRadius = '8px'; n.style.backgroundColor = 'var(--surface-color)';
+            n.style.display = 'flex'; n.style.alignItems = 'center'; n.style.justifyContent = 'center';
+            n.style.flexDirection = 'column';
+            n.innerHTML = `<div>${label}</div><div class="data-val" style="font-size:0.8rem; color:var(--success-color)">-</div>`;
+            canvas.appendChild(n);
+            return n;
+        }
+
+        const lNode = makeNode(replCanvas, 'l-node', 50, 95, 'L', true);
+        const f1Node = makeNode(replCanvas, 'f1-node', 300, 30, 'F1', false);
+        const f2Node = makeNode(replCanvas, 'f2-node', 300, 160, 'F2', false);
+        let dataCounter = 0;
+
+        window.writeToLeader = function() {
+            if (!leaderAlive) {
+                log('log-repl', '<span style="color:var(--error-color)">Cannot write, leader is dead!</span>');
+                return;
+            }
+            dataCounter++;
+            const val = `v${dataCounter}`;
+            log('log-repl', `Client writes ${val} to Leader.`);
+
+            // Update leader
+            lNode.querySelector('.data-val').innerText = val;
+
+            // Replicate
+            setTimeout(() => {
+                createPacket(replCanvas, 110, 125, 300, 60, 400, () => {
+                    f1Node.querySelector('.data-val').innerText = val;
+                });
+                createPacket(replCanvas, 110, 125, 300, 190, 400, () => {
+                    f2Node.querySelector('.data-val').innerText = val;
+                });
+            }, 300);
+        };
+
+        window.killLeader = function() {
+            if (!leaderAlive) return;
+            leaderAlive = false;
+            lNode.style.borderColor = 'var(--error-color)';
+            lNode.style.opacity = '0.5';
+            log('log-repl', '<span style="color:var(--error-color)">Leader crashed!</span>');
+
+            setTimeout(() => {
+                log('log-repl', 'Election started...');
+                setTimeout(() => {
+                    log('log-repl', 'F1 promoted to Leader.');
+                    f1Node.style.borderColor = 'var(--accent-color)';
+                    f1Node.querySelector('div').innerText = 'L (new)';
+                    // We won't fully wire up writes to new leader for this simple demo,
+                    // just show visual state change.
+                }, 1500);
+            }, 1000);
+        };
+
+        // --- 5. Consistency vs Availability (CAP) ---
+        const capCanvas = document.getElementById('canvas-cap');
+        let partitionActive = false;
+        let capVal = 'A';
+        let capValIndex = 1;
+
+        const c1Node = makeNode(capCanvas, 'c1-node', 100, 70, 'N1', false);
+        const c2Node = makeNode(capCanvas, 'c2-node', 400, 70, 'N2', false);
+        c1Node.querySelector('.data-val').innerText = capVal;
+        c2Node.querySelector('.data-val').innerText = capVal;
+
+        // Partition visual
+        const partWall = document.createElement('div');
+        partWall.style.width = '4px'; partWall.style.height = '200px';
+        partWall.style.backgroundColor = 'var(--error-color)';
+        partWall.style.position = 'absolute'; partWall.style.left = '280px'; partWall.style.top = '0';
+        partWall.style.display = 'none';
+        capCanvas.appendChild(partWall);
+
+        window.capTogglePartition = function() {
+            partitionActive = !partitionActive;
+            partWall.style.display = partitionActive ? 'block' : 'none';
+            if (partitionActive) {
+                log('log-cap', '<span style="color:var(--error-color)">Network partition created!</span> N1 and N2 cannot communicate.');
+            } else {
+                log('log-cap', '<span style="color:var(--success-color)">Partition healed.</span> Nodes syncing (Eventual Consistency)...');
+                // Heal sync
+                createPacket(capCanvas, 160, 100, 400, 100, 400, () => {
+                    c2Node.querySelector('.data-val').innerText = capVal;
+                    log('log-cap', 'N2 synced to N1 state.');
+                });
+            }
+        };
+
+        window.capWrite = function() {
+            capValIndex++;
+            capVal = String.fromCharCode(64 + capValIndex); // B, C, D...
+            log('log-cap', `Writing '${capVal}' to N1.`);
+            c1Node.querySelector('.data-val').innerText = capVal;
+
+            if (!partitionActive) {
+                createPacket(capCanvas, 160, 100, 400, 100, 400, () => {
+                    c2Node.querySelector('.data-val').innerText = capVal;
+                });
+            } else {
+                log('log-cap', '<span style="color:var(--error-color)">Write to N2 failed (Partition). N2 is stale.</span>');
+            }
+        };
+
+        window.capReadNode1 = function() {
+            log('log-cap', `Read N1: ${c1Node.querySelector('.data-val').innerText}`);
+        };
+        window.capReadNode2 = function() {
+            const v = c2Node.querySelector('.data-val').innerText;
+            if (v !== capVal && partitionActive) {
+                log('log-cap', `Read N2: ${v} <span style="color:var(--error-color)">(Stale / Available)</span>`);
+            } else {
+                log('log-cap', `Read N2: ${v}`);
+            }
+        };
+
+    </script>
+</body>
+</html>
