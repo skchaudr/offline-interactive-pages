@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Orchestration Lab</title>
+  <style>
+    :root {
+      --bg-color: #fcfcfc;
+      --text-color: #1d1d1f;
+      --accent-color: #0066cc;
+      --border-color: #e5e5ea;
+      --card-bg: #ffffff;
+      --code-bg: #f5f5f7;
+      --sidebar-bg: #fbfbfd;
+      --hover-bg: #f0f0f5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #000000;
+        --text-color: #f5f5f7;
+        --accent-color: #2997ff;
+        --border-color: #424245;
+        --card-bg: #1c1c1e;
+        --code-bg: #2c2c2e;
+        --sidebar-bg: #1d1d1f;
+        --hover-bg: #3a3a3c;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Layout */
+    .app-container {
+      display: flex;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .sidebar {
+      width: 280px;
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      padding: 2rem 1.5rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 3rem 4rem;
+      max-width: 900px;
+    }
+
+    @media (max-width: 800px) {
+      .app-container {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+      }
+      .main-content {
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-top: 3rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      margin-bottom: 1.5rem;
+      color: var(--text-color);
+      opacity: 0.9;
+    }
+
+    /* Sidebar Navigation */
+    .nav-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .nav-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      color: var(--text-color);
+      opacity: 0.6;
+      margin-bottom: 0.75rem;
+    }
+
+    .nav-list {
+      list-style: none;
+    }
+
+    .nav-item {
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 0.5rem 0.75rem;
+      color: var(--text-color);
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .nav-link.active {
+      background-color: var(--hover-bg);
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    /* Components */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+
+    .code-block {
+      background-color: var(--code-bg);
+      padding: 1.25rem;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.875rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background-color: var(--hover-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .tab-button {
+      padding: 0.75rem 1.25rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-color);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab-button:hover {
+      opacity: 1;
+    }
+
+    .tab-button.active {
+      opacity: 1;
+      border-bottom-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Quiz Component */
+    .quiz-container {
+      background-color: var(--card-bg);
+      border: 1px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .quiz-option {
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background-color: var(--bg-color);
+    }
+
+    .quiz-option:hover {
+      background-color: var(--hover-bg);
+      border-color: var(--accent-color);
+    }
+
+    .quiz-option.selected {
+      background-color: var(--hover-bg);
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 1px var(--accent-color);
+    }
+
+    .quiz-option.correct {
+      background-color: rgba(40, 167, 69, 0.1);
+      border-color: #28a745;
+    }
+
+    .quiz-option.incorrect {
+      background-color: rgba(220, 53, 69, 0.1);
+      border-color: #dc3545;
+    }
+
+    .quiz-feedback {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      display: none;
+      font-size: 0.95rem;
+    }
+
+    .quiz-feedback.success {
+      display: block;
+      background-color: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+      border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+
+    .quiz-feedback.error {
+      display: block;
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+      border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+
+    /* Diagram Canvas */
+    .diagram-container {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+      position: relative;
+    }
+
+    .diagram-node {
+      background-color: var(--card-bg);
+      border: 2px solid var(--accent-color);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      position: absolute;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      z-index: 2;
+    }
+
+    .diagram-line {
+      position: absolute;
+      background-color: var(--accent-color);
+      z-index: 1;
+    }
+
+    .diagram-arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid var(--accent-color);
+      z-index: 1;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="nav-group">
+        <div class="nav-title">Orchestration</div>
+        <ul class="nav-list">
+          <li class="nav-item"><a href="#intro" class="nav-link active">Introduction</a></li>
+          <li class="nav-item"><a href="#intent" class="nav-link">Intent Intake</a></li>
+          <li class="nav-item"><a href="#task-packet" class="nav-link">Task Packet Creation</a></li>
+          <li class="nav-item"><a href="#dispatching" class="nav-link">Dispatching & Delegation</a></li>
+          <li class="nav-item"><a href="#roles" class="nav-link">Roles of Agents</a></li>
+        </ul>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Execution Engine</div>
+        <ul class="nav-list">
+          <li class="nav-item"><a href="#tool-execution" class="nav-link">Tool Execution</a></li>
+          <li class="nav-item"><a href="#state-machine" class="nav-link">State Machine</a></li>
+          <li class="nav-item"><a href="#verification" class="nav-link">Verification</a></li>
+        </ul>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Control & Safety</div>
+        <ul class="nav-list">
+          <li class="nav-item"><a href="#halt-states" class="nav-link">Halt States</a></li>
+          <li class="nav-item"><a href="#retry-rules" class="nav-link">Retry Rules</a></li>
+          <li class="nav-item"><a href="#handoff" class="nav-link">Handoff Artifacts</a></li>
+          <li class="nav-item"><a href="#failure-modes" class="nav-link">Failure Modes</a></li>
+          <li class="nav-item"><a href="#human-review" class="nav-link">Human Review Checkpoints</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <h1 id="intro">Agent Orchestration Lab</h1>
+      <p>Welcome to the interactive learning artifact for Single and Multi-Agent Orchestration. Here we treat agent workflows not as magic, but as engineered, disciplined workflow systems.</p>
+
+      <div class="card">
+        <p>The core concept: treating AI execution as deterministic state machines rather than open-ended chat loops.</p>
+        <div>
+          <span class="chip">Self-contained</span>
+          <span class="chip">Offline</span>
+          <span class="chip">Interactive</span>
+        </div>
+      </div>
+
+      <h2 id="intent">Intent Intake</h2>
+      <p>Before any action occurs, user intent must be captured, validated, and normalized into a structured format.</p>
+
+      <div class="tab-group-container">
+        <div class="tabs">
+          <button class="tab-button active" data-target="intake-raw">Raw Input</button>
+          <button class="tab-button" data-target="intake-parsed">Parsed Intent</button>
+        </div>
+        <div id="intake-raw" class="tab-content active">
+          <div class="code-block">"Build me a login page with email and password."</div>
+        </div>
+        <div id="intake-parsed" class="tab-content">
+          <div class="code-block">{
+  "action": "create_component",
+  "target": "login_page",
+  "requirements": ["email_field", "password_field"],
+  "context": "frontend"
+}</div>
+        </div>
+      </div>
+
+      <h2 id="task-packet">Task Packet Creation</h2>
+      <p>A task packet is an immutable, bounded artifact that contains everything needed to execute a specific job.</p>
+      <div class="card">
+        <h3>Anatomy of a Task Packet</h3>
+        <ul>
+          <li><strong>ID:</strong> Unique correlation identifier.</li>
+          <li><strong>Brief:</strong> Clear objective (from intent).</li>
+          <li><strong>Context:</strong> Required state, env vars, or source code.</li>
+          <li><strong>Constraints:</strong> Allowed actions, resource limits.</li>
+        </ul>
+      </div>
+
+      <h2 id="dispatching">Dispatching & Delegation</h2>
+      <p>The orchestrator maps task packets to the appropriate agent based on capabilities and current load.</p>
+      <div class="diagram-container">
+        <div class="diagram-node" style="top: 20px; left: 50%; transform: translateX(-50%);">Orchestrator</div>
+        <div class="diagram-line" style="top: 80px; left: 50%; width: 2px; height: 40px;"></div>
+        <div class="diagram-arrow" style="top: 115px; left: 45px;"></div>
+
+        <div class="diagram-node" style="top: 140px; left: 20%;">Router</div>
+        <div class="diagram-node" style="top: 140px; right: 20%;">Queue</div>
+      </div>
+
+      <h2 id="roles">Roles of Agents</h2>
+      <p>Agents in an orchestration system are not monolithic. They possess specific roles.</p>
+      <div class="card">
+        <details>
+          <summary><strong>Planner</strong></summary>
+          <p>Decomposes large intents into sub-tasks.</p>
+        </details>
+        <br>
+        <details>
+          <summary><strong>Executor</strong></summary>
+          <p>Runs tools, edits code, interacts with APIs.</p>
+        </details>
+        <br>
+        <details>
+          <summary><strong>Reviewer</strong></summary>
+          <p>Validates output against constraints.</p>
+        </details>
+      </div>
+
+      <h2 id="tool-execution">Tool Execution</h2>
+      <p>Agents execute tools to alter state. Tool usage must be logged, verified, and constrained.</p>
+      <div class="card">
+        <h3>Execution Doctrine</h3>
+        <p><strong>When:</strong> Only after a plan has been verified against constraints.</p>
+        <p><strong>What:</strong> Idempotent, bounded operations (e.g., <code>read_file</code>, <code>write_file</code>).</p>
+        <p><strong>Why:</strong> Tools are the only mechanism an agent has to interact with the environment.</p>
+      </div>
+
+      <h2 id="state-machine">State Machine</h2>
+      <p>The entire orchestration process is modeled as a state machine. It prevents runaway loops.</p>
+      <div class="code-block">State = { IDLE, PLANNING, EXECUTING, VERIFYING, HALTED, DONE }</div>
+      <p>Transitions are triggered by events (e.g., <code>TOOL_SUCCESS</code>, <code>CONSTRAINT_FAILED</code>) and managed by the central Orchestrator.</p>
+
+      <h2 id="verification">Verification</h2>
+      <p>Verification is non-optional. Before a task packet is marked complete, its output must be validated against the initial brief.</p>
+      <div class="card">
+        <p><em>Example Verification Checks:</em></p>
+        <ul>
+          <li>Did the build step pass?</li>
+          <li>Are there any linting errors?</li>
+          <li>Does the output file exist?</li>
+        </ul>
+      </div>
+
+      <h2 id="halt-states">Halt States</h2>
+      <p>A Halt State is an intentional termination of the workflow to prevent damage or excessive resource use.</p>
+      <div class="tab-group-container">
+        <div class="tabs">
+          <button class="tab-button active" data-target="halt-timeout">Timeout</button>
+          <button class="tab-button" data-target="halt-loop">Infinite Loop</button>
+        </div>
+        <div id="halt-timeout" class="tab-content active">
+          <div class="code-block">HALT_REASON: MAX_EXECUTION_TIME_EXCEEDED</div>
+        </div>
+        <div id="halt-loop" class="tab-content">
+          <div class="code-block">HALT_REASON: REPEATED_ACTION_DETECTED</div>
+        </div>
+      </div>
+
+      <h2 id="retry-rules">Retry Rules</h2>
+      <p>Failures are expected. Orchestration handles them via deterministic retry rules.</p>
+      <div class="card">
+        <ul>
+          <li><strong>Transient Errors:</strong> Exponential backoff retry (up to 3 times).</li>
+          <li><strong>Constraint Violations:</strong> Do not retry. Trigger Halt State and escalate.</li>
+          <li><strong>Syntax Errors:</strong> Pass error context back to Planner for correction.</li>
+        </ul>
+      </div>
+
+      <h2 id="handoff">Handoff Artifacts</h2>
+      <p>When an agent completes a task, it must produce a standard handoff artifact. This ensures context is perfectly preserved for the next agent in the pipeline.</p>
+      <div class="code-block">{
+  "status": "SUCCESS",
+  "artifact_url": "/tmp/build_output.zip",
+  "logs": "[INFO] Build completed in 4.2s",
+  "next_step": "DEPLOY"
+}</div>
+
+      <h2 id="failure-modes">Failure Modes</h2>
+      <p>Systems fail. Recognizing specific failure modes allows for structured recovery.</p>
+      <div class="card">
+        <details>
+          <summary><strong>Context Window Exhaustion</strong></summary>
+          <p>The agent is given too much context. Solution: Summarize or chunk inputs.</p>
+        </details>
+        <br>
+        <details>
+          <summary><strong>Hallucinated Tool Calls</strong></summary>
+          <p>The agent attempts to use a tool that does not exist. Solution: Strict schema validation.</p>
+        </details>
+        <br>
+        <details>
+          <summary><strong>Semantic Drift</strong></summary>
+          <p>The agent strays from the initial brief over multiple turns. Solution: Periodic alignment checks.</p>
+        </details>
+      </div>
+
+      <h2 id="human-review">Human Review Checkpoints</h2>
+      <p>For high-stakes actions (e.g., deploying to production, mutating a database), the orchestrator must halt and request explicit human approval.</p>
+      <div class="card" style="border-color: var(--accent-color); background-color: rgba(0, 102, 204, 0.05);">
+        <h3>Checkpoint: Deploy to Production</h3>
+        <p>Are you sure you want to deploy branch <code>feature/login</code>?</p>
+        <div>
+          <button style="padding: 0.5rem 1rem; background-color: var(--accent-color); color: white; border: none; border-radius: 6px; cursor: pointer;">Approve</button>
+          <button style="padding: 0.5rem 1rem; background-color: transparent; color: var(--text-color); border: 1px solid var(--border-color); border-radius: 6px; margin-left: 0.5rem; cursor: pointer;">Reject</button>
+        </div>
+      </div>
+
+      <h2 id="knowledge-check">Knowledge Check</h2>
+      <div class="quiz-container">
+        <div class="quiz-question">Which of the following is NOT a recommended reason to trigger a Halt State?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" data-correct="false" data-explanation="Timeouts are a primary reason to halt execution.">Maximum execution time exceeded (Timeout).</div>
+          <div class="quiz-option" data-correct="false" data-explanation="Infinite loops consume resources without progress and should trigger a halt.">The agent enters an infinite loop of repeated actions.</div>
+          <div class="quiz-option" data-correct="true" data-explanation="Correct! Syntax errors can often be handled via transient retry rules, passing the error back to the Planner for a correction before completely halting.">A single syntax error in generated code.</div>
+          <div class="quiz-option" data-correct="false" data-explanation="Severe constraint violations (e.g., attempting a forbidden action) should immediately halt execution.">A severe constraint violation occurs.</div>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // Navigation Highlighting
+    document.addEventListener('DOMContentLoaded', () => {
+      const sections = document.querySelectorAll('h1, h2');
+      const navLinks = document.querySelectorAll('.nav-link');
+
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('id');
+            navLinks.forEach(link => {
+              link.classList.remove('active');
+              if (link.getAttribute('href') === `#${id}`) {
+                link.classList.add('active');
+              }
+            });
+          }
+        });
+      }, observerOptions);
+
+      sections.forEach(section => {
+        observer.observe(section);
+      });
+
+      // Smooth scrolling
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href');
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 20,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+    });
+
+    // Tab Logic
+    function setupTabs() {
+      const tabContainers = document.querySelectorAll('.tab-group-container');
+      tabContainers.forEach(group => {
+        const buttons = group.querySelectorAll('.tab-button');
+        buttons.forEach(button => {
+          button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-target');
+
+            // Deactivate all
+            buttons.forEach(btn => btn.classList.remove('active'));
+            group.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Activate target
+            button.classList.add('active');
+            group.querySelector(`#${targetId}`).classList.add('active');
+          });
+        });
+      });
+    }
+
+    // Quiz Logic
+    function setupQuizzes() {
+      const quizzes = document.querySelectorAll('.quiz-container');
+      quizzes.forEach(quiz => {
+        const options = quiz.querySelectorAll('.quiz-option');
+        const feedback = quiz.querySelector('.quiz-feedback');
+
+        options.forEach(option => {
+          option.addEventListener('click', () => {
+            // Reset
+            options.forEach(opt => {
+              opt.classList.remove('selected', 'correct', 'incorrect');
+            });
+
+            option.classList.add('selected');
+            const isCorrect = option.getAttribute('data-correct') === 'true';
+
+            if (isCorrect) {
+              option.classList.add('correct');
+              feedback.textContent = "Correct! " + option.getAttribute('data-explanation');
+              feedback.className = 'quiz-feedback success';
+            } else {
+              option.classList.add('incorrect');
+              feedback.textContent = "Incorrect. " + option.getAttribute('data-explanation');
+              feedback.className = 'quiz-feedback error';
+            }
+          });
+        });
+      });
+    }
+
+    setupTabs();
+    setupQuizzes();
+  </script>
+</body>
+</html>
