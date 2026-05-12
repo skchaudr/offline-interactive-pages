@@ -1,0 +1,27 @@
+<!--
+  Command chip component
+  Source: keyboard-style chips across all pages.
+  Pattern: inline span styled as a pill. Static markup, no JS needed.
+-->
+
+<p>Press <span class="cmd-chip">Ctrl</span> + <span class="cmd-chip">K</span> to open the palette.</p>
+<p>Run <span class="cmd-chip cmd-chip-mono">git rebase -i</span> to start an interactive rebase.</p>
+
+<style>
+  .cmd-chip {
+    display: inline-block;
+    padding: 0.1em 0.5em;
+    background: var(--chip-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.85em;
+    line-height: 1.4;
+    box-shadow: var(--shadow-sm);
+  }
+  .cmd-chip-mono {
+    font-family: var(--font-mono);
+    color: var(--code-color);
+    background: var(--code-bg);
+  }
+</style>

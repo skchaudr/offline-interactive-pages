@@ -1,0 +1,60 @@
+<!--
+  Copy button component
+  Source: pages/001-git-rebase-lab, pages/003-http-api-playground
+  Pattern: button with data-cmd; clipboard API + transient label swap.
+-->
+
+<button class="copy-btn" data-cmd="git status">
+  <span class="copy-label">Copy</span>
+  <code>git status</code>
+</button>
+
+<style>
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    font: inherit;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .copy-btn:hover { border-color: var(--primary-color); }
+  .copy-btn code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--code-color);
+  }
+  .copy-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    min-width: 3rem;
+  }
+  .copy-btn.copied .copy-label { color: var(--success-color); }
+</style>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.cmd || btn.textContent.trim();
+      const label = btn.querySelector('.copy-label');
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.classList.add('copied');
+        if (label) label.textContent = 'Copied';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          if (label) label.textContent = 'Copy';
+        }, 1500);
+      } catch {
+        if (label) label.textContent = 'Failed';
+      }
+    });
+  });
+</script>

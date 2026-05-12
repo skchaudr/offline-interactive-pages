@@ -1,0 +1,107 @@
+/*
+ * shared/tokens.css
+ *
+ * Reference design tokens. Inline these into each page's <style> block; do
+ * not link this file. The single-file doctrine forbids <link rel="stylesheet">.
+ *
+ * Tokens converged across pages/001-pages/007. Keep names stable so agents
+ * and humans can copy a component snippet and have it work without renaming.
+ *
+ * Visual feel target: Apple docs x Linear x Stripe docs x NotebookLM.
+ */
+
+:root {
+  /* Light theme (default) */
+  --bg-color: #fbfbfa;
+  --surface-color: #ffffff;
+  --surface-raised: #ffffff;
+  --text-main: #1a1a1a;
+  --text-muted: #666666;
+  --text-faint: #999999;
+  --border-color: #eaeaea;
+  --border-strong: #d0d0d0;
+
+  --primary-color: #007aff;
+  --primary-hover: #005bb5;
+  --primary-soft: rgba(0, 122, 255, 0.08);
+
+  --accent-color: #f5f5f5;
+  --code-bg: #f0f0f0;
+  --code-color: #d13232;
+  --chip-bg: #e0e0e0;
+
+  --success-color: #34c759;
+  --success-soft: #e6ffe6;
+  --success-ink: #006600;
+
+  --warning-color: #ffcc00;
+  --warning-soft: #fff4cc;
+  --warning-ink: #7a5b00;
+
+  --error-color: #ff3b30;
+  --error-soft: #ffe6e6;
+  --error-ink: #cc0000;
+
+  --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+  --transition: 0.2s ease;
+  --transition-fast: 0.12s ease;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg-color: #0d0d0d;
+    --surface-color: #1a1a1a;
+    --surface-raised: #222222;
+    --text-main: #f5f5f5;
+    --text-muted: #a1a1a1;
+    --text-faint: #707070;
+    --border-color: #2a2a2a;
+    --border-strong: #3a3a3a;
+
+    --primary-color: #0a84ff;
+    --primary-hover: #409cff;
+    --primary-soft: rgba(10, 132, 255, 0.14);
+
+    --accent-color: #2a2a2a;
+    --code-bg: #1f1f1f;
+    --code-color: #ff6b6b;
+    --chip-bg: #2f2f2f;
+
+    --success-color: #34c759;
+    --success-soft: #103a1a;
+    --success-ink: #7be09a;
+
+    --warning-color: #ffcc00;
+    --warning-soft: #3a2e08;
+    --warning-ink: #ffd956;
+
+    --error-color: #ff453a;
+    --error-soft: #3a1212;
+    --error-ink: #ff8a82;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+  }
+}

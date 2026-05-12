@@ -1,0 +1,64 @@
+<!--
+  Card component
+  Source: surface pattern across all pages.
+  Pattern: structural wrapper for grouped content. Variants via modifier class.
+-->
+
+<article class="card">
+  <header class="card-header">
+    <h3 class="card-title">Card title</h3>
+    <span class="card-meta">Subtitle / status</span>
+  </header>
+  <div class="card-body">
+    <p>Body content.</p>
+  </div>
+  <footer class="card-footer">
+    <button class="card-action">Action</button>
+  </footer>
+</article>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+  }
+  .card.card-raised { box-shadow: var(--shadow-md); background: var(--surface-raised); }
+  .card.card-flat { box-shadow: none; }
+  .card.card-interactive { cursor: pointer; }
+  .card.card-interactive:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+  .card-title { font-size: 1.05rem; font-weight: 600; }
+  .card-meta { font-size: 0.8rem; color: var(--text-muted); }
+  .card-footer {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+  }
+  .card-action {
+    padding: var(--space-2) var(--space-4);
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .card-action:hover { background: var(--primary-hover); }
+</style>

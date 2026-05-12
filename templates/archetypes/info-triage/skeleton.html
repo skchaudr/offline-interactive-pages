@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Info Triage Skeleton</title>
+  <style>
+    :root {
+      --bg-color: #fbfbfa;
+      --surface-color: #ffffff;
+      --surface-raised: #ffffff;
+      --text-main: #1a1a1a;
+      --text-muted: #666666;
+      --text-faint: #999999;
+      --border-color: #eaeaea;
+      --border-strong: #d0d0d0;
+      --primary-color: #007aff;
+      --primary-hover: #005bb5;
+      --primary-soft: rgba(0, 122, 255, 0.08);
+      --accent-color: #f5f5f5;
+      --code-bg: #f0f0f0;
+      --code-color: #d13232;
+      --chip-bg: #e0e0e0;
+      --success-color: #34c759;
+      --success-soft: #e6ffe6;
+      --success-ink: #006600;
+      --warning-color: #ffcc00;
+      --warning-soft: #fff4cc;
+      --warning-ink: #7a5b00;
+      --error-color: #ff3b30;
+      --error-soft: #ffe6e6;
+      --error-ink: #cc0000;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-pill: 999px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --transition: 0.2s ease;
+      --transition-fast: 0.12s ease;
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg-color: #0d0d0d;
+        --surface-color: #1a1a1a;
+        --surface-raised: #222222;
+        --text-main: #f5f5f5;
+        --text-muted: #a1a1a1;
+        --text-faint: #707070;
+        --border-color: #2a2a2a;
+        --border-strong: #3a3a3a;
+        --primary-color: #0a84ff;
+        --primary-hover: #409cff;
+        --primary-soft: rgba(10, 132, 255, 0.14);
+        --accent-color: #2a2a2a;
+        --code-bg: #1f1f1f;
+        --code-color: #ff6b6b;
+        --chip-bg: #2f2f2f;
+        --success-soft: #103a1a;
+        --success-ink: #7be09a;
+        --warning-soft: #3a2e08;
+        --warning-ink: #ffd956;
+        --error-soft: #3a1212;
+        --error-ink: #ff8a82;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-stack);
+      background: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .layout {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--space-5);
+    }
+    header.page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    .summary-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .summary-strip span { padding: var(--space-1) var(--space-3); background: var(--accent-color); border-radius: var(--radius-pill); }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-4);
+    }
+    @media (max-width: 720px) { .controls { grid-template-columns: 1fr; } }
+    .controls input, .controls select {
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font: inherit;
+    }
+    .controls input:focus, .controls select:focus { outline: 2px solid var(--primary-soft); border-color: var(--primary-color); }
+    .filter-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .chip {
+      padding: var(--space-1) var(--space-3);
+      background: var(--accent-color);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-pill);
+      font: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .chip:hover { color: var(--text-main); }
+    .chip.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-3);
+    }
+    .item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-fast);
+    }
+    .item:hover { border-color: var(--primary-color); box-shadow: var(--shadow-md); }
+    .item-title { font-weight: 600; }
+    .item-tags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+    .item-tag {
+      font-size: 0.75rem;
+      padding: 0.1em 0.5em;
+      border-radius: var(--radius-pill);
+      background: var(--chip-bg);
+      color: var(--text-muted);
+    }
+    .item-actions { display: flex; gap: var(--space-2); margin-top: auto; }
+    .item-actions button {
+      padding: var(--space-1) var(--space-3);
+      background: var(--surface-raised);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .item-actions button:hover { border-color: var(--primary-color); }
+    .item.tag-keep { border-left: 3px solid var(--success-color); }
+    .item.tag-defer { border-left: 3px solid var(--warning-color); }
+    .item.tag-drop { border-left: 3px solid var(--error-color); }
+    .empty { padding: var(--space-6); text-align: center; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <header class="page-header">
+      <div>
+        <h1>Triage skeleton</h1>
+        <p class="summary-strip"><span id="count-total">0 total</span><span id="count-visible">0 visible</span><span id="count-keep">0 keep</span><span id="count-defer">0 defer</span><span id="count-drop">0 drop</span></p>
+      </div>
+      <button id="reset-btn" class="chip">Reset triage</button>
+    </header>
+
+    <section class="controls">
+      <input id="search" type="search" placeholder="Search title or notes" aria-label="Search">
+      <select id="sort" aria-label="Sort">
+        <option value="created">Newest</option>
+        <option value="title">Title A–Z</option>
+        <option value="score">Highest score</option>
+      </select>
+      <select id="tag-filter" aria-label="Tag filter">
+        <option value="all">All decisions</option>
+        <option value="untagged">Untagged</option>
+        <option value="keep">Keep</option>
+        <option value="defer">Defer</option>
+        <option value="drop">Drop</option>
+      </select>
+    </section>
+
+    <div class="filter-chips" id="category-chips">
+      <button class="chip active" data-category="all">All categories</button>
+    </div>
+
+    <section id="grid" class="grid" aria-live="polite"></section>
+    <div id="empty" class="empty" hidden>No items match the current filters.</div>
+  </main>
+
+  <script>
+    function createStore(initial) {
+      const subs = new Map();
+      const notify = (k, v) => { const s = subs.get(k); if (s) for (const fn of s) fn(v, k); };
+      const state = new Proxy({ ...initial }, {
+        set(t, k, v) { if (t[k] !== v) { t[k] = v; notify(k, v); } return true; },
+      });
+      function subscribe(keys, fn) {
+        const list = Array.isArray(keys) ? keys : [keys];
+        for (const k of list) { if (!subs.has(k)) subs.set(k, new Set()); subs.get(k).add(fn); }
+        fn();
+        return () => { for (const k of list) subs.get(k)?.delete(fn); };
+      }
+      return { state, subscribe };
+    }
+
+    const STORAGE_KEY = 'triage-skeleton-state';
+
+    const SEED_ITEMS = [
+      { id: 'i1', title: 'Example item one', body: 'Replace with real content.', category: 'alpha', score: 0.8, created: 3 },
+      { id: 'i2', title: 'Example item two', body: 'Another sample.', category: 'beta', score: 0.5, created: 2 },
+      { id: 'i3', title: 'Example item three', body: 'Third sample.', category: 'alpha', score: 0.2, created: 1 },
+    ];
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+    const { state, subscribe } = createStore({
+      items: SEED_ITEMS,
+      decisions: saved.decisions || {},
+      query: '',
+      sort: 'created',
+      tagFilter: 'all',
+      category: 'all',
+    });
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ decisions: state.decisions }));
+    }
+
+    function setDecision(id, decision) {
+      const next = { ...state.decisions };
+      if (next[id] === decision) delete next[id]; else next[id] = decision;
+      state.decisions = next;
+      persist();
+    }
+
+    window.setDecision = setDecision;
+
+    function visibleItems() {
+      const q = state.query.trim().toLowerCase();
+      return state.items
+        .filter((it) => state.category === 'all' || it.category === state.category)
+        .filter((it) => {
+          const tag = state.decisions[it.id];
+          if (state.tagFilter === 'all') return true;
+          if (state.tagFilter === 'untagged') return !tag;
+          return tag === state.tagFilter;
+        })
+        .filter((it) => !q || it.title.toLowerCase().includes(q) || it.body.toLowerCase().includes(q))
+        .slice()
+        .sort((a, b) => {
+          if (state.sort === 'title') return a.title.localeCompare(b.title);
+          if (state.sort === 'score') return b.score - a.score;
+          return b.created - a.created;
+        });
+    }
+
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+
+    function renderGrid() {
+      const items = visibleItems();
+      empty.hidden = items.length > 0;
+      grid.innerHTML = items.map((it) => {
+        const decision = state.decisions[it.id] || '';
+        return `
+          <article class="item${decision ? ' tag-' + decision : ''}" data-id="${it.id}">
+            <div class="item-title">${it.title}</div>
+            <p>${it.body}</p>
+            <div class="item-tags"><span class="item-tag">${it.category}</span><span class="item-tag">score ${it.score.toFixed(2)}</span></div>
+            <div class="item-actions">
+              <button onclick="setDecision('${it.id}','keep')">Keep</button>
+              <button onclick="setDecision('${it.id}','defer')">Defer</button>
+              <button onclick="setDecision('${it.id}','drop')">Drop</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderCounts() {
+      const counts = { keep: 0, defer: 0, drop: 0 };
+      for (const v of Object.values(state.decisions)) if (counts[v] !== undefined) counts[v]++;
+      document.getElementById('count-total').textContent = state.items.length + ' total';
+      document.getElementById('count-visible').textContent = visibleItems().length + ' visible';
+      document.getElementById('count-keep').textContent = counts.keep + ' keep';
+      document.getElementById('count-defer').textContent = counts.defer + ' defer';
+      document.getElementById('count-drop').textContent = counts.drop + ' drop';
+    }
+
+    function renderCategoryChips() {
+      const wrap = document.getElementById('category-chips');
+      const cats = ['all', ...new Set(state.items.map((i) => i.category))];
+      wrap.innerHTML = cats.map((c) => `<button class="chip${c === state.category ? ' active' : ''}" data-category="${c}">${c === 'all' ? 'All categories' : c}</button>`).join('');
+      wrap.querySelectorAll('.chip').forEach((btn) => {
+        btn.addEventListener('click', () => { state.category = btn.dataset.category; });
+      });
+    }
+
+    subscribe(['items', 'decisions', 'query', 'sort', 'tagFilter', 'category'], renderGrid);
+    subscribe(['items', 'decisions', 'query', 'sort', 'tagFilter', 'category'], renderCounts);
+    subscribe(['items', 'category'], renderCategoryChips);
+
+    document.getElementById('search').addEventListener('input', (e) => { state.query = e.target.value; });
+    document.getElementById('sort').addEventListener('change', (e) => { state.sort = e.target.value; });
+    document.getElementById('tag-filter').addEventListener('change', (e) => { state.tagFilter = e.target.value; });
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      if (!confirm('Clear all triage decisions?')) return;
+      state.decisions = {};
+      persist();
+    });
+  </script>
+</body>
+</html>
