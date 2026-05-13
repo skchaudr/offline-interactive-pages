@@ -1,0 +1,66 @@
+<!--
+  Accordion component
+  Source: pages/006-neovim-lazyvim-lab/index.html:382-495
+  Pattern: .accordion wraps header + body; .open class toggles body visibility.
+  Reactivity: plain event listeners.
+-->
+
+<div class="accordion">
+  <button class="accordion-header" aria-expanded="false">
+    <span>Section title</span>
+    <span class="accordion-icon" aria-hidden="true">+</span>
+  </button>
+  <div class="accordion-body">
+    <p>Body content. Reveals on click.</p>
+  </div>
+</div>
+
+<style>
+  .accordion {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--surface-color);
+    overflow: hidden;
+  }
+  .accordion + .accordion { margin-top: var(--space-2); }
+  .accordion-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4);
+    background: none;
+    border: none;
+    color: var(--text-main);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+  }
+  .accordion-icon {
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    transition: transform var(--transition-fast);
+  }
+  .accordion.open .accordion-icon { transform: rotate(45deg); }
+  .accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition);
+    padding: 0 var(--space-4);
+  }
+  .accordion.open .accordion-body {
+    max-height: 800px;
+    padding: 0 var(--space-4) var(--space-4);
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.accordion-header').forEach((header) => {
+    header.addEventListener('click', () => {
+      const wrap = header.parentElement;
+      const open = wrap.classList.toggle('open');
+      header.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+</script>

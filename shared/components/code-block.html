@@ -1,0 +1,82 @@
+<!--
+  Code block component
+  Source: code pattern across all pages.
+  Pattern: <pre><code> with monospace background. Optional caption + copy button.
+-->
+
+<figure class="code-block">
+  <figcaption class="code-caption">Example: rebase onto main</figcaption>
+  <pre><code>git fetch origin
+git rebase origin/main</code></pre>
+  <button class="copy-btn copy-btn-overlay" data-cmd="git fetch origin&#10;git rebase origin/main">
+    <span class="copy-label">Copy</span>
+  </button>
+</figure>
+
+<style>
+  .code-block {
+    position: relative;
+    margin: var(--space-4) 0;
+    background: var(--code-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .code-caption {
+    padding: var(--space-2) var(--space-4);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+  .code-block pre {
+    padding: var(--space-4);
+    margin: 0;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-main);
+  }
+  .code-block code {
+    font-family: inherit;
+    background: none;
+    color: inherit;
+  }
+  .copy-btn-overlay {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .copy-btn-overlay:hover { color: var(--primary-color); }
+  .copy-btn-overlay.copied .copy-label { color: var(--success-color); }
+</style>
+
+<script>
+  document.querySelectorAll('.copy-btn-overlay').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.cmd || btn.closest('.code-block').querySelector('code').textContent;
+      const label = btn.querySelector('.copy-label');
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.classList.add('copied');
+        if (label) label.textContent = 'Copied';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          if (label) label.textContent = 'Copy';
+        }, 1500);
+      } catch {
+        if (label) label.textContent = 'Failed';
+      }
+    });
+  });
+</script>

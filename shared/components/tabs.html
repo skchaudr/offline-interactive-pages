@@ -1,0 +1,66 @@
+<!--
+  Tabs component
+  Source: pages/001-git-rebase-lab, pages/007-pi-harness-build-path-lab
+  Pattern: data-tab on buttons, data-panel on content, class .active toggles both.
+  Reactivity: plain event listeners; no signals needed.
+-->
+
+<div class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+  <button class="tab-btn" data-tab="details" role="tab" aria-selected="false">Details</button>
+  <button class="tab-btn" data-tab="notes" role="tab" aria-selected="false">Notes</button>
+</div>
+
+<div class="tab-panels">
+  <section class="tab-panel active" data-panel="overview" role="tabpanel">Overview content.</section>
+  <section class="tab-panel" data-panel="details" role="tabpanel" hidden>Details content.</section>
+  <section class="tab-panel" data-panel="notes" role="tabpanel" hidden>Notes content.</section>
+</div>
+
+<style>
+  .tabs {
+    display: flex;
+    gap: var(--space-2);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--space-4);
+  }
+  .tab-btn {
+    padding: var(--space-2) var(--space-4);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .tab-btn:hover { color: var(--text-main); }
+  .tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+  }
+  .tab-panel[hidden] { display: none; }
+</style>
+
+<script>
+  document.querySelectorAll('.tabs').forEach((group) => {
+    const buttons = group.querySelectorAll('.tab-btn');
+    const panels = group.parentElement.querySelectorAll('.tab-panel');
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        buttons.forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle('active', on);
+          b.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        panels.forEach((p) => {
+          const on = p.dataset.panel === target;
+          p.classList.toggle('active', on);
+          p.hidden = !on;
+        });
+      });
+    });
+  });
+</script>

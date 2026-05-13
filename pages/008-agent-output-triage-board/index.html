@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Output Triage Board</title>
+  <meta name="description" content="An offline, interactive board for triaging a batch of agent-produced outputs.">
+  <style>
+    :root {
+      --bg-color: #fbfbfa;
+      --surface-color: #ffffff;
+      --surface-raised: #ffffff;
+      --text-main: #1a1a1a;
+      --text-muted: #666666;
+      --text-faint: #999999;
+      --border-color: #eaeaea;
+      --border-strong: #d0d0d0;
+      --primary-color: #007aff;
+      --primary-hover: #005bb5;
+      --primary-soft: rgba(0, 122, 255, 0.08);
+      --accent-color: #f5f5f5;
+      --code-bg: #f0f0f0;
+      --code-color: #d13232;
+      --chip-bg: #e0e0e0;
+      --success-color: #34c759;
+      --success-soft: #e6ffe6;
+      --success-ink: #006600;
+      --warning-color: #ffcc00;
+      --warning-soft: #fff4cc;
+      --warning-ink: #7a5b00;
+      --error-color: #ff3b30;
+      --error-soft: #ffe6e6;
+      --error-ink: #cc0000;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-pill: 999px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --transition: 0.2s ease;
+      --transition-fast: 0.12s ease;
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg-color: #0d0d0d;
+        --surface-color: #1a1a1a;
+        --surface-raised: #222222;
+        --text-main: #f5f5f5;
+        --text-muted: #a1a1a1;
+        --text-faint: #707070;
+        --border-color: #2a2a2a;
+        --border-strong: #3a3a3a;
+        --primary-color: #0a84ff;
+        --primary-hover: #409cff;
+        --primary-soft: rgba(10, 132, 255, 0.14);
+        --accent-color: #2a2a2a;
+        --code-bg: #1f1f1f;
+        --code-color: #ff6b6b;
+        --chip-bg: #2f2f2f;
+        --success-soft: #103a1a;
+        --success-ink: #7be09a;
+        --warning-soft: #3a2e08;
+        --warning-ink: #ffd956;
+        --error-soft: #3a1212;
+        --error-ink: #ff8a82;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-stack);
+      background: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .layout {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--space-5);
+    }
+    header.page-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-4);
+      align-items: end;
+      margin-bottom: var(--space-5);
+    }
+    @media (max-width: 720px) { header.page-header { grid-template-columns: 1fr; } }
+    h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.01em; }
+    .subtitle { color: var(--text-muted); margin-top: var(--space-1); max-width: 60ch; }
+    .summary-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+    .summary-pill {
+      display: inline-flex;
+      gap: var(--space-2);
+      align-items: baseline;
+      padding: var(--space-1) var(--space-3);
+      background: var(--accent-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .summary-pill strong { color: var(--text-main); font-variant-numeric: tabular-nums; }
+    .summary-pill.keep strong { color: var(--success-color); }
+    .summary-pill.defer strong { color: var(--warning-color); }
+    .summary-pill.drop strong { color: var(--error-color); }
+    .header-actions {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .secondary-btn {
+      padding: var(--space-2) var(--space-3);
+      background: var(--surface-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .secondary-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+    .controls {
+      display: grid;
+      grid-template-columns: 1.6fr 0.9fr 0.9fr;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-3);
+    }
+    @media (max-width: 720px) { .controls { grid-template-columns: 1fr; } }
+    .controls input, .controls select {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font: inherit;
+    }
+    .controls input:focus, .controls select:focus {
+      outline: 2px solid var(--primary-soft);
+      border-color: var(--primary-color);
+    }
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+    }
+    .chip {
+      padding: var(--space-1) var(--space-3);
+      background: var(--accent-color);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-pill);
+      font: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .chip:hover { color: var(--text-main); }
+    .chip.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--space-3);
+    }
+    .item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-fast);
+    }
+    .item:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+    .item.decision-keep { border-left: 3px solid var(--success-color); }
+    .item.decision-defer { border-left: 3px solid var(--warning-color); }
+    .item.decision-drop { border-left: 3px solid var(--error-color); opacity: 0.78; }
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-3);
+    }
+    .item-title { font-weight: 600; font-size: 1rem; line-height: 1.35; }
+    .item-score {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .item-body { font-size: 0.9rem; color: var(--text-main); }
+    .item-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .meta-tag {
+      padding: 0.05em 0.6em;
+      border-radius: var(--radius-pill);
+      background: var(--chip-bg);
+      color: var(--text-muted);
+    }
+    .meta-tag.cat-code { background: var(--primary-soft); color: var(--primary-color); }
+    .meta-tag.cat-note { background: var(--warning-soft); color: var(--warning-ink); }
+    .meta-tag.cat-plan { background: var(--success-soft); color: var(--success-ink); }
+    .meta-tag.cat-query { background: var(--accent-color); }
+    .item-snippet {
+      max-height: 7rem;
+      overflow: auto;
+      padding: var(--space-2) var(--space-3);
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-main);
+      white-space: pre-wrap;
+    }
+    .item-actions {
+      display: flex;
+      gap: var(--space-2);
+      margin-top: auto;
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--border-color);
+    }
+    .decision-btn {
+      flex: 1;
+      padding: var(--space-2) var(--space-3);
+      background: var(--surface-raised);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .decision-btn:hover { border-color: var(--primary-color); }
+    .decision-btn.is-keep.on { background: var(--success-soft); border-color: var(--success-color); color: var(--success-ink); }
+    .decision-btn.is-defer.on { background: var(--warning-soft); border-color: var(--warning-color); color: var(--warning-ink); }
+    .decision-btn.is-drop.on { background: var(--error-soft); border-color: var(--error-color); color: var(--error-ink); }
+    .item-note {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font: inherit;
+      font-size: 0.85rem;
+      resize: vertical;
+      min-height: 2.5rem;
+    }
+    .empty {
+      grid-column: 1 / -1;
+      padding: var(--space-6);
+      text-align: center;
+      color: var(--text-muted);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-md);
+    }
+    .intro {
+      padding: var(--space-4) var(--space-5);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-5);
+    }
+    .intro p { color: var(--text-muted); }
+    .intro p + p { margin-top: var(--space-2); }
+    kbd {
+      display: inline-block;
+      padding: 0.05em 0.45em;
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--chip-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-sm);
+      color: var(--text-main);
+    }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <header class="page-header">
+      <div>
+        <h1>Agent Output Triage Board</h1>
+        <p class="subtitle">A batch of 24 outputs from a fictional multi-agent run. Filter, sort, and mark each one Keep, Defer, or Drop. Decisions and notes persist in this browser.</p>
+        <div class="summary-strip" aria-live="polite">
+          <span class="summary-pill"><strong id="count-total">0</strong> total</span>
+          <span class="summary-pill"><strong id="count-visible">0</strong> visible</span>
+          <span class="summary-pill keep"><strong id="count-keep">0</strong> keep</span>
+          <span class="summary-pill defer"><strong id="count-defer">0</strong> defer</span>
+          <span class="summary-pill drop"><strong id="count-drop">0</strong> drop</span>
+          <span class="summary-pill"><strong id="count-untagged">0</strong> untagged</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="export-btn" class="secondary-btn" type="button">Export decisions</button>
+        <button id="reset-btn" class="secondary-btn" type="button">Reset triage</button>
+      </div>
+    </header>
+
+    <section class="intro">
+      <p><strong>How this works.</strong> Each card represents one piece of output an agent produced during a multi-step run: a snippet of code, a plan, a query for the operator, or a note. The board's job is to help the operator decide what to act on now, what to defer, and what to discard.</p>
+      <p>Type to search across titles, bodies, and snippets. Use sort and decision filters to narrow the view. Click <kbd>Keep</kbd>, <kbd>Defer</kbd>, or <kbd>Drop</kbd> on a card to record a decision; click the same button again to clear it. Add a free-text note per card. Everything persists across reload.</p>
+    </section>
+
+    <section class="controls">
+      <input id="search" type="search" placeholder="Search titles, bodies, snippets" aria-label="Search">
+      <select id="sort" aria-label="Sort order">
+        <option value="created">Newest first</option>
+        <option value="title">Title A–Z</option>
+        <option value="score">Highest confidence</option>
+        <option value="effort">Lowest effort</option>
+        <option value="agent">By agent</option>
+      </select>
+      <select id="decision-filter" aria-label="Decision filter">
+        <option value="all">All decisions</option>
+        <option value="untagged">Untagged only</option>
+        <option value="keep">Keep</option>
+        <option value="defer">Defer</option>
+        <option value="drop">Drop</option>
+      </select>
+    </section>
+
+    <div class="filter-chips" id="category-chips" role="group" aria-label="Filter by category"></div>
+
+    <section id="grid" class="grid" aria-live="polite" aria-busy="false">
+      <div class="empty" id="empty" hidden>No outputs match the current filters. Clear the search or change a chip to see more.</div>
+    </section>
+  </main>
+
+  <script>
+    function createStore(initial) {
+      const subs = new Map();
+      const notify = (key, value) => {
+        const set = subs.get(key);
+        if (!set) return;
+        for (const fn of set) fn(value, key);
+      };
+      const state = new Proxy({ ...initial }, {
+        set(target, key, value) {
+          if (target[key] !== value) {
+            target[key] = value;
+            notify(key, value);
+          }
+          return true;
+        },
+      });
+      function subscribe(keys, fn) {
+        const list = Array.isArray(keys) ? keys : [keys];
+        for (const key of list) {
+          if (!subs.has(key)) subs.set(key, new Set());
+          subs.get(key).add(fn);
+        }
+        fn();
+        return function unsubscribe() {
+          for (const key of list) subs.get(key)?.delete(fn);
+        };
+      }
+      return { state, subscribe };
+    }
+
+    const STORAGE_KEY = 'agent-triage-v1';
+
+    const ITEMS = [
+      { id: 'a01', title: 'Refactor retry helper to use AbortSignal', body: 'The retry helper in lib/net.js builds its own timeout. Replace with AbortSignal timeouts so callers can compose.', category: 'code', agent: 'planner', score: 0.92, effort: 2, created: 24, snippet: 'export async function withRetry(fn, { signal, attempts = 3 } = {}) {\n  for (let i = 0; i < attempts; i++) {\n    try { return await fn({ signal }); }\n    catch (err) { if (signal?.aborted || i === attempts - 1) throw err; }\n  }\n}' },
+      { id: 'a02', title: 'Add integration test for token refresh race', body: 'Two concurrent refreshes can both write the new token, then one overwrites with the older response. Need a deterministic test.', category: 'plan', agent: 'reviewer', score: 0.84, effort: 4, created: 23, snippet: 'test(\'concurrent refreshes do not clobber\', async () => {\n  const a = refresh();\n  const b = refresh();\n  await Promise.all([a, b]);\n  expect(store.get(\'token\')).toBe(latest);\n});' },
+      { id: 'a03', title: 'Should pagination cursor be opaque or sortable?', body: 'The operator should pick. Sortable cursors enable backwards iteration; opaque ones prevent client-side filtering tricks.', category: 'query', agent: 'planner', score: 0.61, effort: 1, created: 22, snippet: '' },
+      { id: 'a04', title: 'Drop the trailing-slash redirect on health endpoint', body: 'Probes hit /healthz/ which 301s to /healthz. Adds 1 RTT to every probe. Remove the redirect for /healthz only.', category: 'code', agent: 'patcher', score: 0.88, effort: 1, created: 21, snippet: '- app.use(redirectTrailingSlash);\n+ app.use((req, res, next) => {\n+   if (req.path === \'/healthz/\') return res.redirect(308, \'/healthz\');\n+   next();\n+ });' },
+      { id: 'a05', title: 'Migration plan for switching to UUID v7', body: 'New rows get v7; backfill is offline; readers tolerate both. Document the window where both formats are live.', category: 'plan', agent: 'planner', score: 0.71, effort: 5, created: 20, snippet: '' },
+      { id: 'a06', title: 'Possible XSS in markdown preview', body: 'The preview pane uses innerHTML on rendered markdown. If user input includes raw script tags, they execute.', category: 'note', agent: 'reviewer', score: 0.97, effort: 2, created: 19, snippet: 'preview.innerHTML = md.render(input); // <-- input flows unsanitized' },
+      { id: 'a07', title: 'Cache the compiled regex in slug generator', body: 'slugify() compiles two regexes on every call. Tens of thousands of calls per request in the bulk import path.', category: 'code', agent: 'patcher', score: 0.78, effort: 1, created: 18, snippet: 'const SLUG_RE = /[^a-z0-9]+/g;\nconst TRIM_RE = /^-+|-+$/g;\nexport function slugify(s) { return s.toLowerCase().replace(SLUG_RE, \'-\').replace(TRIM_RE, \'\'); }' },
+      { id: 'a08', title: 'Note: docs say POST returns 201, code returns 200', body: 'API reference and the actual response disagree on the success status. Pick one and align.', category: 'note', agent: 'reviewer', score: 0.65, effort: 1, created: 17, snippet: '' },
+      { id: 'a09', title: 'Add structured logging to the queue consumer', body: 'Operator cannot correlate failures to upstream events without a request id field. Pipe it through.', category: 'plan', agent: 'planner', score: 0.74, effort: 3, created: 16, snippet: '' },
+      { id: 'a10', title: 'Should soft-deleted rows count toward quotas?', body: 'Currently they do; users report this as a bug. Either change the count or document the behavior.', category: 'query', agent: 'planner', score: 0.58, effort: 2, created: 15, snippet: '' },
+      { id: 'a11', title: 'Replace setInterval poll with a backoff loop', body: 'Constant 1s poll on the worker creates a tight floor on idle CPU. Backoff to 30s when idle.', category: 'code', agent: 'patcher', score: 0.69, effort: 3, created: 14, snippet: 'let delay = 1000;\nwhile (true) {\n  const work = await dequeue();\n  if (work) { delay = 1000; await handle(work); }\n  else { delay = Math.min(delay * 2, 30000); await sleep(delay); }\n}' },
+      { id: 'a12', title: 'Document the difference between dry-run and preview', body: 'Operators confuse the two. Add a doc with a side-by-side table.', category: 'plan', agent: 'planner', score: 0.49, effort: 2, created: 13, snippet: '' },
+      { id: 'a13', title: 'Memory leak in the SSE reconnector', body: 'Each reconnect attaches a new error listener and never removes it. After 100 reconnects the listener count is 100.', category: 'note', agent: 'reviewer', score: 0.93, effort: 2, created: 12, snippet: 'es.addEventListener(\'error\', handle);\n// no removeEventListener anywhere in the reconnect path' },
+      { id: 'a14', title: 'Add an opt-in flag for verbose CLI output', body: 'New users want to see what the CLI is doing. Default stays terse; --verbose dumps the plan.', category: 'plan', agent: 'planner', score: 0.55, effort: 2, created: 11, snippet: '' },
+      { id: 'a15', title: 'Was the rate-limit bucket sized for burst or steady?', body: 'The doc says 60/min steady; the code reads as a burst of 60 with no refill. Confirm intent.', category: 'query', agent: 'reviewer', score: 0.6, effort: 1, created: 10, snippet: 'const bucket = new TokenBucket({ capacity: 60, refill: 0 });' },
+      { id: 'a16', title: 'Inline JSON for offline demo data', body: 'Replace the fetch() seed with an inline JSON literal so the page runs from file://.', category: 'code', agent: 'patcher', score: 0.86, effort: 1, created: 9, snippet: '- const data = await (await fetch(\'/seed.json\')).json();\n+ const data = SEED;' },
+      { id: 'a17', title: 'Note: env var name collision with another tool', body: 'APP_TOKEN is also used by an unrelated CLI in the toolchain. Rename to APP_AUTH_TOKEN.', category: 'note', agent: 'reviewer', score: 0.7, effort: 1, created: 8, snippet: '' },
+      { id: 'a18', title: 'Plan: split the monolith config file', body: 'Single config.yaml is 1400 lines. Propose splitting into config/{net,db,auth,worker}.yaml with an index.', category: 'plan', agent: 'planner', score: 0.66, effort: 5, created: 7, snippet: '' },
+      { id: 'a19', title: 'Should the agent stop on first error or continue?', body: 'Both behaviors are reasonable for different operator modes. Need a setting; default = stop.', category: 'query', agent: 'planner', score: 0.57, effort: 2, created: 6, snippet: '' },
+      { id: 'a20', title: 'Fix off-by-one in pagination link header', body: 'next link points to (page) instead of (page+1). Already filed as issue 482 but agent rediscovered it.', category: 'code', agent: 'patcher', score: 0.81, effort: 1, created: 5, snippet: '- next: `?page=${page}`,\n+ next: `?page=${page + 1}`,' },
+      { id: 'a21', title: 'Add accessibility audit to CI', body: 'Run axe-core against the docs site on every PR. Fail on serious issues only.', category: 'plan', agent: 'planner', score: 0.63, effort: 3, created: 4, snippet: '' },
+      { id: 'a22', title: 'Note: GitHub action uses pinned SHA, good', body: 'Spot check of .github/workflows/test.yml: every action is pinned to a SHA. Worth keeping that pattern.', category: 'note', agent: 'reviewer', score: 0.42, effort: 0, created: 3, snippet: '' },
+      { id: 'a23', title: 'Use IntersectionObserver to lazy-mount panels', body: 'Heavy dashboard panels build canvases on load. Defer until scrolled into view.', category: 'code', agent: 'patcher', score: 0.73, effort: 3, created: 2, snippet: 'const io = new IntersectionObserver((entries) => {\n  for (const e of entries) if (e.isIntersecting) mount(e.target);\n});\npanels.forEach((p) => io.observe(p));' },
+      { id: 'a24', title: 'Should we run the migration in maintenance mode?', body: 'Migration locks a hot table for ~3 minutes. Operator decides whether to schedule downtime.', category: 'query', agent: 'planner', score: 0.68, effort: 4, created: 1, snippet: '' },
+    ];
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+    const { state, subscribe } = createStore({
+      items: ITEMS,
+      decisions: saved.decisions || {},
+      notes: saved.notes || {},
+      query: '',
+      sort: 'created',
+      decisionFilter: 'all',
+      category: 'all',
+    });
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        decisions: state.decisions,
+        notes: state.notes,
+      }));
+    }
+
+    function setDecision(id, decision) {
+      const next = { ...state.decisions };
+      if (next[id] === decision) delete next[id]; else next[id] = decision;
+      state.decisions = next;
+      persist();
+    }
+
+    function setNote(id, value) {
+      const next = { ...state.notes };
+      if (!value) delete next[id]; else next[id] = value;
+      state.notes = next;
+      persist();
+    }
+
+    window.setDecision = setDecision;
+
+    function visibleItems() {
+      const q = state.query.trim().toLowerCase();
+      const out = [];
+      for (const it of state.items) {
+        if (state.category !== 'all' && it.category !== state.category) continue;
+        const tag = state.decisions[it.id];
+        if (state.decisionFilter === 'untagged' && tag) continue;
+        if (state.decisionFilter !== 'all' && state.decisionFilter !== 'untagged' && tag !== state.decisionFilter) continue;
+        if (q) {
+          const hay = (it.title + ' ' + it.body + ' ' + (it.snippet || '') + ' ' + (state.notes[it.id] || '')).toLowerCase();
+          if (!hay.includes(q)) continue;
+        }
+        out.push(it);
+      }
+      switch (state.sort) {
+        case 'title': out.sort((a, b) => a.title.localeCompare(b.title)); break;
+        case 'score': out.sort((a, b) => b.score - a.score); break;
+        case 'effort': out.sort((a, b) => a.effort - b.effort); break;
+        case 'agent': out.sort((a, b) => a.agent.localeCompare(b.agent) || b.score - a.score); break;
+        default: out.sort((a, b) => b.created - a.created);
+      }
+      return out;
+    }
+
+    function escapeHtml(s) {
+      return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+
+    function cardMarkup(it) {
+      const decision = state.decisions[it.id] || '';
+      const note = state.notes[it.id] || '';
+      const snippetBlock = it.snippet
+        ? `<pre class="item-snippet"><code>${escapeHtml(it.snippet)}</code></pre>`
+        : '';
+      return `
+        <article class="item${decision ? ' decision-' + decision : ''}" data-id="${it.id}">
+          <div class="item-head">
+            <div class="item-title">${escapeHtml(it.title)}</div>
+            <div class="item-score" title="confidence | effort">${it.score.toFixed(2)} | e${it.effort}</div>
+          </div>
+          <div class="item-meta">
+            <span class="meta-tag cat-${it.category}">${it.category}</span>
+            <span class="meta-tag">agent: ${escapeHtml(it.agent)}</span>
+          </div>
+          <p class="item-body">${escapeHtml(it.body)}</p>
+          ${snippetBlock}
+          <textarea class="item-note" data-id="${it.id}" placeholder="Note (optional)" rows="1">${escapeHtml(note)}</textarea>
+          <div class="item-actions" role="group" aria-label="Decision">
+            <button class="decision-btn is-keep${decision === 'keep' ? ' on' : ''}" data-id="${it.id}" data-decision="keep" type="button">Keep</button>
+            <button class="decision-btn is-defer${decision === 'defer' ? ' on' : ''}" data-id="${it.id}" data-decision="defer" type="button">Defer</button>
+            <button class="decision-btn is-drop${decision === 'drop' ? ' on' : ''}" data-id="${it.id}" data-decision="drop" type="button">Drop</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderGrid() {
+      const items = visibleItems();
+      empty.hidden = items.length > 0;
+      const frag = items.map(cardMarkup).join('');
+      grid.innerHTML = frag + (items.length === 0 ? empty.outerHTML : '');
+      if (items.length === 0) {
+        const e = document.getElementById('empty');
+        if (e) e.hidden = false;
+      }
+    }
+
+    function renderCounts() {
+      let keep = 0, defer = 0, drop = 0;
+      for (const v of Object.values(state.decisions)) {
+        if (v === 'keep') keep++;
+        else if (v === 'defer') defer++;
+        else if (v === 'drop') drop++;
+      }
+      const visible = visibleItems().length;
+      const untagged = state.items.length - keep - defer - drop;
+      document.getElementById('count-total').textContent = state.items.length;
+      document.getElementById('count-visible').textContent = visible;
+      document.getElementById('count-keep').textContent = keep;
+      document.getElementById('count-defer').textContent = defer;
+      document.getElementById('count-drop').textContent = drop;
+      document.getElementById('count-untagged').textContent = untagged;
+    }
+
+    function renderCategoryChips() {
+      const wrap = document.getElementById('category-chips');
+      const cats = ['all', ...Array.from(new Set(state.items.map((i) => i.category)))];
+      const labels = { all: 'All categories', code: 'Code patches', plan: 'Plans', note: 'Notes', query: 'Operator questions' };
+      wrap.innerHTML = cats.map((c) => `
+        <button class="chip${c === state.category ? ' active' : ''}" data-category="${c}" type="button">${labels[c] || c}</button>
+      `).join('');
+    }
+
+    subscribe(['items', 'decisions', 'notes', 'query', 'sort', 'decisionFilter', 'category'], renderGrid);
+    subscribe(['items', 'decisions', 'query', 'sort', 'decisionFilter', 'category'], renderCounts);
+    subscribe(['items', 'category'], renderCategoryChips);
+
+    document.getElementById('search').addEventListener('input', (e) => { state.query = e.target.value; });
+    document.getElementById('sort').addEventListener('change', (e) => { state.sort = e.target.value; });
+    document.getElementById('decision-filter').addEventListener('change', (e) => { state.decisionFilter = e.target.value; });
+
+    document.getElementById('category-chips').addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      state.category = btn.dataset.category;
+    });
+
+    grid.addEventListener('click', (e) => {
+      const btn = e.target.closest('.decision-btn');
+      if (!btn) return;
+      setDecision(btn.dataset.id, btn.dataset.decision);
+    });
+
+    grid.addEventListener('input', (e) => {
+      const ta = e.target.closest('.item-note');
+      if (!ta) return;
+      setNote(ta.dataset.id, ta.value);
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      if (!confirm('Clear all triage decisions and notes?')) return;
+      state.decisions = {};
+      state.notes = {};
+      persist();
+    });
+
+    document.getElementById('export-btn').addEventListener('click', () => {
+      const lines = ['# Triage decisions', ''];
+      const byDecision = { keep: [], defer: [], drop: [] };
+      for (const it of state.items) {
+        const d = state.decisions[it.id];
+        if (d) byDecision[d].push(it);
+      }
+      for (const d of ['keep', 'defer', 'drop']) {
+        if (!byDecision[d].length) continue;
+        lines.push('## ' + d.toUpperCase());
+        for (const it of byDecision[d]) {
+          lines.push('- [' + it.id + '] ' + it.title + (state.notes[it.id] ? ' -- ' + state.notes[it.id] : ''));
+        }
+        lines.push('');
+      }
+      const out = lines.join('\n');
+      navigator.clipboard.writeText(out).then(() => {
+        const btn = document.getElementById('export-btn');
+        const original = btn.textContent;
+        btn.textContent = 'Copied to clipboard';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Developer Command Center</title>
+  <meta name="description" content="An offline, interactive dashboard hub synthesizing PRs, CI runs, agent sessions, and incidents into one inspectable view.">
+  <style>
+    :root {
+      --bg-color: #fbfbfa;
+      --surface-color: #ffffff;
+      --surface-raised: #ffffff;
+      --text-main: #1a1a1a;
+      --text-muted: #666666;
+      --text-faint: #999999;
+      --border-color: #eaeaea;
+      --border-strong: #d0d0d0;
+      --primary-color: #007aff;
+      --primary-hover: #005bb5;
+      --primary-soft: rgba(0, 122, 255, 0.08);
+      --accent-color: #f5f5f5;
+      --code-bg: #f0f0f0;
+      --code-color: #d13232;
+      --chip-bg: #e0e0e0;
+      --success-color: #34c759;
+      --success-soft: #e6ffe6;
+      --success-ink: #006600;
+      --warning-color: #ffcc00;
+      --warning-soft: #fff4cc;
+      --warning-ink: #7a5b00;
+      --error-color: #ff3b30;
+      --error-soft: #ffe6e6;
+      --error-ink: #cc0000;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-pill: 999px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --transition: 0.2s ease;
+      --transition-fast: 0.12s ease;
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg-color: #0d0d0d;
+        --surface-color: #1a1a1a;
+        --surface-raised: #222222;
+        --text-main: #f5f5f5;
+        --text-muted: #a1a1a1;
+        --text-faint: #707070;
+        --border-color: #2a2a2a;
+        --border-strong: #3a3a3a;
+        --primary-color: #0a84ff;
+        --primary-hover: #409cff;
+        --primary-soft: rgba(10, 132, 255, 0.14);
+        --accent-color: #2a2a2a;
+        --code-bg: #1f1f1f;
+        --code-color: #ff6b6b;
+        --chip-bg: #2f2f2f;
+        --success-soft: #103a1a;
+        --success-ink: #7be09a;
+        --warning-soft: #3a2e08;
+        --warning-ink: #ffd956;
+        --error-soft: #3a1212;
+        --error-ink: #ff8a82;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-stack);
+      background: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: var(--space-5);
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: var(--space-5);
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      aside.sidebar { position: static; height: auto; }
+    }
+    aside.sidebar {
+      position: sticky;
+      top: var(--space-5);
+      align-self: start;
+      max-height: calc(100vh - 3rem);
+      overflow: auto;
+      padding: var(--space-4);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+    .sidebar-title { font-size: 1rem; font-weight: 700; margin-bottom: var(--space-4); }
+    .sidebar h2 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-faint);
+      margin: var(--space-4) 0 var(--space-2);
+    }
+    .sidebar h2:first-of-type { margin-top: 0; }
+    .sidebar nav { display: flex; flex-direction: column; gap: 2px; }
+    .sidebar a {
+      padding: var(--space-2) var(--space-3);
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: var(--transition-fast);
+    }
+    .sidebar a:hover { background: var(--accent-color); color: var(--text-main); }
+    .sidebar a.active { background: var(--primary-soft); color: var(--primary-color); }
+    main { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+    header.hub-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-4);
+      align-items: end;
+    }
+    @media (max-width: 720px) { header.hub-header { grid-template-columns: 1fr; } }
+    h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; }
+    .meta-line { color: var(--text-muted); font-size: 0.9rem; margin-top: var(--space-1); }
+    .scope-filter { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+    .scope-label {
+      font-size: 0.75rem;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: var(--space-2);
+    }
+    .chip {
+      padding: var(--space-1) var(--space-3);
+      background: var(--accent-color);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-pill);
+      font: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .chip:hover { color: var(--text-main); }
+    .chip.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--space-3);
+    }
+    .stat {
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      margin-top: var(--space-2);
+    }
+    .stat-trend {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: var(--space-1);
+    }
+    .stat.good .stat-value { color: var(--success-color); }
+    .stat.warn .stat-value { color: var(--warning-color); }
+    .stat.bad .stat-value { color: var(--error-color); }
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: var(--space-4);
+    }
+    section.panel {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-5);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      scroll-margin-top: var(--space-5);
+    }
+    section.panel.span-2 { grid-column: span 2; }
+    @media (max-width: 900px) { section.panel.span-2 { grid-column: span 1; } }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-3);
+    }
+    .panel-head h3 { font-size: 1rem; font-weight: 600; }
+    .panel-head .meta { font-size: 0.8rem; color: var(--text-muted); }
+    .panel ul { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+    .row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: var(--space-3);
+      align-items: center;
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+    }
+    .row .row-id {
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    .row .row-meta { font-size: 0.75rem; color: var(--text-muted); }
+    .badge {
+      display: inline-block;
+      padding: 0.1em 0.6em;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-radius: var(--radius-pill);
+      flex-shrink: 0;
+    }
+    .badge.good { background: var(--success-soft); color: var(--success-ink); }
+    .badge.warn { background: var(--warning-soft); color: var(--warning-ink); }
+    .badge.bad { background: var(--error-soft); color: var(--error-ink); }
+    .badge.neutral { background: var(--chip-bg); color: var(--text-muted); }
+    .spark {
+      width: 100%;
+      height: 64px;
+      display: block;
+      cursor: crosshair;
+    }
+    .panel-footnote {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: var(--space-1);
+    }
+    .panel-footnote strong {
+      color: var(--text-main);
+      font-variant-numeric: tabular-nums;
+    }
+    .notes-area {
+      width: 100%;
+      min-height: 6rem;
+      padding: var(--space-3);
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font: inherit;
+      resize: vertical;
+    }
+    .notes-area:focus {
+      outline: 2px solid var(--primary-soft);
+      border-color: var(--primary-color);
+    }
+    .notes-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .empty {
+      padding: var(--space-4);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-sm);
+    }
+    .pulse-grid {
+      display: grid;
+      grid-template-columns: repeat(14, 1fr);
+      gap: 4px;
+      margin-top: var(--space-2);
+    }
+    .pulse-cell {
+      height: 18px;
+      border-radius: 3px;
+      background: var(--chip-bg);
+    }
+    .pulse-cell[data-tone="good"] { background: var(--success-color); opacity: 0.7; }
+    .pulse-cell[data-tone="warn"] { background: var(--warning-color); opacity: 0.85; }
+    .pulse-cell[data-tone="bad"] { background: var(--error-color); }
+    .ci-row {
+      display: grid;
+      grid-template-columns: 1.5rem 1fr auto;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .ci-dot {
+      width: 0.8rem;
+      height: 0.8rem;
+      border-radius: 50%;
+      background: var(--chip-bg);
+    }
+    .ci-dot.good { background: var(--success-color); }
+    .ci-dot.warn { background: var(--warning-color); }
+    .ci-dot.bad { background: var(--error-color); }
+    .secondary-btn {
+      padding: var(--space-2) var(--space-3);
+      background: var(--surface-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .secondary-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">Command Center</div>
+
+      <h2>View</h2>
+      <nav id="section-nav">
+        <a href="#overview" class="active">Overview</a>
+        <a href="#prs">Pull requests</a>
+        <a href="#ci">CI runs</a>
+        <a href="#agents">Agent sessions</a>
+        <a href="#incidents">Incidents</a>
+        <a href="#trend">Throughput trend</a>
+        <a href="#pulse">14-day pulse</a>
+        <a href="#notes">Operator notes</a>
+      </nav>
+
+      <h2>Refresh</h2>
+      <button id="refresh-btn" class="secondary-btn" type="button">Simulate refresh</button>
+
+      <h2>Storage</h2>
+      <button id="reset-btn" class="secondary-btn" type="button">Reset local state</button>
+    </aside>
+
+    <main>
+      <header class="hub-header">
+        <div>
+          <h1>Developer Command Center</h1>
+          <p class="meta-line">A synthetic, offline view of one developer's daily surface area. Last refresh <span id="last-refresh">just now</span>.</p>
+        </div>
+        <div class="scope-filter" id="scope-filter" role="group" aria-label="Scope">
+          <span class="scope-label">Scope</span>
+          <button class="chip active" data-scope="all" type="button">All</button>
+          <button class="chip" data-scope="mine" type="button">Mine</button>
+          <button class="chip" data-scope="team" type="button">Team</button>
+        </div>
+      </header>
+
+      <section class="status-strip" id="status-strip" aria-label="Key status"></section>
+
+      <section id="overview" class="panel">
+        <div class="panel-head">
+          <h3>Overview</h3>
+          <span class="meta" id="overview-meta"></span>
+        </div>
+        <ul id="overview-list"></ul>
+      </section>
+
+      <div class="panel-grid">
+        <section id="prs" class="panel">
+          <div class="panel-head"><h3>Pull requests</h3><span class="meta" id="prs-meta"></span></div>
+          <ul id="prs-list"></ul>
+        </section>
+
+        <section id="ci" class="panel">
+          <div class="panel-head"><h3>CI runs</h3><span class="meta" id="ci-meta"></span></div>
+          <ul id="ci-list"></ul>
+        </section>
+
+        <section id="agents" class="panel">
+          <div class="panel-head"><h3>Agent sessions</h3><span class="meta" id="agents-meta"></span></div>
+          <ul id="agents-list"></ul>
+        </section>
+
+        <section id="incidents" class="panel">
+          <div class="panel-head"><h3>Incidents</h3><span class="meta" id="incidents-meta"></span></div>
+          <ul id="incidents-list"></ul>
+        </section>
+
+        <section id="trend" class="panel span-2">
+          <div class="panel-head">
+            <h3>Throughput trend</h3>
+            <span class="meta">commits merged per day, last 30 days</span>
+          </div>
+          <canvas id="trend-canvas" class="spark" aria-label="Sparkline of commits merged per day for the last 30 days"></canvas>
+          <div class="panel-footnote">
+            <span>Today: <strong id="trend-today">0</strong></span>
+            <span>30-day average: <strong id="trend-avg">0</strong></span>
+            <span>Peak: <strong id="trend-peak">0</strong></span>
+          </div>
+        </section>
+
+        <section id="pulse" class="panel">
+          <div class="panel-head"><h3>14-day pulse</h3><span class="meta" id="pulse-meta"></span></div>
+          <div class="pulse-grid" id="pulse-grid" aria-label="Daily health for the last 14 days"></div>
+          <p class="notes-meta">Green = healthy. Yellow = warning. Red = incident. Gray = no activity.</p>
+        </section>
+
+        <section id="notes" class="panel">
+          <div class="panel-head"><h3>Operator notes</h3><span class="notes-meta">persisted in this browser</span></div>
+          <textarea id="notes-text" class="notes-area" placeholder="What did you decide today? Why? (saved locally)"></textarea>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function createStore(initial) {
+      const subs = new Map();
+      const notify = (key, value) => {
+        const set = subs.get(key);
+        if (!set) return;
+        for (const fn of set) fn(value, key);
+      };
+      const state = new Proxy({ ...initial }, {
+        set(target, key, value) {
+          if (target[key] !== value) {
+            target[key] = value;
+            notify(key, value);
+          }
+          return true;
+        },
+      });
+      function subscribe(keys, fn) {
+        const list = Array.isArray(keys) ? keys : [keys];
+        for (const key of list) {
+          if (!subs.has(key)) subs.set(key, new Set());
+          subs.get(key).add(fn);
+        }
+        fn();
+        return function unsubscribe() {
+          for (const key of list) subs.get(key)?.delete(fn);
+        };
+      }
+      return { state, subscribe };
+    }
+
+    const STORAGE_KEY = 'developer-command-center-v1';
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+    const SEED = {
+      prs: [
+        { id: 'PR-482', label: 'Fix off-by-one in pagination link header', owner: 'mine', status: 'good', meta: 'approved, 1 check pending' },
+        { id: 'PR-479', label: 'Refactor retry helper to AbortSignal', owner: 'mine', status: 'warn', meta: '1 change requested' },
+        { id: 'PR-477', label: 'Add structured logging to queue consumer', owner: 'team', status: 'good', meta: 'merging soon' },
+        { id: 'PR-471', label: 'UUID v7 migration draft', owner: 'team', status: 'warn', meta: 'awaiting decision' },
+        { id: 'PR-465', label: 'SSE reconnector leak fix', owner: 'team', status: 'bad', meta: 'CI failing' },
+      ],
+      ci: [
+        { id: 'main #1287', label: 'main', owner: 'team', status: 'good', meta: '4m 12s' },
+        { id: 'pr-482 #1286', label: 'pr-482', owner: 'mine', status: 'warn', meta: '1 flaky test' },
+        { id: 'pr-465 #1285', label: 'pr-465', owner: 'team', status: 'bad', meta: 'timeout in worker tests' },
+        { id: 'nightly #1284', label: 'nightly', owner: 'team', status: 'good', meta: 'green' },
+        { id: 'release-1.4 #1283', label: 'release-1.4', owner: 'team', status: 'good', meta: 'tagged' },
+      ],
+      agents: [
+        { id: 'sess-913', label: 'Review backlog of 24 outputs', owner: 'mine', status: 'good', meta: 'awaiting triage' },
+        { id: 'sess-912', label: 'Investigate flaky retry tests', owner: 'mine', status: 'warn', meta: 'paused for input' },
+        { id: 'sess-908', label: 'Draft release notes for 1.4', owner: 'team', status: 'good', meta: 'ready to review' },
+        { id: 'sess-905', label: 'Audit env var collisions', owner: 'team', status: 'good', meta: 'done' },
+      ],
+      incidents: [
+        { id: 'INC-73', label: 'Email queue stalled 14 minutes', owner: 'team', status: 'warn', meta: 'retro scheduled' },
+        { id: 'INC-72', label: 'Auth latency spike', owner: 'team', status: 'good', meta: 'resolved, no action' },
+      ],
+      trend: [3, 5, 4, 6, 7, 5, 4, 6, 8, 7, 9, 6, 5, 7, 8, 9, 10, 8, 7, 9, 11, 10, 9, 12, 11, 9, 10, 12, 13, 11],
+      pulse: ['good', 'good', 'good', 'warn', 'good', 'good', 'good', 'good', 'warn', 'bad', 'warn', 'good', 'good', 'good'],
+    };
+
+    const { state, subscribe } = createStore({
+      scope: saved.scope || 'all',
+      prs: SEED.prs,
+      ci: SEED.ci,
+      agents: SEED.agents,
+      incidents: SEED.incidents,
+      trend: SEED.trend,
+      pulse: SEED.pulse,
+      notes: saved.notes || '',
+    });
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        scope: state.scope,
+        notes: state.notes,
+      }));
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function filterByScope(list) {
+      if (state.scope === 'all') return list;
+      return list.filter((it) => it.owner === state.scope);
+    }
+
+    function countByStatus(list, status) {
+      let n = 0;
+      for (const it of list) if (it.status === status) n++;
+      return n;
+    }
+
+    function renderStatusStrip() {
+      const prs = filterByScope(state.prs);
+      const ci = filterByScope(state.ci);
+      const agents = filterByScope(state.agents);
+      const incidents = filterByScope(state.incidents);
+      const stats = [
+        { label: 'Open PRs', value: prs.length, tone: prs.some((p) => p.status === 'bad') ? 'bad' : prs.some((p) => p.status === 'warn') ? 'warn' : 'good' },
+        { label: 'CI failing', value: countByStatus(ci, 'bad'), tone: countByStatus(ci, 'bad') ? 'bad' : 'good' },
+        { label: 'Agents awaiting', value: agents.filter((a) => a.status !== 'good').length, tone: agents.some((a) => a.status === 'bad') ? 'bad' : agents.some((a) => a.status === 'warn') ? 'warn' : 'good' },
+        { label: 'Open incidents', value: incidents.filter((i) => i.status !== 'good').length, tone: incidents.some((i) => i.status === 'bad') ? 'bad' : incidents.some((i) => i.status === 'warn') ? 'warn' : 'good' },
+        { label: 'Today\'s merges', value: state.trend[state.trend.length - 1], tone: 'good' },
+      ];
+      document.getElementById('status-strip').innerHTML = stats.map((s) => `
+        <div class="stat ${s.tone}">
+          <div class="stat-label">${escapeHtml(s.label)}</div>
+          <div class="stat-value">${s.value}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderListPanel(listEl, metaEl, items, emptyText) {
+      metaEl.textContent = items.length + ' item' + (items.length === 1 ? '' : 's');
+      if (items.length === 0) {
+        listEl.innerHTML = `<li class="empty">${escapeHtml(emptyText)}</li>`;
+        return;
+      }
+      listEl.innerHTML = items.map((it) => `
+        <li class="row">
+          <span class="row-id">${escapeHtml(it.id)}</span>
+          <span>${escapeHtml(it.label)}<br><span class="row-meta">${escapeHtml(it.meta)}</span></span>
+          <span class="badge ${it.status}">${it.status}</span>
+        </li>
+      `).join('');
+    }
+
+    function renderOverview() {
+      const top = [];
+      const allLists = [
+        ['PR', state.prs],
+        ['CI', state.ci],
+        ['Agent', state.agents],
+        ['Incident', state.incidents],
+      ];
+      for (const [tag, list] of allLists) {
+        for (const it of filterByScope(list)) {
+          if (it.status === 'bad' || it.status === 'warn') top.push({ tag, it });
+        }
+      }
+      top.sort((a, b) => (a.it.status === 'bad' ? 0 : 1) - (b.it.status === 'bad' ? 0 : 1));
+      const sliced = top.slice(0, 6);
+      document.getElementById('overview-meta').textContent = sliced.length + ' need' + (sliced.length === 1 ? 's' : '') + ' attention';
+      const listEl = document.getElementById('overview-list');
+      if (sliced.length === 0) {
+        listEl.innerHTML = '<li class="empty">All clear in the current scope.</li>';
+        return;
+      }
+      listEl.innerHTML = sliced.map(({ tag, it }) => `
+        <li class="row">
+          <span class="row-id">${escapeHtml(tag)} · ${escapeHtml(it.id)}</span>
+          <span>${escapeHtml(it.label)}<br><span class="row-meta">${escapeHtml(it.meta)}</span></span>
+          <span class="badge ${it.status}">${it.status}</span>
+        </li>
+      `).join('');
+    }
+
+    function renderPRs() {
+      renderListPanel(
+        document.getElementById('prs-list'),
+        document.getElementById('prs-meta'),
+        filterByScope(state.prs),
+        'No PRs in this scope.',
+      );
+    }
+
+    function renderCI() {
+      const items = filterByScope(state.ci);
+      document.getElementById('ci-meta').textContent = items.length + ' run' + (items.length === 1 ? '' : 's');
+      const list = document.getElementById('ci-list');
+      if (items.length === 0) {
+        list.innerHTML = '<li class="empty">No CI runs in this scope.</li>';
+        return;
+      }
+      list.innerHTML = items.map((it) => `
+        <li class="row">
+          <span class="ci-row" style="grid-column: 1 / -1">
+            <span class="ci-dot ${it.status}" aria-hidden="true"></span>
+            <span>${escapeHtml(it.label)}<br><span class="row-meta">${escapeHtml(it.id)} · ${escapeHtml(it.meta)}</span></span>
+            <span class="badge ${it.status}">${it.status}</span>
+          </span>
+        </li>
+      `).join('');
+    }
+
+    function renderAgents() {
+      renderListPanel(
+        document.getElementById('agents-list'),
+        document.getElementById('agents-meta'),
+        filterByScope(state.agents),
+        'No agent sessions in this scope.',
+      );
+    }
+
+    function renderIncidents() {
+      renderListPanel(
+        document.getElementById('incidents-list'),
+        document.getElementById('incidents-meta'),
+        filterByScope(state.incidents),
+        'No incidents in this scope.',
+      );
+    }
+
+    function renderTrend() {
+      const canvas = document.getElementById('trend-canvas');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (w === 0) return;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const data = state.trend;
+      if (!data.length) return;
+      const max = Math.max(...data);
+      const min = Math.min(...data);
+      const range = Math.max(1, max - min);
+      const padding = 6;
+      const stepX = (w - padding * 2) / Math.max(1, data.length - 1);
+
+      const primary = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#007aff';
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--primary-soft').trim() || 'rgba(0,122,255,0.08)';
+
+      ctx.beginPath();
+      data.forEach((v, i) => {
+        const x = padding + i * stepX;
+        const y = h - padding - ((v - min) / range) * (h - padding * 2);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      const lastX = padding + (data.length - 1) * stepX;
+      ctx.lineTo(lastX, h - padding);
+      ctx.lineTo(padding, h - padding);
+      ctx.closePath();
+      ctx.fillStyle = accent;
+      ctx.fill();
+
+      ctx.beginPath();
+      data.forEach((v, i) => {
+        const x = padding + i * stepX;
+        const y = h - padding - ((v - min) / range) * (h - padding * 2);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = primary;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      const lastY = h - padding - ((data[data.length - 1] - min) / range) * (h - padding * 2);
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 3, 0, Math.PI * 2);
+      ctx.fillStyle = primary;
+      ctx.fill();
+
+      const avg = (data.reduce((s, v) => s + v, 0) / data.length).toFixed(1);
+      document.getElementById('trend-today').textContent = data[data.length - 1];
+      document.getElementById('trend-avg').textContent = avg;
+      document.getElementById('trend-peak').textContent = max;
+    }
+
+    function renderPulse() {
+      const wrap = document.getElementById('pulse-grid');
+      wrap.innerHTML = state.pulse.map((tone, idx) => {
+        const days = state.pulse.length - idx;
+        const label = days === 1 ? 'today' : days + ' days ago';
+        return `<div class="pulse-cell" data-tone="${tone}" title="${escapeHtml(label)}: ${escapeHtml(tone)}"></div>`;
+      }).join('');
+      const bad = state.pulse.filter((t) => t === 'bad').length;
+      const warn = state.pulse.filter((t) => t === 'warn').length;
+      const meta = bad ? `${bad} red day${bad === 1 ? '' : 's'}` : warn ? `${warn} yellow day${warn === 1 ? '' : 's'}` : 'all green';
+      document.getElementById('pulse-meta').textContent = meta;
+    }
+
+    function renderNotes() {
+      const ta = document.getElementById('notes-text');
+      if (ta.value !== state.notes) ta.value = state.notes;
+    }
+
+    function renderScopeChips() {
+      document.querySelectorAll('#scope-filter .chip').forEach((b) => {
+        b.classList.toggle('active', b.dataset.scope === state.scope);
+      });
+    }
+
+    subscribe(['scope', 'prs', 'ci', 'agents', 'incidents', 'trend'], renderStatusStrip);
+    subscribe(['scope', 'prs', 'ci', 'agents', 'incidents'], renderOverview);
+    subscribe(['scope', 'prs'], renderPRs);
+    subscribe(['scope', 'ci'], renderCI);
+    subscribe(['scope', 'agents'], renderAgents);
+    subscribe(['scope', 'incidents'], renderIncidents);
+    subscribe(['trend'], renderTrend);
+    subscribe(['pulse'], renderPulse);
+    subscribe(['notes'], renderNotes);
+    subscribe(['scope'], renderScopeChips);
+
+    document.getElementById('scope-filter').addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      state.scope = btn.dataset.scope;
+      persist();
+    });
+
+    const notesTa = document.getElementById('notes-text');
+    notesTa.addEventListener('input', (e) => {
+      state.notes = e.target.value;
+      persist();
+    });
+
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      const next = state.trend.slice(1).concat(Math.max(0, Math.round(state.trend[state.trend.length - 1] + (Math.random() * 6 - 3))));
+      state.trend = next;
+      document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString();
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      if (!confirm('Clear notes and reset scope?')) return;
+      state.notes = '';
+      state.scope = 'all';
+      persist();
+    });
+
+    document.querySelectorAll('#section-nav a').forEach((a) => {
+      a.addEventListener('click', () => {
+        document.querySelectorAll('#section-nav a').forEach((x) => x.classList.toggle('active', x === a));
+      });
+    });
+
+    window.addEventListener('resize', renderTrend);
+  </script>
+</body>
+</html>

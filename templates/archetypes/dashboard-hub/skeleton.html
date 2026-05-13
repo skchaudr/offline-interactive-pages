@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Hub Skeleton</title>
+  <style>
+    :root {
+      --bg-color: #fbfbfa;
+      --surface-color: #ffffff;
+      --surface-raised: #ffffff;
+      --text-main: #1a1a1a;
+      --text-muted: #666666;
+      --text-faint: #999999;
+      --border-color: #eaeaea;
+      --primary-color: #007aff;
+      --primary-hover: #005bb5;
+      --primary-soft: rgba(0, 122, 255, 0.08);
+      --accent-color: #f5f5f5;
+      --code-bg: #f0f0f0;
+      --chip-bg: #e0e0e0;
+      --success-color: #34c759;
+      --success-soft: #e6ffe6;
+      --success-ink: #006600;
+      --warning-color: #ffcc00;
+      --warning-soft: #fff4cc;
+      --warning-ink: #7a5b00;
+      --error-color: #ff3b30;
+      --error-soft: #ffe6e6;
+      --error-ink: #cc0000;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-pill: 999px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --transition: 0.2s ease;
+      --transition-fast: 0.12s ease;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg-color: #0d0d0d;
+        --surface-color: #1a1a1a;
+        --surface-raised: #222222;
+        --text-main: #f5f5f5;
+        --text-muted: #a1a1a1;
+        --text-faint: #707070;
+        --border-color: #2a2a2a;
+        --primary-color: #0a84ff;
+        --primary-hover: #409cff;
+        --primary-soft: rgba(10, 132, 255, 0.14);
+        --accent-color: #2a2a2a;
+        --code-bg: #1f1f1f;
+        --chip-bg: #2f2f2f;
+        --success-soft: #103a1a;
+        --success-ink: #7be09a;
+        --warning-soft: #3a2e08;
+        --warning-ink: #ffd956;
+        --error-soft: #3a1212;
+        --error-ink: #ff8a82;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-stack);
+      background: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: var(--space-5);
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--space-5);
+    }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static !important; height: auto !important; } }
+    .sidebar {
+      position: sticky;
+      top: var(--space-5);
+      align-self: start;
+      height: calc(100vh - 3rem);
+      padding: var(--space-4);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+    .sidebar h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: var(--space-3); }
+    .sidebar nav { display: flex; flex-direction: column; gap: var(--space-1); }
+    .sidebar a {
+      padding: var(--space-2) var(--space-3);
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      transition: var(--transition-fast);
+    }
+    .sidebar a:hover { background: var(--accent-color); color: var(--text-main); }
+    .sidebar a.active { background: var(--primary-soft); color: var(--primary-color); }
+    main { display: flex; flex-direction: column; gap: var(--space-5); }
+    header.hub-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-3);
+    }
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    .status-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+    .stat {
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      min-width: 140px;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; margin-top: var(--space-2); }
+    .stat.good .stat-value { color: var(--success-color); }
+    .stat.warn .stat-value { color: var(--warning-color); }
+    .stat.bad .stat-value { color: var(--error-color); }
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-4);
+    }
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-5);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      scroll-margin-top: var(--space-5);
+    }
+    .panel header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-2);
+    }
+    .panel h3 { font-size: 1rem; font-weight: 600; }
+    .panel .meta { font-size: 0.8rem; color: var(--text-muted); }
+    .panel ul { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+    .panel li {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+    }
+    .panel li .label { color: var(--text-muted); }
+    .badge {
+      display: inline-block;
+      padding: 0.1em 0.6em;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-radius: var(--radius-pill);
+    }
+    .badge.good { background: var(--success-soft); color: var(--success-ink); }
+    .badge.warn { background: var(--warning-soft); color: var(--warning-ink); }
+    .badge.bad { background: var(--error-soft); color: var(--error-ink); }
+    .spark { width: 100%; height: 40px; display: block; }
+    .filter-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .filter-row button {
+      padding: var(--space-1) var(--space-3);
+      background: var(--accent-color);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-pill);
+      font: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .filter-row button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Sections</h2>
+      <nav id="section-nav">
+        <a href="#overview" class="active">Overview</a>
+        <a href="#queue">Queue</a>
+        <a href="#trend">Trend</a>
+        <a href="#notes">Notes</a>
+      </nav>
+    </aside>
+
+    <main>
+      <header class="hub-header">
+        <div>
+          <h1>Dashboard hub skeleton</h1>
+          <p class="meta" style="color: var(--text-muted)">Last refresh: <span id="last-refresh">just now</span></p>
+        </div>
+        <div class="filter-row" id="scope-filter">
+          <button class="active" data-scope="all">All</button>
+          <button data-scope="mine">Mine</button>
+          <button data-scope="team">Team</button>
+        </div>
+      </header>
+
+      <section class="status-strip" id="status-strip"></section>
+
+      <section id="overview" class="panel">
+        <header><h3>Overview</h3><span class="meta" id="overview-meta">0 items</span></header>
+        <ul id="overview-list"></ul>
+      </section>
+
+      <section class="panel-grid">
+        <section id="queue" class="panel">
+          <header><h3>Queue</h3><span class="meta" id="queue-meta">0</span></header>
+          <ul id="queue-list"></ul>
+        </section>
+
+        <section id="trend" class="panel">
+          <header><h3>Trend</h3><span class="meta">last 14 ticks</span></header>
+          <canvas id="trend-spark" class="spark" width="600" height="40" aria-label="Sparkline of recent values"></canvas>
+          <p class="meta">Current: <strong id="trend-current">0</strong></p>
+        </section>
+
+        <section id="notes" class="panel">
+          <header><h3>Notes</h3><span class="meta">persisted locally</span></header>
+          <textarea id="notes-text" rows="6" style="width:100%;padding:var(--space-3);background:var(--bg-color);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-main);font:inherit;resize:vertical"></textarea>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    function createStore(initial) {
+      const subs = new Map();
+      const notify = (k, v) => { const s = subs.get(k); if (s) for (const fn of s) fn(v, k); };
+      const state = new Proxy({ ...initial }, {
+        set(t, k, v) { if (t[k] !== v) { t[k] = v; notify(k, v); } return true; },
+      });
+      function subscribe(keys, fn) {
+        const list = Array.isArray(keys) ? keys : [keys];
+        for (const k of list) { if (!subs.has(k)) subs.set(k, new Set()); subs.get(k).add(fn); }
+        fn();
+        return () => { for (const k of list) subs.get(k)?.delete(fn); };
+      }
+      return { state, subscribe };
+    }
+
+    const STORAGE_KEY = 'dashboard-hub-skeleton';
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+    const SEED = {
+      stats: [
+        { id: 'active', label: 'Active', value: 12, tone: 'good' },
+        { id: 'attention', label: 'Needs attention', value: 3, tone: 'warn' },
+        { id: 'failing', label: 'Failing', value: 1, tone: 'bad' },
+      ],
+      overview: [
+        { id: 'o1', label: 'Auth service', status: 'good', owner: 'mine' },
+        { id: 'o2', label: 'Billing worker', status: 'warn', owner: 'team' },
+        { id: 'o3', label: 'Email queue', status: 'good', owner: 'team' },
+      ],
+      queue: [
+        { id: 'q1', label: 'PR #482 review', status: 'warn', owner: 'mine' },
+        { id: 'q2', label: 'Incident 73 retro', status: 'good', owner: 'mine' },
+        { id: 'q3', label: 'Release 1.4 cut', status: 'good', owner: 'team' },
+      ],
+      trend: [4, 5, 5, 6, 4, 7, 8, 6, 7, 9, 8, 10, 11, 12],
+    };
+
+    const { state, subscribe } = createStore({
+      scope: 'all',
+      stats: SEED.stats,
+      overview: SEED.overview,
+      queue: SEED.queue,
+      trend: SEED.trend,
+      notes: saved.notes || '',
+    });
+
+    function filterByScope(list) {
+      return state.scope === 'all' ? list : list.filter((it) => it.owner === state.scope);
+    }
+
+    function renderStats() {
+      const strip = document.getElementById('status-strip');
+      strip.innerHTML = state.stats.map((s) => `
+        <div class="stat ${s.tone}">
+          <div class="stat-label">${s.label}</div>
+          <div class="stat-value">${s.value}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderListPanel(listEl, metaEl, items) {
+      metaEl.textContent = items.length + ' item' + (items.length === 1 ? '' : 's');
+      listEl.innerHTML = items.map((it) => `
+        <li>
+          <span class="label">${it.label}</span>
+          <span class="badge ${it.status}">${it.status}</span>
+        </li>
+      `).join('');
+    }
+
+    function renderOverview() {
+      renderListPanel(
+        document.getElementById('overview-list'),
+        document.getElementById('overview-meta'),
+        filterByScope(state.overview),
+      );
+    }
+
+    function renderQueue() {
+      renderListPanel(
+        document.getElementById('queue-list'),
+        document.getElementById('queue-meta'),
+        filterByScope(state.queue),
+      );
+    }
+
+    function renderTrend() {
+      const canvas = document.getElementById('trend-spark');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const data = state.trend;
+      if (!data.length) return;
+      const max = Math.max(...data);
+      const min = Math.min(...data);
+      const range = Math.max(1, max - min);
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#007aff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      data.forEach((v, i) => {
+        const x = (i / (data.length - 1)) * (w - 4) + 2;
+        const y = h - 2 - ((v - min) / range) * (h - 4);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      document.getElementById('trend-current').textContent = data[data.length - 1];
+    }
+
+    function renderNotes() {
+      const ta = document.getElementById('notes-text');
+      if (ta.value !== state.notes) ta.value = state.notes;
+    }
+
+    subscribe(['stats'], renderStats);
+    subscribe(['overview', 'scope'], renderOverview);
+    subscribe(['queue', 'scope'], renderQueue);
+    subscribe(['trend'], renderTrend);
+    subscribe(['notes'], renderNotes);
+
+    document.getElementById('scope-filter').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      document.querySelectorAll('#scope-filter button').forEach((b) => b.classList.toggle('active', b === btn));
+      state.scope = btn.dataset.scope;
+    });
+
+    document.getElementById('notes-text').addEventListener('input', (e) => {
+      state.notes = e.target.value;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ notes: state.notes }));
+    });
+
+    document.querySelectorAll('#section-nav a').forEach((a) => {
+      a.addEventListener('click', () => {
+        document.querySelectorAll('#section-nav a').forEach((x) => x.classList.toggle('active', x === a));
+      });
+    });
+
+    window.addEventListener('resize', renderTrend);
+  </script>
+</body>
+</html>
