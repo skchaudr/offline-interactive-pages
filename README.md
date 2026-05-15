@@ -61,6 +61,7 @@ pages/
   ...
   008-agent-output-triage-board/
   009-developer-command-center/
+  010-neoobsidian-drill-console/
 ```
 
 Each page contains:
