@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo-Obsidian Drill Console</title>
+    <style>
+        :root {
+            /* Light mode variables */
+            --bg-color: #fcfcfc;
+            --text-color: #333333;
+            --surface-color: #ffffff;
+            --surface-raised: #f8fafc;
+            --border-color: #e5e7eb;
+            --primary-color: #0ea5e9;
+            --secondary-color: #64748b;
+            --accent-color: #8b5cf6;
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --code-bg: #f1f5f9;
+            --chip-bg: #e2e8f0;
+            --font-sys: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                /* Dark mode variables */
+                --bg-color: #0f172a;
+                --text-color: #f8fafc;
+                --surface-color: #1e293b;
+                --surface-raised: #334155;
+                --border-color: #334155;
+                --primary-color: #38bdf8;
+                --secondary-color: #94a3b8;
+                --accent-color: #a78bfa;
+                --danger-color: #f87171;
+                --success-color: #4ade80;
+                --code-bg: #0f172a;
+                --chip-bg: #475569;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sys);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .mission {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; }
+
+        code {
+            font-family: var(--font-mono);
+            background-color: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Stack Ladder Specifics */
+        .stack-ladder {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .ladder-step {
+            display: flex;
+            align-items: center;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .ladder-step::before {
+            content: '';
+            position: absolute;
+            left: 2rem;
+            top: -1rem;
+            width: 2px;
+            height: 1rem;
+            background-color: var(--border-color);
+        }
+
+        .ladder-step:first-child::before {
+            display: none;
+        }
+
+        .ladder-step.active-layer {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        .ladder-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            background-color: var(--chip-bg);
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .ladder-step.active-layer .ladder-number {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .ladder-content h4 {
+            margin-bottom: 0.2rem;
+            font-size: 1.1rem;
+        }
+
+        .ladder-content p {
+            margin-bottom: 0;
+            color: var(--secondary-color);
+            font-size: 0.95rem;
+        }
+
+        /* Decoder Specifics */
+        .decoder-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; /* Pill shape */
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .filter-btn:hover {
+            background-color: var(--surface-raised);
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .decoder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .key-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .key-card.hidden {
+            display: none;
+        }
+
+        .key-combo {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .key-combo code {
+            border: none;
+            background: none;
+            padding: 0;
+        }
+
+        .key-desc {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        /* Drill Board Specifics */
+        .drill-board {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .drill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .drill-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .drill-checkbox {
+            position: relative;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+        }
+
+        .drill-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 24px;
+            width: 24px;
+            background-color: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .drill-checkbox:hover input ~ .checkmark {
+            border-color: var(--primary-color);
+        }
+
+        .drill-checkbox input:checked ~ .checkmark {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 8px;
+            top: 4px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .drill-checkbox input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .drill-card.completed {
+            opacity: 0.7;
+            background-color: var(--surface-raised);
+        }
+
+        .drill-card.completed .drill-title {
+            text-decoration: line-through;
+            color: var(--secondary-color);
+        }
+
+        .drill-goal, .drill-why {
+            margin-bottom: 0.75rem;
+        }
+
+        .drill-steps ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .drill-steps li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Translator Specifics */
+        .translator-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .translator-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .translator-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .friction-col {
+            flex: 1;
+            font-style: italic;
+            color: var(--danger-color);
+        }
+
+        .arrow-col {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .solution-col {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        /* Plan Specifics */
+        .plan-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .plan-day {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            background-color: var(--surface-raised);
+        }
+
+        .day-label {
+            font-weight: bold;
+            color: var(--primary-color);
+            width: 4rem;
+        }
+
+        .day-task {
+            flex: 1;
+        }
+
+        /* Checklist Specifics */
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .checklist-card ul {
+            margin-left: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .checklist-card li {
+            margin-bottom: 0.5rem;
+        }
+
+        .checklist-card.keep h3 { color: var(--success-color); }
+        .checklist-card.ignore h3 { color: var(--danger-color); }
+        .checklist-card.evaluate h3 { color: var(--accent-color); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Neo-Obsidian Drill Console</h1>
+        <p class="mission">Obsidian knowledge + Neovim repetition = practical editor fluency.</p>
+    </header>
+
+    <section id="hero">
+        <div class="card">
+            <p>Welcome to the training cockpit. You understand Obsidian deeply. You're starting out with LazyVim, but the sheer volume of keymaps and plugins feels overwhelming.</p>
+            <p>This page bridges the gap. We will translate your existing mental models of markdown vaults into concrete, daily Neovim reps. </p>
+            <p>We treat Neovim as a lighter-weight alternative to the Obsidian Electron app. Focus on daily reps instead of abstract Vim drills.</p>
+        </div>
+    </section>
+
+    <section id="stack-ladder">
+        <h2>The Stack Ladder</h2>
+        <p>To master Neovim for knowledge work, learn the layers in this specific order. Do not try to learn everything at once. Notably, the <code>obsidian.nvim</code> plugin is an enhancement layer at the top, not the foundational layer.</p>
+
+        <div class="stack-ladder">
+            <div class="ladder-step active-layer">
+                <div class="ladder-number">1</div>
+                <div class="ladder-content">
+                    <h4>Neovim fundamentals</h4>
+                    <p>Basic movements, modes (Insert, Normal, Visual), opening/saving/quitting.</p>
+                </div>
+            </div>
+            <div class="ladder-step active-layer">
+                <div class="ladder-number">2</div>
+                <div class="ladder-content">
+                    <h4>Markdown files</h4>
+                    <p>Editing text, navigating headings, and understanding how Neovim sees plain text files.</p>
+                </div>
+            </div>
+            <div class="ladder-step active-layer">
+                <div class="ladder-number">3</div>
+                <div class="ladder-content">
+                    <h4>Obsidian vault structure</h4>
+                    <p>Navigating directories, grepping across folders, finding specific notes.</p>
+                </div>
+            </div>
+            <div class="ladder-step active-layer">
+                <div class="ladder-number">4</div>
+                <div class="ladder-content">
+                    <h4>LazyVim conveniences</h4>
+                    <p>Using the core Which-Key maps (<code>&lt;leader&gt;f</code>, <code>&lt;leader&gt;s</code>) to speed up vault operations.</p>
+                </div>
+            </div>
+            <div class="ladder-step">
+                <div class="ladder-number">5</div>
+                <div class="ladder-content">
+                    <h4>obsidian.nvim (Later Layer)</h4>
+                    <p>Following links, templates, backlinks. Do this <em>after</em> steps 1-4 are muscle memory.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="which-key-decoder">
+        <h2>Which-Key Decoder</h2>
+        <p>LazyVim comes with dozens of keymaps. You don't need most of them for Obsidian editing yet. Filter the view below to see what you actually need to memorize.</p>
+
+        <div class="decoder-controls">
+            <button class="filter-btn active" data-filter="core">Core Now</button>
+            <button class="filter-btn" data-filter="ignore">Ignore For Now</button>
+            <button class="filter-btn" data-filter="clutter">Possible Clutter</button>
+        </div>
+
+        <div class="decoder-grid">
+            <!-- Core Now -->
+            <div class="key-card" data-category="core">
+                <div class="key-combo"><code>&lt;leader&gt; e</code></div>
+                <div class="key-desc">File explorer / file panel</div>
+            </div>
+            <div class="key-card" data-category="core">
+                <div class="key-combo"><code>&lt;leader&gt; f</code></div>
+                <div class="key-desc">File / find</div>
+            </div>
+            <div class="key-card" data-category="core">
+                <div class="key-combo"><code>&lt;leader&gt; /</code></div>
+                <div class="key-desc">Grep root directory</div>
+            </div>
+            <div class="key-card" data-category="core">
+                <div class="key-combo"><code>&lt;leader&gt; b</code></div>
+                <div class="key-desc">Buffers</div>
+            </div>
+            <div class="key-card" data-category="core">
+                <div class="key-combo"><code>&lt;leader&gt; w</code></div>
+                <div class="key-desc">Windows</div>
+            </div>
+            <div class="key-card" data-category="core">
+                <div class="key-combo"><code>&lt;leader&gt; q</code></div>
+                <div class="key-desc">Quit / session</div>
+            </div>
+            <div class="key-card" data-category="core">
+                <div class="key-combo"><code>&lt;leader&gt; g</code></div>
+                <div class="key-desc">Git</div>
+            </div>
+            <div class="key-card" data-category="core">
+                <div class="key-combo"><code>&lt;leader&gt; x</code></div>
+                <div class="key-desc">Diagnostics / quickfix</div>
+            </div>
+            <div class="key-card" data-category="core">
+                <div class="key-combo"><code>&lt;leader&gt; ?</code></div>
+                <div class="key-desc">Buffer keymaps</div>
+            </div>
+
+            <!-- Ignore for now -->
+            <div class="key-card hidden" data-category="ignore">
+                <div class="key-combo"><code>&lt;leader&gt; a</code></div>
+                <div class="key-desc">AI</div>
+            </div>
+            <div class="key-card hidden" data-category="ignore">
+                <div class="key-combo"><code>&lt;leader&gt; c</code></div>
+                <div class="key-desc">Code</div>
+            </div>
+            <div class="key-card hidden" data-category="ignore">
+                <div class="key-combo"><code>&lt;leader&gt; d</code></div>
+                <div class="key-desc">Debug</div>
+            </div>
+            <div class="key-card hidden" data-category="ignore">
+                <div class="key-combo"><code>&lt;leader&gt; h</code></div>
+                <div class="key-desc">Harpoon</div>
+            </div>
+            <div class="key-card hidden" data-category="ignore">
+                <div class="key-combo"><code>&lt;leader&gt; s</code></div>
+                <div class="key-desc">Search submenu</div>
+            </div>
+            <div class="key-card hidden" data-category="ignore">
+                <div class="key-combo"><code>&lt;leader&gt; u</code></div>
+                <div class="key-desc">UI toggles</div>
+            </div>
+            <div class="key-card hidden" data-category="ignore">
+                <div class="key-combo"><code>&lt;leader&gt; P</code></div>
+                <div class="key-desc">Periodic notes</div>
+            </div>
+
+            <!-- Possible Clutter -->
+            <div class="key-card hidden" data-category="clutter">
+                <div class="key-combo"><code>Lazy</code></div>
+                <div class="key-desc">Plugin manager UI</div>
+            </div>
+            <div class="key-card hidden" data-category="clutter">
+                <div class="key-combo"><code>Changelog</code></div>
+                <div class="key-desc">LazyVim Changelog</div>
+            </div>
+            <div class="key-card hidden" data-category="clutter">
+                <div class="key-combo"><code>Notification History</code></div>
+                <div class="key-desc">Snafu UI history</div>
+            </div>
+            <div class="key-card hidden" data-category="clutter">
+                <div class="key-combo"><code>Keywordprg</code></div>
+                <div class="key-desc">Man pages / docs</div>
+            </div>
+            <div class="key-card hidden" data-category="clutter">
+                <div class="key-combo"><code>Scratch Buffer</code></div>
+                <div class="key-desc">Temporary buffer</div>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="daily-drill-board">
+        <h2>Daily Drill Board</h2>
+        <p>Do these concrete exercises daily until they are muscle memory.</p>
+
+        <div class="drill-board">
+            <!-- Drill 1 -->
+            <div class="card drill-card" data-drill="1">
+                <div class="drill-header">
+                    <div class="drill-title">Drill 1: Open vault from terminal</div>
+                    <label class="drill-checkbox">
+                        <input type="checkbox" aria-label="Mark drill 1 as complete">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="drill-goal"><strong>Goal:</strong> Enter your vault without using the Obsidian app.</div>
+                <div class="drill-steps">
+                    <ol>
+                        <li><code>cd ~/path/to/vault</code></li>
+                        <li><code>nvim .</code></li>
+                        <li>Find and open a note from the file explorer.</li>
+                    </ol>
+                </div>
+                <div class="drill-why"><strong>Why:</strong> This replaces clicking the Obsidian desktop icon.</div>
+            </div>
+
+            <!-- Drill 2 -->
+            <div class="card drill-card" data-drill="2">
+                <div class="drill-header">
+                    <div class="drill-title">Drill 2: Find a note</div>
+                    <label class="drill-checkbox">
+                        <input type="checkbox" aria-label="Mark drill 2 as complete">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="drill-goal"><strong>Goal:</strong> Jump to a specific file instantly.</div>
+                <div class="drill-steps">
+                    <ol>
+                        <li>Press <code>&lt;leader&gt; f</code> (Find file)</li>
+                        <li>Type part of the note's name</li>
+                        <li>Press <code>Enter</code> to open it</li>
+                        <li>Press <code>&lt;leader&gt; b</code> to return to previous buffer</li>
+                    </ol>
+                </div>
+                <div class="drill-why"><strong>Why:</strong> Replaces Obsidian's Quick Switcher (Ctrl+O).</div>
+            </div>
+
+            <!-- Drill 3 -->
+            <div class="card drill-card" data-drill="3">
+                <div class="drill-header">
+                    <div class="drill-title">Drill 3: Grep the vault</div>
+                    <label class="drill-checkbox">
+                        <input type="checkbox" aria-label="Mark drill 3 as complete">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="drill-goal"><strong>Goal:</strong> Search for text inside all your notes.</div>
+                <div class="drill-steps">
+                    <ol>
+                        <li>Press <code>&lt;leader&gt; /</code> (Grep root dir)</li>
+                        <li>Type a tag (e.g. <code>#project</code>) or a phrase</li>
+                        <li>Select a match and hit <code>Enter</code></li>
+                    </ol>
+                </div>
+                <div class="drill-why"><strong>Why:</strong> Replaces Obsidian's global search (Ctrl+Shift+F).</div>
+            </div>
+
+            <!-- Drill 4 -->
+            <div class="card drill-card" data-drill="4">
+                <div class="drill-header">
+                    <div class="drill-title">Drill 4: Edit frontmatter</div>
+                    <label class="drill-checkbox">
+                        <input type="checkbox" aria-label="Mark drill 4 as complete">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="drill-goal"><strong>Goal:</strong> Update metadata quickly.</div>
+                <div class="drill-steps">
+                    <ol>
+                        <li>Press <code>gg</code> to jump to the top of the file</li>
+                        <li>Move inside the YAML frontmatter block</li>
+                        <li>Change a status or tag, e.g. <code>status: draft</code></li>
+                        <li>Type <code>:w</code> and <code>Enter</code> to save</li>
+                    </ol>
+                </div>
+                <div class="drill-why"><strong>Why:</strong> Markdown metadata is powerful, but only if it's easy to edit.</div>
+            </div>
+
+            <!-- Drill 5 -->
+            <div class="card drill-card" data-drill="5">
+                <div class="drill-header">
+                    <div class="drill-title">Drill 5: Wiki-link surgery</div>
+                    <label class="drill-checkbox">
+                        <input type="checkbox" aria-label="Mark drill 5 as complete">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="drill-goal"><strong>Goal:</strong> Edit existing links.</div>
+                <div class="drill-steps">
+                    <ol>
+                        <li>Find a <code>[[wiki link]]</code></li>
+                        <li>Move cursor inside the brackets</li>
+                        <li>Use <code>ci[</code> to change everything inside the brackets, or <code>cw</code> to change one word</li>
+                    </ol>
+                </div>
+                <div class="drill-why"><strong>Why:</strong> Normal mode text objects make editing links faster than using a mouse.</div>
+            </div>
+
+            <!-- Drill 6 -->
+            <div class="card drill-card" data-drill="6">
+                <div class="drill-header">
+                    <div class="drill-title">Drill 6: Split-based reading</div>
+                    <label class="drill-checkbox">
+                        <input type="checkbox" aria-label="Mark drill 6 as complete">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="drill-goal"><strong>Goal:</strong> View two notes side-by-side.</div>
+                <div class="drill-steps">
+                    <ol>
+                        <li>Press <code>&lt;leader&gt; w v</code> to split vertically</li>
+                        <li>Use <code>&lt;leader&gt; f</code> to open a different note in the new split</li>
+                        <li>Press <code>&lt;C-h&gt;</code> and <code>&lt;C-l&gt;</code> to move between them</li>
+                        <li>Press <code>&lt;leader&gt; w c</code> or <code>:q</code> to close the split</li>
+                    </ol>
+                </div>
+                <div class="drill-why"><strong>Why:</strong> Essential for synthesizing ideas from multiple sources.</div>
+            </div>
+
+            <!-- Drill 7 -->
+            <div class="card drill-card" data-drill="7">
+                <div class="drill-header">
+                    <div class="drill-title">Drill 7: Quickfix search review</div>
+                    <label class="drill-checkbox">
+                        <input type="checkbox" aria-label="Mark drill 7 as complete">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="drill-goal"><strong>Goal:</strong> Review multiple search results sequentially.</div>
+                <div class="drill-steps">
+                    <ol>
+                        <li>Grep for something using <code>&lt;leader&gt; /</code></li>
+                        <li>Instead of hitting Enter on one result, press <code>&lt;C-q&gt;</code> to send all results to Quickfix</li>
+                        <li>Use <code>&lt;leader&gt; x q</code> to open the list</li>
+                        <li>Use <code>]q</code> and <code>[q</code> to jump between matches</li>
+                    </ol>
+                </div>
+                <div class="drill-why"><strong>Why:</strong> Crucial for refactoring tags or reviewing all notes on a topic.</div>
+            </div>
+
+            <!-- Drill 8 -->
+            <div class="card drill-card" data-drill="8">
+                <div class="drill-header">
+                    <div class="drill-title">Drill 8: Daily note rep</div>
+                    <label class="drill-checkbox">
+                        <input type="checkbox" aria-label="Mark drill 8 as complete">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="drill-goal"><strong>Goal:</strong> A full workflow loop.</div>
+                <div class="drill-steps">
+                    <ol>
+                        <li>Create or open today's daily note (e.g. <code>2023-10-27.md</code>)</li>
+                        <li>Add one log line: <code>- 10:00 AM: Did the Neovim drills</code></li>
+                        <li>Add one task: <code>- [ ] Review notes later</code></li>
+                        <li>Type <code>:wq</code> to save and quit</li>
+                    </ol>
+                </div>
+                <div class="drill-why"><strong>Why:</strong> Proves you can use Neovim for actual daily work.</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="friction-translator">
+        <h2>Friction-to-Rep Translator</h2>
+        <p>When you feel frustrated, you are usually missing a specific mental model translation. Use this lookup table to find the drill that fixes the friction.</p>
+
+        <div class="card translator-card">
+            <div class="translator-row">
+                <div class="friction-col">"I don't know what key to use"</div>
+                <div class="arrow-col">→</div>
+                <div class="solution-col">Open which-key (<code>&lt;leader&gt;</code>) and inspect only Tier 1</div>
+            </div>
+            <div class="translator-row">
+                <div class="friction-col">"I lost the file I was editing"</div>
+                <div class="arrow-col">→</div>
+                <div class="solution-col">Do <strong>Drill 2 (Buffers)</strong> — <code>&lt;leader&gt; b b</code></div>
+            </div>
+            <div class="translator-row">
+                <div class="friction-col">"I need to find a thought across the vault"</div>
+                <div class="arrow-col">→</div>
+                <div class="solution-col">Do <strong>Drill 3 (Grep)</strong> — <code>&lt;leader&gt; /</code></div>
+            </div>
+            <div class="translator-row">
+                <div class="friction-col">"Obsidian is too heavy right now"</div>
+                <div class="arrow-col">→</div>
+                <div class="solution-col">Do <strong>Drill 1 (Terminal open)</strong></div>
+            </div>
+            <div class="translator-row">
+                <div class="friction-col">"obsidian.nvim is broken/confusing"</div>
+                <div class="arrow-col">→</div>
+                <div class="solution-col">Ignore it. Stick to plain markdown workflows.</div>
+            </div>
+            <div class="translator-row">
+                <div class="friction-col">"LazyVim feels too magical"</div>
+                <div class="arrow-col">→</div>
+                <div class="solution-col">Decode one leader group at a time.</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="obsidian-nvim-layer">
+        <h2>The <code>obsidian.nvim</code> Later Layer</h2>
+        <p>This plugin is excellent, but it is <strong>not required</strong> for immediate Neovim fluency. It is valuable later for following links, backlinks, daily note creation, and templates.</p>
+        <p>Only map these once standard markdown editing is effortless.</p>
+
+        <div class="card">
+            <ul>
+                <li><code>&lt;leader&gt; oo</code> — open current note in Obsidian app</li>
+                <li><code>&lt;leader&gt; on</code> — new note</li>
+                <li><code>&lt;leader&gt; od</code> — daily note</li>
+                <li><code>&lt;leader&gt; os</code> — search notes</li>
+                <li><code>&lt;leader&gt; ol</code> — follow link</li>
+                <li><code>&lt;leader&gt; ob</code> — backlinks</li>
+                <li><code>&lt;leader&gt; ot</code> — tags</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="starter-plan">
+        <h2>Seven-Day Starter Plan</h2>
+        <p>Follow this exact sequence. One new concept per day.</p>
+
+        <div class="card plan-card">
+            <div class="plan-day">
+                <div class="day-label">Day 1</div>
+                <div class="day-task">File explorer + open/save/quit (Drill 1)</div>
+            </div>
+            <div class="plan-day">
+                <div class="day-label">Day 2</div>
+                <div class="day-task">File finder + buffers (Drill 2)</div>
+            </div>
+            <div class="plan-day">
+                <div class="day-label">Day 3</div>
+                <div class="day-task">Grep across vault (Drill 3)</div>
+            </div>
+            <div class="plan-day">
+                <div class="day-label">Day 4</div>
+                <div class="day-task">Windows/splits (Drill 6)</div>
+            </div>
+            <div class="plan-day">
+                <div class="day-label">Day 5</div>
+                <div class="day-task">Frontmatter editing (Drill 4)</div>
+            </div>
+            <div class="plan-day">
+                <div class="day-label">Day 6</div>
+                <div class="day-task">Wiki-link editing (Drill 5)</div>
+            </div>
+            <div class="plan-day">
+                <div class="day-label">Day 7</div>
+                <div class="day-task">Daily note workflow + review (Drill 8)</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="strip-checklist">
+        <h2>"Strip Later" Checklist</h2>
+        <p>LazyVim is a starting point. As you grow comfortable, disable plugins you don't use. Here is a guide on what to keep, ignore, or evaluate later.</p>
+
+        <div class="checklist-grid">
+            <div class="card checklist-card keep">
+                <h3>Keep</h3>
+                <ul>
+                    <li>File navigation</li>
+                    <li>Grep</li>
+                    <li>Buffers</li>
+                    <li>Windows</li>
+                    <li>Git</li>
+                    <li>Diagnostics</li>
+                </ul>
+            </div>
+            <div class="card checklist-card ignore">
+                <h3>Ignore (Disable)</h3>
+                <ul>
+                    <li>Debuggers</li>
+                    <li>AI assistants</li>
+                    <li>Extra UI toggles</li>
+                    <li>Plugin/admin surfaces</li>
+                </ul>
+            </div>
+            <div class="card checklist-card evaluate">
+                <h3>Evaluate Later</h3>
+                <ul>
+                    <li>Harpoon</li>
+                    <li><code>obsidian.nvim</code></li>
+                    <li>Advanced search plugins</li>
+                    <li>Periodic note integrations</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Decoder logic
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const keyCards = document.querySelectorAll('.key-card');
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const filter = btn.getAttribute('data-filter');
+                    keyCards.forEach(card => {
+                        if (card.getAttribute('data-category') === filter) {
+                            card.classList.remove('hidden');
+                        } else {
+                            card.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // Drill board logic
+            const drills = document.querySelectorAll('.drill-card');
+
+            // Load state
+            drills.forEach(drill => {
+                const id = drill.getAttribute('data-drill');
+                const checkbox = drill.querySelector('input[type="checkbox"]');
+                const isCompleted = localStorage.getItem(`drill-${id}`) === 'true';
+
+                if (isCompleted) {
+                    checkbox.checked = true;
+                    drill.classList.add('completed');
+                }
+
+                checkbox.addEventListener('change', (e) => {
+                    const checked = e.target.checked;
+                    localStorage.setItem(`drill-${id}`, checked);
+                    if (checked) {
+                        drill.classList.add('completed');
+                    } else {
+                        drill.classList.remove('completed');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
