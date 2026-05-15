@@ -43,14 +43,68 @@
             padding: 0;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: var(--font-sys);
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
             padding: 2rem 1rem;
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toc {
+            position: sticky;
+            top: 2rem;
+            width: 250px;
+            flex-shrink: 0;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            display: block;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .toc a {
+            display: block;
+            text-decoration: none;
+            color: var(--secondary-color);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: var(--text-color);
+        }
+
+        .toc a.active {
+            color: var(--primary-color);
+            font-weight: 600;
+            border-left: 2px solid var(--primary-color);
+            padding-left: 0.5rem;
+            margin-left: -0.5rem;
         }
 
         h1, h2, h3 {
@@ -238,6 +292,11 @@
         }
 
         /* Responsive Design */
+        @media (max-width: 1024px) {
+            body { flex-direction: column; }
+            .toc { position: static; width: 100%; margin-bottom: 2rem; }
+        }
+
         @media (max-width: 768px) {
             body { padding: 1rem; }
             h1 { font-size: 2rem; }
@@ -246,6 +305,15 @@
     </style>
 </head>
 <body>
+    <nav id="toc" class="toc">
+        <h3>You are here</h3>
+        <a href="#mental-model">Mental Model</a>
+        <a href="#lazyvim-layer">LazyVim Layer</a>
+        <a href="#workflows">Core Workflows</a>
+        <a href="#friction-points">Friction Points</a>
+        <a href="#interactive-troubleshooting">Interactive Troubleshooting</a>
+    </nav>
+    <div class="content-wrapper">
     <header>
         <h1>NeoVim & LazyVim Interactive Lab</h1>
         <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
@@ -378,6 +446,7 @@
         </section>
 
     </main>
+    </div>
 
     <script>
         // Accordion Logic
@@ -492,6 +561,21 @@
 
             // Init
             loadScenario(0);
+
+            // Table of Contents Active State Logic
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        document.querySelectorAll('.toc a').forEach(link => link.classList.remove('active'));
+                        const activeLink = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
+                        if (activeLink) activeLink.classList.add('active');
+                    }
+                });
+            }, { rootMargin: '-20% 0px -80% 0px' });
+
+            document.querySelectorAll('section[id]').forEach(section => {
+                observer.observe(section);
+            });
         });
     </script>
 </body>
