@@ -49,8 +49,72 @@
             color: var(--text-color);
             line-height: 1.6;
             padding: 2rem 1rem;
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
+        }
+
+        .layout-wrapper {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .toc {
+            position: sticky;
+            top: 2rem;
+            width: 250px;
+            flex-shrink: 0;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc a {
+            text-decoration: none;
+            color: var(--secondary-color);
+            font-size: 0.95rem;
+            transition: color 0.2s, background-color 0.2s;
+            display: block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            border-left: 2px solid transparent;
+        }
+
+        .toc a:hover {
+            color: var(--primary-color);
+            background-color: rgba(14, 165, 233, 0.05);
+        }
+
+        .toc a.toc-active {
+            color: var(--primary-color);
+            font-weight: 600;
+            border-left-color: var(--primary-color);
+            background-color: rgba(14, 165, 233, 0.05);
+        }
+
+        main {
+            flex-grow: 1;
+            min-width: 0; /* Prevents flex item from overflowing */
         }
 
         h1, h2, h3 {
@@ -242,6 +306,14 @@
             body { padding: 1rem; }
             h1 { font-size: 2rem; }
             h2 { font-size: 1.5rem; }
+            .layout-wrapper {
+                flex-direction: column;
+            }
+            .toc {
+                position: static;
+                width: 100%;
+                margin-bottom: 2rem;
+            }
         }
     </style>
 </head>
@@ -251,8 +323,20 @@
         <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
     </header>
 
-    <main id="content">
-        <section id="mental-model" class="card">
+    <div class="layout-wrapper">
+        <nav class="toc" aria-label="Table of Contents">
+            <h3>You are here</h3>
+            <ul>
+                <li><a href="#mental-model">Mental Model</a></li>
+                <li><a href="#lazyvim-layer">LazyVim Layer</a></li>
+                <li><a href="#workflows">Core Workflows</a></li>
+                <li><a href="#friction-points">Friction Points</a></li>
+                <li><a href="#interactive-troubleshooting">Interactive Troubleshooting</a></li>
+            </ul>
+        </nav>
+
+        <main id="content">
+            <section id="mental-model" class="card">
             <h2>The NeoVim Mental Model</h2>
             <p>Unlike many modern editors that use a simple "one file = one tab" model, NeoVim separates the concepts of what you are editing from how you are viewing it.</p>
 
@@ -375,13 +459,41 @@
                 <div id="quiz-feedback" class="feedback"></div>
                 <button id="next-btn" class="chip" style="margin-top: 1rem; display: none; cursor: pointer; background: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem;">Next Scenario</button>
             </div>
-        </section>
+            </section>
 
-    </main>
+        </main>
+    </div>
 
     <script>
         // Accordion Logic
         document.addEventListener('DOMContentLoaded', () => {
+            // TOC Intersection Observer
+            const sections = document.querySelectorAll('main section[id]');
+            const tocLinks = document.querySelectorAll('.toc a');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.5
+            };
+
+            const observerCallback = (entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        tocLinks.forEach(link => {
+                            link.classList.remove('toc-active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('toc-active');
+                            }
+                        });
+                    }
+                });
+            };
+
+            const observer = new IntersectionObserver(observerCallback, observerOptions);
+            sections.forEach(section => observer.observe(section));
+
             const accordions = document.querySelectorAll('.accordion');
             accordions.forEach(acc => {
                 acc.addEventListener('click', function() {
