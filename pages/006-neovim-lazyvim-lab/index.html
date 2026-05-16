@@ -237,16 +237,91 @@
             border: 1px solid var(--danger-color);
         }
 
+        /* Utility Row */
+        .utility-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        .badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .utility-btn {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: var(--font-sys);
+        }
+
+        .utility-btn:hover {
+            background-color: var(--code-bg);
+            border-color: var(--secondary-color);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             body { padding: 1rem; }
             h1 { font-size: 2rem; }
             h2 { font-size: 1.5rem; }
         }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+                padding: 0;
+            }
+            .utility-row, .interactive-section, .accordion:after {
+                display: none !important;
+            }
+            .card {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                page-break-inside: avoid;
+            }
+            .panel {
+                max-height: none !important;
+                border: 1px solid #ccc;
+                border-top: none;
+                padding: 1rem;
+                display: block !important;
+            }
+            .accordion {
+                border: 1px solid #ccc;
+            }
+            pre, code {
+                border: 1px solid #ccc;
+                background-color: #f9f9f9;
+            }
+            a { text-decoration: none; color: black; }
+        }
     </style>
 </head>
 <body>
     <header>
+        <div class="utility-row">
+            <span class="badge">Offline Lab</span>
+            <button class="utility-btn" id="print-btn">Print / Save as PDF</button>
+            <button class="utility-btn" id="expand-all-btn">Expand all friction points</button>
+            <button class="utility-btn" id="collapse-all-btn">Collapse all</button>
+        </div>
         <h1>NeoVim & LazyVim Interactive Lab</h1>
         <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
     </header>
@@ -383,19 +458,48 @@
         // Accordion Logic
         document.addEventListener('DOMContentLoaded', () => {
             const accordions = document.querySelectorAll('.accordion');
+
+            function toggleAccordion(acc, forceState) {
+                const panel = acc.nextElementSibling;
+                if (forceState === 'open' || (forceState === undefined && !acc.classList.contains('active'))) {
+                    acc.classList.add('active');
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                    panel.classList.add('show');
+                } else if (forceState === 'close' || (forceState === undefined && acc.classList.contains('active'))) {
+                    acc.classList.remove('active');
+                    panel.style.maxHeight = null;
+                    panel.classList.remove('show');
+                }
+            }
+
             accordions.forEach(acc => {
                 acc.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                    const panel = this.nextElementSibling;
-                    if (panel.style.maxHeight) {
-                        panel.style.maxHeight = null;
-                        panel.classList.remove('show');
-                    } else {
-                        panel.style.maxHeight = panel.scrollHeight + "px";
-                        panel.classList.add('show');
-                    }
+                    toggleAccordion(this);
                 });
             });
+
+            // Utility Buttons Logic
+            const printBtn = document.getElementById('print-btn');
+            if (printBtn) {
+                printBtn.addEventListener('click', () => {
+                    accordions.forEach(acc => toggleAccordion(acc, 'open'));
+                    window.print();
+                });
+            }
+
+            const expandAllBtn = document.getElementById('expand-all-btn');
+            if (expandAllBtn) {
+                expandAllBtn.addEventListener('click', () => {
+                    accordions.forEach(acc => toggleAccordion(acc, 'open'));
+                });
+            }
+
+            const collapseAllBtn = document.getElementById('collapse-all-btn');
+            if (collapseAllBtn) {
+                collapseAllBtn.addEventListener('click', () => {
+                    accordions.forEach(acc => toggleAccordion(acc, 'close'));
+                });
+            }
 
             // Quiz Logic
             const scenarios = [
