@@ -153,7 +153,7 @@ Standalone explainers, not series.
 (burned entries move here as: `**<id>. <name>** — used YYYY-MM-DD — <url> — <1-line retro>`)
 
 - **E1. Git Object Model Visualizer** — used 2026-05-18
-  - **GitHub source:** https://github.com/skchaudr/git-object-explorer
+  - **GitHub source:** https://github.com/skchaudr/git-object-explorer-v1
   - **Lovable project:** lives at `pages/011-git-object-explorer/` locally (gitignored from outer repo — managed by its own .git)
   - **Deploy URL:** TBD (Publish in Lovable to populate)
   - **Credits spent:** ~2 (initial build + readability/centering pass)

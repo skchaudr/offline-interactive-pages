@@ -8,7 +8,7 @@
 
 The full project lives in `pages/011-git-object-explorer/` locally, but that directory is **gitignored from this repo's outer .git**. The project has its own `.git` and is managed via its own GitHub remote.
 
-- **GitHub source:** https://github.com/skchaudr/git-object-explorer
+- **GitHub source:** https://github.com/skchaudr/git-object-explorer-v1
 - **Lovable project:** synced bidirectionally — Lovable AI edits push to GitHub; `git pull` in the local dir brings them down
 - **Deploy URL:** TBD (publish in Lovable to populate)
 
