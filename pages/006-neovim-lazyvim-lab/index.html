@@ -49,7 +49,7 @@
             color: var(--text-color);
             line-height: 1.6;
             padding: 2rem 1rem;
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -237,7 +237,79 @@
             border: 1px solid var(--danger-color);
         }
 
+        /* Layout & TOC */
+        .layout {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        #content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toc {
+            position: sticky;
+            top: 2rem;
+            width: 250px;
+            flex-shrink: 0;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .toc-title {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-link {
+            display: block;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .toc-link:hover {
+            background-color: var(--code-bg);
+        }
+
+        .toc-link.active {
+            background-color: rgba(14, 165, 233, 0.1);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
         /* Responsive Design */
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+            .toc {
+                position: static;
+                width: 100%;
+                margin-bottom: 1.5rem;
+            }
+        }
+
         @media (max-width: 768px) {
             body { padding: 1rem; }
             h1 { font-size: 2rem; }
@@ -251,8 +323,20 @@
         <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
     </header>
 
-    <main id="content">
-        <section id="mental-model" class="card">
+    <div class="layout">
+        <nav class="toc" aria-label="Table of Contents">
+            <h3 class="toc-title">You are here</h3>
+            <ul class="toc-list">
+                <li><a href="#mental-model" class="toc-link">The NeoVim Mental Model</a></li>
+                <li><a href="#lazyvim-layer" class="toc-link">LazyVim as a Distribution Layer</a></li>
+                <li><a href="#workflows" class="toc-link">Core Workflows & Navigation</a></li>
+                <li><a href="#friction-points" class="toc-link">Common Friction Points & Solutions</a></li>
+                <li><a href="#interactive-troubleshooting" class="toc-link">Interactive: "What Broke?"</a></li>
+            </ul>
+        </nav>
+
+        <main id="content">
+            <section id="mental-model" class="card">
             <h2>The NeoVim Mental Model</h2>
             <p>Unlike many modern editors that use a simple "one file = one tab" model, NeoVim separates the concepts of what you are editing from how you are viewing it.</p>
 
@@ -377,11 +461,37 @@
             </div>
         </section>
 
-    </main>
+        </main>
+    </div>
 
     <script>
         // Accordion Logic
         document.addEventListener('DOMContentLoaded', () => {
+            // IntersectionObserver for Table of Contents
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('.toc-link');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -60% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === '#' + entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
+
             const accordions = document.querySelectorAll('.accordion');
             accordions.forEach(acc => {
                 acc.addEventListener('click', function() {
