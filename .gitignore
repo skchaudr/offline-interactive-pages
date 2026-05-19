@@ -7,3 +7,7 @@ dist/
 build/
 coverage/
 .tmp/
+
+# Lovable-built projects live in pages/ but are managed by their own .git + GitHub remote.
+# Outer repo tracks only the sibling .md marker (e.g. pages/011-git-object-explorer.md).
+pages/011-git-object-explorer/
