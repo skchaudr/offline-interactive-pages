@@ -155,7 +155,7 @@ Standalone explainers, not series.
 - **E1. Git Object Model Visualizer** — used 2026-05-18
   - **GitHub source:** https://github.com/skchaudr/git-object-explorer-v1
   - **Lovable project:** lives at `pages/011-git-object-explorer/` locally (gitignored from outer repo — managed by its own .git)
-  - **Deploy URL:** TBD (Publish in Lovable to populate)
+  - **Deploy URL:** https://git-inkwell.lovable.app
   - **Credits spent:** ~2 (initial build + readability/centering pass)
   - **Retro:** Paper-and-ink field-guide aesthetic landed cleanly. Engine works end-to-end (objects + refs render correctly, counters accurate). Interaction model was click-suggested-commands rather than typing — Lovable defaulted to that on the readability pass; defensible for a lesson app but diverges from original "fires git commands from a faux terminal" framing. Worth one more polish pass if more credits available.
 

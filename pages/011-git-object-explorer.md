@@ -10,7 +10,7 @@ The full project lives in `pages/011-git-object-explorer/` locally, but that dir
 
 - **GitHub source:** https://github.com/skchaudr/git-object-explorer-v1
 - **Lovable project:** synced bidirectionally — Lovable AI edits push to GitHub; `git pull` in the local dir brings them down
-- **Deploy URL:** TBD (publish in Lovable to populate)
+- **Deploy URL:** https://git-inkwell.lovable.app
 
 ## Why this lives differently
 
