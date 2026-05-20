@@ -49,8 +49,84 @@
             color: var(--text-color);
             line-height: 1.6;
             padding: 2rem 1rem;
-            max-width: 900px;
+            max-width: 1200px; /* Increased to accommodate sidebar */
             margin: 0 auto;
+        }
+
+        /* Layout */
+        .page-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (min-width: 768px) {
+            .page-layout {
+                grid-template-columns: 250px 1fr;
+            }
+        }
+
+        /* Table of Contents */
+        .toc {
+            position: sticky;
+            top: 2rem;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            display: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        @media (min-width: 768px) {
+            .toc {
+                display: block;
+            }
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            border: none;
+            padding-bottom: 0;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc li {
+            margin-bottom: 0.75rem;
+        }
+
+        .toc a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s, color 0.2s;
+            border-left: 2px solid transparent;
+        }
+
+        .toc a:hover {
+            background-color: var(--code-bg);
+            color: var(--primary-color);
+        }
+
+        .toc a.active {
+            color: var(--primary-color);
+            font-weight: 600;
+            border-left: 2px solid var(--primary-color);
+            background-color: var(--code-bg);
         }
 
         h1, h2, h3 {
@@ -251,8 +327,20 @@
         <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
     </header>
 
-    <main id="content">
-        <section id="mental-model" class="card">
+    <div class="page-layout">
+        <nav class="toc">
+            <h3>You are here</h3>
+            <ul>
+                <li><a href="#mental-model">Mental Model</a></li>
+                <li><a href="#lazyvim-layer">LazyVim Layer</a></li>
+                <li><a href="#workflows">Core Workflows</a></li>
+                <li><a href="#friction-points">Friction Points</a></li>
+                <li><a href="#interactive-troubleshooting">Interactive Troubleshooting</a></li>
+            </ul>
+        </nav>
+
+        <main id="content">
+            <section id="mental-model" class="card">
             <h2>The NeoVim Mental Model</h2>
             <p>Unlike many modern editors that use a simple "one file = one tab" model, NeoVim separates the concepts of what you are editing from how you are viewing it.</p>
 
@@ -377,7 +465,8 @@
             </div>
         </section>
 
-    </main>
+        </main>
+    </div>
 
     <script>
         // Accordion Logic
@@ -492,6 +581,34 @@
 
             // Init
             loadScenario(0);
+
+            // IntersectionObserver for Table of Contents
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('.toc a');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -60% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
         });
     </script>
 </body>
