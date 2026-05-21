@@ -242,18 +242,66 @@
             body { padding: 1rem; }
             h1 { font-size: 2rem; }
             h2 { font-size: 1.5rem; }
+            .layout { grid-template-columns: 1fr; }
+            .toc-container { display: none; }
+        }
+
+        /* Layout Styles */
+        .layout {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 2rem;
+        }
+
+        .toc-container {
+            position: sticky;
+            top: 2rem;
+            align-self: start;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-link {
+            text-decoration: none;
+            color: var(--secondary-color);
+            font-size: 0.95rem;
+            transition: color 0.2s;
+            display: block;
+        }
+
+        .toc-link:hover, .toc-link.active {
+            color: var(--primary-color);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>NeoVim & LazyVim Interactive Lab</h1>
-        <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
-    </header>
+    <div class="layout">
+        <aside class="toc-container">
+            <h3 style="margin-top: 0; font-size: 1rem; margin-bottom: 1rem;">Contents</h3>
+            <ul class="toc-list">
+                <li class="toc-item"><a href="#mental-model" class="toc-link">Mental Model</a></li>
+                <li class="toc-item"><a href="#lazyvim-layer" class="toc-link">LazyVim Layer</a></li>
+                <li class="toc-item"><a href="#workflows" class="toc-link">Core Workflows</a></li>
+                <li class="toc-item"><a href="#friction-points" class="toc-link">Friction Points</a></li>
+                <li class="toc-item"><a href="#interactive-troubleshooting" class="toc-link">Interactive Troubleshooting</a></li>
+            </ul>
+        </aside>
+        <div>
+            <header>
+                <h1>NeoVim & LazyVim Interactive Lab</h1>
+                <p style="color: var(--secondary-color); font-size: 1.1rem; margin-bottom: 2rem;">Master your editor through mental models and interactive troubleshooting.</p>
+            </header>
 
-    <main id="content">
-        <section id="mental-model" class="card">
-            <h2>The NeoVim Mental Model</h2>
+            <main id="content">
+                <section id="mental-model" class="card">
+                    <h2>The NeoVim Mental Model</h2>
             <p>Unlike many modern editors that use a simple "one file = one tab" model, NeoVim separates the concepts of what you are editing from how you are viewing it.</p>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
@@ -377,7 +425,9 @@
             </div>
         </section>
 
-    </main>
+            </main>
+        </div>
+    </div>
 
     <script>
         // Accordion Logic
@@ -492,6 +542,28 @@
 
             // Init
             loadScenario(0);
+
+            // Intersection Observer for TOC
+            const sections = document.querySelectorAll('section');
+            const tocLinks = document.querySelectorAll('.toc-link');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.5
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        tocLinks.forEach(link => link.classList.remove('active'));
+                        const id = entry.target.getAttribute('id');
+                        document.querySelector(`.toc-link[href="#${id}"]`)?.classList.add('active');
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
         });
     </script>
 </body>
