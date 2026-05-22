@@ -49,8 +49,47 @@
             color: var(--text-color);
             line-height: 1.6;
             padding: 2rem 1rem;
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
+        }
+
+        #content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toc {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            list-style-type: none;
+            padding-left: 0;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .toc a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover,
+        .toc a.active {
+            color: var(--primary-color);
+            font-weight: 600;
         }
 
         h1, h2, h3 {
@@ -238,6 +277,21 @@
         }
 
         /* Responsive Design */
+        @media (min-width: 768px) {
+            #content {
+                display: grid;
+                grid-template-columns: 250px 1fr;
+                gap: 2rem;
+                align-items: start;
+            }
+
+            .toc {
+                position: sticky;
+                top: 2rem;
+                margin-bottom: 0;
+            }
+        }
+
         @media (max-width: 768px) {
             body { padding: 1rem; }
             h1 { font-size: 2rem; }
@@ -252,6 +306,17 @@
     </header>
 
     <main id="content">
+        <nav class="toc">
+            <h3>Contents</h3>
+            <ul>
+                <li><a href="#mental-model">Mental Model</a></li>
+                <li><a href="#lazyvim-layer">LazyVim Layer</a></li>
+                <li><a href="#workflows">Core Workflows</a></li>
+                <li><a href="#friction-points">Friction Points</a></li>
+                <li><a href="#interactive-troubleshooting">Interactive Troubleshooting</a></li>
+            </ul>
+        </nav>
+        <div class="content-wrapper">
         <section id="mental-model" class="card">
             <h2>The NeoVim Mental Model</h2>
             <p>Unlike many modern editors that use a simple "one file = one tab" model, NeoVim separates the concepts of what you are editing from how you are viewing it.</p>
@@ -376,12 +441,41 @@
                 <button id="next-btn" class="chip" style="margin-top: 1rem; display: none; cursor: pointer; background: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem;">Next Scenario</button>
             </div>
         </section>
+        </div>
 
     </main>
 
     <script>
         // Accordion Logic
         document.addEventListener('DOMContentLoaded', () => {
+            // TOC Logic
+            const tocLinks = document.querySelectorAll('.toc a');
+            const sections = document.querySelectorAll('.content-wrapper section[id]');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px 0px -60% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        tocLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
             const accordions = document.querySelectorAll('.accordion');
             accordions.forEach(acc => {
                 acc.addEventListener('click', function() {
