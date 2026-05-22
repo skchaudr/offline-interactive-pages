@@ -117,6 +117,24 @@
         }
 
         /* Accordion Styles */
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        .accordion-indicator {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+
         .accordion {
             background-color: var(--surface-color);
             color: var(--text-color);
@@ -139,18 +157,7 @@
         .accordion:hover {
             background-color: var(--code-bg);
         }
-
-        .accordion:after {
-            content: '\002B'; /* Plus sign */
-            font-size: 1.5rem;
-            color: var(--secondary-color);
-        }
-
-        .active:after {
-            content: "\2212"; /* Minus sign */
-        }
-
-        .panel {
+.panel {
             padding: 0 1rem;
             background-color: var(--surface-color);
             max-height: 0;
@@ -321,38 +328,56 @@
             <h2>Common Friction Points & Solutions</h2>
             <p>We've all been there. Here is how to solve the most frequent issues.</p>
 
-            <button class="accordion">Root Directory Confusion / Losing Track of CWD</button>
-            <div class="panel">
+            <button class="accordion" aria-expanded="false" aria-controls="panel-root-confusion">
+                <span>Root Directory Confusion / Losing Track of CWD</span>
+                <span class="accordion-indicator"><span class="sr-only">Open</span><span aria-hidden="true" class="icon">+</span></span>
+            </button>
+            <div id="panel-root-confusion" class="panel">
                 <p><strong>The Problem:</strong> You open a file, but your fuzzy finder or LSP isn't picking up your project root properly.</p>
                 <p><strong>The Solution:</strong> LazyVim has a concept of a "root directory". Check your current root with <code>:pwd</code>. You can also press <code>&lt;Space&gt; f R</code> to explore files from the project root. If you need to manually change it, use <code>:cd %:p:h</code> to change directory to the current file's folder.</p>
             </div>
 
-            <button class="accordion">File Explorer Drift</button>
-            <div class="panel">
+            <button class="accordion" aria-expanded="false" aria-controls="panel-file-drift">
+                <span>File Explorer Drift</span>
+                <span class="accordion-indicator"><span class="sr-only">Open</span><span aria-hidden="true" class="icon">+</span></span>
+            </button>
+            <div id="panel-file-drift" class="panel">
                 <p><strong>The Problem:</strong> You navigate to a deeply nested file, but Neo-tree (the file explorer) is still showing the top-level directory and hasn't expanded to your current file.</p>
                 <p><strong>The Solution:</strong> Press <code>&lt;Space&gt; e</code> to open/focus Neo-tree. If it hasn't focused the current file, use <code>&lt;Space&gt; f E</code> to open Neo-tree specifically at the current file.</p>
             </div>
 
-            <button class="accordion">Keybinding Discovery</button>
-            <div class="panel">
+            <button class="accordion" aria-expanded="false" aria-controls="panel-keybinding-discovery">
+                <span>Keybinding Discovery</span>
+                <span class="accordion-indicator"><span class="sr-only">Open</span><span aria-hidden="true" class="icon">+</span></span>
+            </button>
+            <div id="panel-keybinding-discovery" class="panel">
                 <p><strong>The Problem:</strong> You forgot the keybinding to format a file, run a test, or toggle the terminal.</p>
                 <p><strong>The Solution:</strong> The <code>which-key</code> plugin is your best friend. Just press <code>&lt;Space&gt;</code> and <em>wait half a second</em>. A menu will appear at the bottom of the screen showing all available commands. You can also search for keymaps using Telescope: <code>&lt;Space&gt; s k</code>.</p>
             </div>
 
-            <button class="accordion">LSP Not Attaching / Formatting Not Running</button>
-            <div class="panel">
+            <button class="accordion" aria-expanded="false" aria-controls="panel-lsp-attaching">
+                <span>LSP Not Attaching / Formatting Not Running</span>
+                <span class="accordion-indicator"><span class="sr-only">Open</span><span aria-hidden="true" class="icon">+</span></span>
+            </button>
+            <div id="panel-lsp-attaching" class="panel">
                 <p><strong>The Problem:</strong> You open a Python/TS/Rust file and get no autocomplete, diagnostics, or formatting.</p>
                 <p><strong>The Solution:</strong> First, run <code>:LspInfo</code> to check if the language server is attached to the current buffer. If not, you might be missing the server. Open <strong>Mason</strong> with <code>:Mason</code> (or <code>&lt;Space&gt; c m</code>) to easily install LSPs, formatters, and linters.</p>
             </div>
 
-            <button class="accordion">Confusing Buffer/Window/Tab Model</button>
-            <div class="panel">
+            <button class="accordion" aria-expanded="false" aria-controls="panel-confusing-buffer">
+                <span>Confusing Buffer/Window/Tab Model</span>
+                <span class="accordion-indicator"><span class="sr-only">Open</span><span aria-hidden="true" class="icon">+</span></span>
+            </button>
+            <div id="panel-confusing-buffer" class="panel">
                 <p><strong>The Problem:</strong> You opened 10 files, closed one window, and now you have no idea where your files went.</p>
                 <p><strong>The Solution:</strong> Remember that closing a window (<code>:q</code>) does <em>not</em> close the buffer. To see all open buffers, press <code>&lt;Space&gt; ,</code> (switch buffers) or <code>&lt;Space&gt; b b</code>. To actually close a buffer and remove it from memory, use <code>&lt;Space&gt; b d</code> (buffer delete).</p>
             </div>
 
-            <button class="accordion">Plugin Conflicts</button>
-            <div class="panel">
+            <button class="accordion" aria-expanded="false" aria-controls="panel-plugin-conflicts">
+                <span>Plugin Conflicts</span>
+                <span class="accordion-indicator"><span class="sr-only">Open</span><span aria-hidden="true" class="icon">+</span></span>
+            </button>
+            <div id="panel-plugin-conflicts" class="panel">
                 <p><strong>The Problem:</strong> After adding a custom plugin snippet, LazyVim throws errors on startup.</p>
                 <p><strong>The Solution:</strong> Run <code>:Lazy</code> to open the lazy.nvim dashboard. Check for errors, updates, or perform a <code>Shift+S</code> to sync/install plugins. Review your <code>lua/plugins/*.lua</code> files to ensure you're returning a valid table format.</p>
             </div>
@@ -366,10 +391,10 @@
                 <h3 style="margin-top: 0;" id="question-text">Scenario: You pressed a wrong key combination and now your cursor is stuck in a terminal buffer at the bottom of the screen. Pressing `Esc` just types `^[`. How do you get back to normal mode?</h3>
 
                 <div class="options-grid" id="options-container">
-                    <button class="option-btn" data-correct="false">Type `exit` and hit Enter</button>
-                    <button class="option-btn" data-correct="true">Press `&lt;C-\&gt; &lt;C-n&gt;`</button>
-                    <button class="option-btn" data-correct="false">Press `&lt;C-c&gt;` repeatedly</button>
-                    <button class="option-btn" data-correct="false">Close the window with `:q`</button>
+                    <button class="option-btn" data-correct="false" aria-pressed="false">Type `exit` and hit Enter</button>
+                    <button class="option-btn" data-correct="true" aria-pressed="false">Press `&lt;C-\&gt; &lt;C-n&gt;`</button>
+                    <button class="option-btn" data-correct="false" aria-pressed="false">Press `&lt;C-c&gt;` repeatedly</button>
+                    <button class="option-btn" data-correct="false" aria-pressed="false">Close the window with `:q`</button>
                 </div>
 
                 <div id="quiz-feedback" class="feedback"></div>
@@ -385,7 +410,15 @@
             const accordions = document.querySelectorAll('.accordion');
             accordions.forEach(acc => {
                 acc.addEventListener('click', function() {
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !isExpanded);
                     this.classList.toggle('active');
+
+                    const srText = this.querySelector('.sr-only');
+                    const icon = this.querySelector('.icon');
+                    if (srText) srText.textContent = isExpanded ? 'Open' : 'Close';
+                    if (icon) icon.textContent = isExpanded ? '+' : '−';
+
                     const panel = this.nextElementSibling;
                     if (panel.style.maxHeight) {
                         panel.style.maxHeight = null;
@@ -451,6 +484,7 @@
                     // Sanitize html tags for display
                     btn.innerHTML = opt.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     btn.dataset.correct = opt.correct;
+                    btn.setAttribute('aria-pressed', 'false');
                     btn.addEventListener('click', handleOptionClick);
                     optionsContainer.appendChild(btn);
                 });
@@ -464,14 +498,17 @@
                 const buttons = optionsContainer.querySelectorAll('.option-btn');
 
                 buttons.forEach(btn => {
+                    btn.setAttribute('aria-pressed', 'false');
                     if (btn.dataset.correct === 'true') {
                         btn.classList.add('correct');
                     } else if (btn === e.target) {
                         btn.classList.add('wrong');
                     }
                 });
+                e.target.setAttribute('aria-pressed', 'true');
 
                 feedbackBox.style.display = 'block';
+                feedbackBox.setAttribute('tabindex', '-1');
                 if (isCorrect) {
                     feedbackBox.textContent = "Correct! " + scenarios[currentScenario].explanation;
                     feedbackBox.className = 'feedback show success';
@@ -479,6 +516,7 @@
                     feedbackBox.textContent = "Incorrect. " + scenarios[currentScenario].explanation;
                     feedbackBox.className = 'feedback show error';
                 }
+                feedbackBox.focus();
 
                 if (currentScenario < scenarios.length - 1) {
                     nextBtn.style.display = 'inline-block';
