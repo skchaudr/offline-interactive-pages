@@ -49,8 +49,58 @@
             color: var(--text-color);
             line-height: 1.6;
             padding: 2rem 1rem;
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
+        }
+
+        .layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .toc {
+            display: none; /* Hide on very small screens, show on medium+ */
+        }
+
+        .toc-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.85rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-list a {
+            text-decoration: none;
+            color: var(--secondary-color);
+            font-size: 0.95rem;
+            display: block;
+            padding: 0.25rem 0 0.25rem 0.75rem;
+            border-left: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .toc-list a:hover {
+            color: var(--text-color);
+            border-left-color: var(--border-color);
+        }
+
+        .toc-list a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            font-weight: 600;
         }
 
         h1, h2, h3 {
@@ -238,6 +288,22 @@
         }
 
         /* Responsive Design */
+        @media (min-width: 768px) {
+            .layout {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            .toc {
+                display: block;
+                position: sticky;
+                top: 2rem;
+                min-width: 220px;
+            }
+            main#content {
+                flex: 1;
+                min-width: 0;
+            }
+        }
         @media (max-width: 768px) {
             body { padding: 1rem; }
             h1 { font-size: 2rem; }
@@ -251,8 +317,20 @@
         <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
     </header>
 
-    <main id="content">
-        <section id="mental-model" class="card">
+    <div class="layout">
+        <aside class="toc">
+            <div class="toc-title">You are here</div>
+            <ul class="toc-list">
+                <li><a href="#mental-model">Mental Model</a></li>
+                <li><a href="#lazyvim-layer">LazyVim Layer</a></li>
+                <li><a href="#workflows">Core Workflows</a></li>
+                <li><a href="#friction-points">Friction Points</a></li>
+                <li><a href="#interactive-troubleshooting">Interactive Troubleshooting</a></li>
+            </ul>
+        </aside>
+
+        <main id="content">
+            <section id="mental-model" class="card">
             <h2>The NeoVim Mental Model</h2>
             <p>Unlike many modern editors that use a simple "one file = one tab" model, NeoVim separates the concepts of what you are editing from how you are viewing it.</p>
 
@@ -377,7 +455,8 @@
             </div>
         </section>
 
-    </main>
+        </main>
+    </div>
 
     <script>
         // Accordion Logic
@@ -492,6 +571,31 @@
 
             // Init
             loadScenario(0);
+
+            // Sticky TOC Intersection Observer
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px 0px -80% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        document.querySelectorAll('.toc-list a').forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('main#content section[id]').forEach(section => {
+                observer.observe(section);
+            });
         });
     </script>
 </body>
