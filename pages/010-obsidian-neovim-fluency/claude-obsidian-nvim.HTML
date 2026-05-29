@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neovim, Translated from Obsidian — Part 1</title>
+<style>
+:root {
+  --bg: #0b0b10;
+  --text: #e5e7eb;
+  --muted: #71717a;
+  --lavender: #d8b4fe;
+  --mint: #7dd3fc;
+  --yellow: #fde047;
+  --magenta: #e879f9;
+  --divider: rgba(216, 180, 254, 0.12);
+  --chip-border: rgba(232, 121, 249, 0.45);
+  --chip-bg: rgba(232, 121, 249, 0.05);
+  --tooltip-bg: #15151c;
+  --tooltip-border: rgba(216, 180, 254, 0.18);
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  max-width: 1180px;
+  margin: 0 auto;
+  gap: 64px;
+  padding: 64px 40px 120px;
+}
+
+/* TOC */
+.toc {
+  position: sticky;
+  top: 48px;
+  align-self: start;
+  width: 220px;
+  font-size: 13px;
+}
+
+.toc-label {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  margin-bottom: 18px;
+  font-family: var(--mono);
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-list li {
+  margin-bottom: 14px;
+}
+
+.toc-list a {
+  color: var(--muted);
+  text-decoration: none;
+  display: inline-block;
+  position: relative;
+  padding-bottom: 2px;
+  font-family: var(--sans);
+}
+
+.toc-list a::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--mint);
+  transition: width 200ms ease;
+}
+
+.toc-list a:hover::after {
+  width: 100%;
+}
+
+.toc-list a.active {
+  color: var(--lavender);
+}
+
+.toc-list a.active::after {
+  width: 100%;
+  background: var(--lavender);
+}
+
+.toc-num {
+  font-family: var(--mono);
+  color: var(--yellow);
+  margin-right: 8px;
+  font-size: 11px;
+  font-feature-settings: "tnum";
+}
+
+/* Main column */
+main {
+  max-width: 720px;
+  min-width: 0;
+}
+
+header.hero {
+  margin-bottom: 72px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  color: var(--mint);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+
+h1 {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0 0 22px;
+  color: var(--lavender);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 17px;
+  margin: 0;
+  max-width: 620px;
+  line-height: 1.55;
+}
+
+section {
+  margin-bottom: 88px;
+  scroll-margin-top: 36px;
+}
+
+.section-num {
+  font-family: var(--mono);
+  color: var(--yellow);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  margin-bottom: 14px;
+  display: block;
+  font-feature-settings: "tnum";
+}
+
+section h2 {
+  color: var(--lavender);
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0 0 28px;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+p {
+  margin: 0 0 22px;
+  color: var(--text);
+}
+
+p + p { margin-top: 0; }
+
+.divider {
+  height: 1px;
+  background: var(--divider);
+  border: 0;
+  margin: 40px 0;
+}
+
+/* Chip */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 7px;
+  border: 2px solid var(--chip-border);
+  background: var(--chip-bg);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--text);
+  position: relative;
+  cursor: help;
+  white-space: nowrap;
+  vertical-align: baseline;
+  line-height: 1.5;
+  border-radius: 2px;
+  height: 22px;
+  font-feature-settings: "tnum";
+}
+
+.chip svg {
+  flex-shrink: 0;
+  display: block;
+}
+
+.chip::after {
+  content: attr(data-source);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: var(--tooltip-bg);
+  border: 1px solid var(--tooltip-border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  border-radius: 2px;
+  z-index: 10;
+  letter-spacing: 0.01em;
+}
+
+.chip:hover::after,
+.chip:focus-visible::after {
+  opacity: 1;
+}
+
+/* Inline code (non-key) */
+code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: rgba(125, 211, 252, 0.08);
+  padding: 1px 6px;
+  color: var(--mint);
+  border-radius: 2px;
+  font-feature-settings: "tnum";
+}
+
+strong {
+  color: var(--lavender);
+  font-weight: 600;
+}
+
+em {
+  color: var(--text);
+  font-style: italic;
+}
+
+.callout-num {
+  color: var(--yellow);
+  font-family: var(--mono);
+  font-weight: 600;
+  font-feature-settings: "tnum";
+}
+
+/* Footer */
+footer {
+  margin-top: 96px;
+  padding-top: 32px;
+  border-top: 1px solid var(--divider);
+  color: var(--muted);
+  font-size: 12px;
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+@media (max-width: 920px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 32px 22px 80px;
+    gap: 36px;
+  }
+  .toc {
+    position: static;
+    width: 100%;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .toc-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 22px;
+  }
+  h1 { font-size: 32px; }
+  section h2 { font-size: 24px; }
+  header.hero { margin-bottom: 48px; }
+  section { margin-bottom: 64px; }
+}
+
+/* ============================================================
+   WIDGETS
+   Form serves teaching. Reuse palette; no new visual identity.
+   ============================================================ */
+
+.widget {
+  margin: 36px 0;
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  background: rgba(216, 180, 254, 0.025);
+  overflow: hidden;
+}
+
+.widget-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--divider);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: rgba(125, 211, 252, 0.02);
+}
+
+.widget-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mint);
+}
+
+.widget-title {
+  color: var(--lavender);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.widget-body { padding: 22px 18px; }
+
+.widget-caption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-family: var(--mono);
+  line-height: 1.6;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--divider);
+}
+.widget-caption strong { color: var(--lavender); font-weight: 600; }
+.widget-caption em { color: var(--mint); font-style: normal; }
+
+/* Segmented control (shared) */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.seg button {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  border-right: 1px solid var(--divider);
+  transition: background 150ms ease, color 150ms ease;
+}
+.seg button:last-child { border-right: 0; }
+.seg button:hover { color: var(--text); background: rgba(125, 211, 252, 0.04); }
+.seg button[aria-pressed="true"] {
+  color: var(--bg);
+  background: var(--mint);
+}
+
+/* === Widget 1: Mode Explorer === */
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 8px;
+}
+.mode-key {
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  padding: 14px 4px 10px;
+  text-align: center;
+  background: rgba(11, 11, 16, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 250ms ease, background 250ms ease, transform 200ms ease;
+  min-width: 0;
+}
+.mode-key .glyph {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  font-feature-settings: "tnum";
+  line-height: 1;
+  color: var(--lavender);
+}
+.mode-key .role {
+  font-size: 10.5px;
+  color: var(--muted);
+  line-height: 1.35;
+  font-family: var(--sans);
+  min-height: 40px;
+  padding: 0 2px;
+}
+.mode-key[data-flavor="op"]     { border-color: rgba(232, 121, 249, 0.40); }
+.mode-key[data-flavor="op"]     .glyph { color: var(--magenta); }
+.mode-key[data-flavor="motion"] { border-color: rgba(125, 211, 252, 0.35); }
+.mode-key[data-flavor="motion"] .glyph { color: var(--mint); }
+.mode-key[data-flavor="count"]  { border-color: rgba(253, 224, 71, 0.30); }
+.mode-key[data-flavor="count"]  .glyph { color: var(--yellow); }
+.mode-key[data-flavor="mode"]   { border-color: rgba(216, 180, 254, 0.40); background: rgba(216, 180, 254, 0.04); }
+.mode-key[data-flavor="mode"]   .glyph { color: var(--lavender); }
+.mode-key[data-flavor="literal"] { background: rgba(125, 211, 252, 0.03); }
+.mode-key[data-flavor="literal"] .glyph { color: var(--text); opacity: 0.75; }
+
+.flavor-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 10.5px;
+  font-family: var(--mono);
+  color: var(--muted);
+  margin-top: 14px;
+}
+.flavor-legend span::before { content: "■"; margin-right: 5px; }
+.flavor-legend .op::before     { color: var(--magenta); }
+.flavor-legend .motion::before { color: var(--mint); }
+.flavor-legend .count::before  { color: var(--yellow); }
+.flavor-legend .mode::before   { color: var(--lavender); }
+.flavor-legend .literal::before { color: var(--text); opacity: 0.6; }
+
+@media (max-width: 720px) {
+  .mode-grid { grid-template-columns: repeat(3, 1fr); }
+  .mode-key .glyph { font-size: 20px; }
+  .mode-key .role { font-size: 11px; }
+}
+
+/* === Widget 2: Translation Toggle === */
+.trans-grid {
+  display: grid;
+  gap: 10px;
+}
+.trans-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 16px;
+  align-items: stretch;
+  padding: 13px 15px;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  background: rgba(11, 11, 16, 0.4);
+  transition: background 200ms ease;
+}
+.trans-row.both { grid-template-columns: 130px 1fr 1fr; }
+.trans-habit {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--yellow);
+  letter-spacing: 0.04em;
+  align-self: center;
+  font-feature-settings: "tnum";
+}
+.trans-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  border-left: 2px solid var(--divider);
+  padding-left: 12px;
+}
+.trans-cell.obs { border-left-color: rgba(125, 211, 252, 0.30); }
+.trans-cell.nvim { border-left-color: rgba(232, 121, 249, 0.40); }
+.trans-cell .label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.trans-cell .trigger {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--mint);
+  font-feature-settings: "tnum";
+  word-break: break-word;
+}
+.trans-cell .note {
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .trans-row, .trans-row.both { grid-template-columns: 1fr; gap: 10px; }
+  .trans-habit { font-size: 13px; color: var(--lavender); }
+}
+
+/* === Widget 3: Live Picker === */
+.picker {
+  font-family: var(--mono);
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  background: rgba(11, 11, 16, 0.9);
+  overflow: hidden;
+}
+.picker-source {
+  display: flex;
+  border-bottom: 1px solid var(--divider);
+}
+.picker-source button {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--divider);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 9px 10px;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: color 150ms, background 150ms;
+}
+.picker-source button:last-child { border-right: 0; }
+.picker-source button:hover { color: var(--text); }
+.picker-source button[aria-pressed="true"] {
+  color: var(--lavender);
+  background: rgba(216, 180, 254, 0.06);
+  box-shadow: inset 0 -2px 0 var(--lavender);
+}
+.picker-prompt {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--divider);
+  background: rgba(216, 180, 254, 0.02);
+  gap: 8px;
+}
+.picker-prompt .sigil {
+  color: var(--magenta);
+  font-size: 14px;
+  font-weight: 700;
+}
+.picker-prompt input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  outline: none;
+  caret-color: var(--mint);
+  padding: 0;
+  min-width: 0;
+}
+.picker-prompt .count {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+}
+.picker-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 280px;
+}
+.picker-results {
+  border-right: 1px solid var(--divider);
+  overflow-y: auto;
+  font-size: 12px;
+}
+.picker-results .item {
+  padding: 6px 12px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 2px solid transparent;
+}
+.picker-results .item:hover { background: rgba(216, 180, 254, 0.04); }
+.picker-results .item.active {
+  background: rgba(216, 180, 254, 0.10);
+  border-left-color: var(--lavender);
+  color: var(--lavender);
+}
+.picker-results .item .meta {
+  color: var(--muted);
+  font-size: 10px;
+  flex-shrink: 0;
+  font-feature-settings: "tnum";
+}
+.picker-results .item .match {
+  color: var(--yellow);
+  font-weight: 700;
+}
+.picker-results .empty {
+  padding: 22px 18px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  font-style: italic;
+}
+.picker-preview {
+  padding: 14px 16px;
+  overflow-y: auto;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.55;
+  background: rgba(11, 11, 16, 0.5);
+  min-width: 0;
+}
+.picker-preview .preview-title {
+  color: var(--mint);
+  font-size: 10.5px;
+  letter-spacing: 0.15em;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--divider);
+  padding-bottom: 8px;
+}
+.picker-preview pre {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text);
+  line-height: 1.6;
+}
+.picker-preview .hl-line {
+  background: rgba(253, 224, 71, 0.10);
+  display: inline-block;
+  width: 100%;
+  padding: 1px 4px;
+  margin: 0 -4px;
+  color: var(--yellow);
+}
+.picker-foot {
+  padding: 7px 14px;
+  border-top: 1px solid var(--divider);
+  color: var(--muted);
+  font-size: 10px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  letter-spacing: 0.05em;
+  background: rgba(216, 180, 254, 0.015);
+}
+.picker-foot kbd {
+  font-family: var(--mono);
+  background: rgba(216, 180, 254, 0.10);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--lavender);
+  margin: 0 2px;
+}
+
+@media (max-width: 720px) {
+  .picker-main { grid-template-columns: 1fr; height: auto; }
+  .picker-results { border-right: 0; border-bottom: 1px solid var(--divider); max-height: 200px; }
+  .picker-preview { max-height: 180px; }
+  .picker-source button { font-size: 10px; padding: 8px 6px; }
+}
+
+/* === Widget 4: Leader Chord Tree === */
+.chord {
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  background: rgba(11, 11, 16, 0.5);
+}
+.chord-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--divider);
+  background: rgba(216, 180, 254, 0.02);
+  font-family: var(--mono);
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.chord-pressed {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.chord-pressed .crumb {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.chord-pressed .key {
+  background: rgba(216, 180, 254, 0.10);
+  color: var(--lavender);
+  border: 1px solid var(--chip-border);
+  border-radius: 2px;
+  padding: 2px 8px;
+  font-feature-settings: "tnum";
+  font-weight: 600;
+}
+.chord-pressed .key.placeholder {
+  background: transparent;
+  border-style: dashed;
+  color: var(--muted);
+  opacity: 0.6;
+}
+.chord-pressed .sep {
+  color: var(--divider);
+  font-size: 14px;
+}
+.chord-reset {
+  background: transparent;
+  border: 1px solid var(--divider);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 150ms, border-color 150ms;
+}
+.chord-reset:hover { color: var(--mint); border-color: var(--mint); }
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1px;
+  padding: 0;
+  background: var(--divider);
+  min-height: 60px;
+}
+.chord-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  background: rgba(11, 11, 16, 0.7);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  border: 0;
+  width: 100%;
+  text-align: left;
+  color: var(--text);
+  transition: background 150ms;
+}
+.chord-option:hover { background: rgba(216, 180, 254, 0.07); }
+.chord-option .k {
+  background: rgba(125, 211, 252, 0.10);
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  color: var(--mint);
+  padding: 2px 7px;
+  border-radius: 2px;
+  font-weight: 700;
+  min-width: 26px;
+  text-align: center;
+  flex-shrink: 0;
+  font-feature-settings: "tnum";
+}
+.chord-option.group .k {
+  background: rgba(232, 121, 249, 0.10);
+  border-color: var(--chip-border);
+  color: var(--magenta);
+}
+.chord-option .desc { color: var(--text); flex: 1; }
+.chord-option.group .desc::after {
+  content: " ▸";
+  color: var(--magenta);
+  font-weight: 700;
+  margin-left: 4px;
+}
+.chord-leaf-result {
+  padding: 16px 18px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  background: rgba(125, 211, 252, 0.05);
+  border-top: 1px solid var(--divider);
+  color: var(--text);
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  animation: leafIn 220ms ease;
+}
+@keyframes leafIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.chord-leaf-result .badge {
+  background: var(--mint);
+  color: var(--bg);
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.chord-leaf-result code {
+  background: rgba(216, 180, 254, 0.10);
+  color: var(--lavender);
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+/* === <details> hideaways === */
+details.hideaway {
+  margin: 26px 0;
+  border-left: 2px solid var(--divider);
+  padding: 0 0 0 18px;
+  transition: border-color 200ms;
+}
+details.hideaway[open] { border-left-color: var(--lavender); }
+details.hideaway summary {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+  padding: 4px 0;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 150ms;
+}
+details.hideaway summary::-webkit-details-marker { display: none; }
+details.hideaway summary::before {
+  content: "+";
+  color: var(--magenta);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  width: 12px;
+  text-align: center;
+  display: inline-block;
+}
+details.hideaway[open] summary::before { content: "−"; }
+details.hideaway summary:hover { color: var(--text); }
+details.hideaway > *:not(summary) {
+  margin-top: 12px;
+  font-size: 14.5px;
+  color: var(--text);
+  line-height: 1.6;
+}
+details.hideaway p:last-child { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-label">Contents</div>
+    <ul class="toc-list">
+      <li><a href="#s1" data-target="s1"><span class="toc-num">01</span>What You Already Know</a></li>
+      <li><a href="#s2" data-target="s2"><span class="toc-num">02</span>Vocabulary</a></li>
+      <li><a href="#s3" data-target="s3"><span class="toc-num">03</span>Translation Table</a></li>
+      <li><a href="#s4" data-target="s4"><span class="toc-num">04</span>The Picker Pattern</a></li>
+      <li><a href="#s5" data-target="s5"><span class="toc-num">05</span>obsidian.nvim</a></li>
+      <li><a href="#s6" data-target="s6"><span class="toc-num">06</span>What&#39;s Next</a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <header class="hero">
+      <div class="eyebrow">Part 01 &middot; A Translation Series</div>
+      <h1>Neovim, Translated from Obsidian</h1>
+      <p class="subtitle">You already know how to live inside a text graph. This is the part where the graph turns into a terminal.</p>
+    </header>
+
+    <section id="s1">
+      <span class="section-num">01</span>
+      <h2>What You Already Know That Transfers</h2>
+
+      <p>The conventional wisdom about Neovim is that it has a steep learning curve. That framing isn&#39;t wrong, exactly, but it&#39;s wrong for <em>you</em>. If you&#39;ve spent years inside Obsidian, you have already internalized most of the load-bearing concepts that Neovim asks you to hold in your head. The terminal interface is unfamiliar; the <em>thinking</em> underneath it isn&#39;t. The rest of this artifact is built on that observation, so it&#39;s worth being concrete about which five Obsidian habits you can carry across without modification.</p>
+
+      <p>Start with <strong>linked thinking</strong>. Obsidian taught you that a single editor session is really a movement through a graph of files, where every jump &mdash; to a backlinked note, to a search result, to today&#39;s daily &mdash; is a traversal step. Neovim&#39;s model is identical in shape, just less decorated. There is no graph view because the graph lives in your head and in your filesystem. The set of files you&#39;ve recently touched, the path you took to get to the current buffer, the references between notes that ripgrep can find &mdash; all of these are graph operations. You already think this way. You&#39;ll find Neovim flatters that habit and demands almost nothing extra from it.</p>
+
+      <p><strong>Plugin culture</strong> is the second free transfer. Obsidian&#39;s community is plugin-saturated by design: every workflow problem has at least four community responses, each opinionated and each willing to argue. Neovim is the same way, and for the same reason. A small, sharp core surrounded by an enormous third-party surface is the shape of both ecosystems. The vocabulary differs &mdash; &ldquo;Lua plugin&rdquo; instead of &ldquo;community plugin,&rdquo; LazyVim or kickstart.nvim instead of an Obsidian theme&#43;plugin starter pack &mdash; but the cultural disposition is one you already have. You know how to read a plugin README, evaluate maintenance health from commit activity, install something experimental, and uninstall it three days later without feeling guilty. That&#39;s a real skill. Neovim users do the same thing, and the muscle for it transfers in one piece.</p>
+
+      <p><strong>Search-driven workflow</strong> is the third. In Obsidian, the quick switcher is your primary navigation tool &mdash; you do not click sidebars to find files; you summon a fuzzy search modal and type three letters of the title. Neovim&#39;s analogue is the picker, and Section 4 of this artifact is entirely about pickers, because they are the single most important pattern for an Obsidian veteran to land on. For now, just know that the muscle you have for &ldquo;press the magic key, type four letters, hit enter&rdquo; works exactly the same way in Neovim. The picker UI is even visually similar: a floating modal with a prompt at the top and a filtered list below, results narrowing live as you type.</p>
+
+      <p><strong>Daily-notes discipline</strong> transfers without modification. The keystroke is different and the file lives in a different folder, but the practice &mdash; open today&#39;s note, capture what&#39;s in your head, link out to longer-form notes when something needs more room &mdash; works identically. The Neovim plugin called obsidian.nvim, which Section 5 covers in depth, supports daily notes natively; if you have a <code>daily_notes</code> folder in your vault and a template you trust, you can recreate your Obsidian morning ritual in a terminal in roughly two minutes of configuration.</p>
+
+      <p>And finally, the <strong>command palette</strong>. Obsidian&#39;s <span class="chip" data-source="Obsidian default keymap">Cmd-P</span> is the universal &ldquo;I want to do a thing, just let me type what&rdquo; interface. Neovim has two equivalents, layered. The colon prompt &mdash; Ex commands, like <code>:write</code> or <code>:bdelete</code> &mdash; is the literal command palette, with a fuzzy-matchable surface. And the leader key, which Section 2 explains in detail, is the keyboard-shortcut layer that maps &ldquo;press space, then a memorable sequence&rdquo; onto common commands. Two interfaces, one familiar instinct.</p>
+
+      <p>Hold those five &mdash; linked thinking, plugin culture, search-driven workflow, daily-notes discipline, command-palette muscle &mdash; as the rosetta. The rest of this artifact translates Neovim&#39;s unfamiliar surface back into those ideas. When something feels alien, the move is to ask: <em>which of the five is this, in disguise?</em> Almost always, it&#39;s one of them.</p>
+    </section>
+
+    <hr class="divider">
+
+    <section id="s2">
+      <span class="section-num">02</span>
+      <h2>Neovim Vocabulary You Need First</h2>
+
+      <p>Five terms carry most of the weight in this artifact: <strong>modes</strong>, <strong>buffers</strong>, <strong>windows</strong>, <strong>leader keys</strong>, and the <strong>Lua plugin ecosystem</strong>. You&#39;ll meet others as you go &mdash; text objects, motions, marks, registers &mdash; but those are content for later parts of this series. The five here are the ones you need before anything else will make sense, and each one earns a paragraph because the <em>why</em> is the part that makes them stick.</p>
+
+      <p><strong>Modes.</strong> Neovim has several editing modes, but the four you will live in are <em>normal</em>, <em>insert</em>, <em>visual</em>, and <em>command-line</em>. In normal mode, the default, your keyboard is not a typewriter &mdash; it is a sequence of commands. Pressing <span class="chip" data-source="Vim/Neovim normal-mode operator">d</span> is not &ldquo;type a d&rdquo;; it&#39;s the start of a delete instruction that waits for a noun (a motion or text object) to tell it <em>what</em> to delete. Pressing <span class="chip" data-source="Vim/Neovim operator + motion">dw</span> means &ldquo;delete one word forward.&rdquo; Pressing <span class="chip" data-source="Vim/Neovim operator + count + motion">d3w</span> means &ldquo;delete three words forward.&rdquo; Pressing <span class="chip" data-source="Vim dot-repeat, vi heritage">.</span> after that repeats the entire last edit as a single unit. Insert mode, which you enter by pressing <span class="chip" data-source="Vim/Neovim mode switch">i</span> or <span class="chip" data-source="Vim/Neovim mode switch">a</span> or <span class="chip" data-source="Vim/Neovim mode switch">o</span> among others, <em>is</em> the typewriter &mdash; keys insert characters. Visual mode is for selection. Command-line mode is the colon prompt at the bottom of the screen, where you type Ex commands like <code>:write</code> or <code>:source $MYVIMRC</code>.</p>
+
+      <p>The reason modes exist is <em>composition</em>. In a modeless editor &mdash; every other editor you have used, including Obsidian&#39;s editor pane &mdash; every shortcut has to coexist on the keyboard alongside ordinary typing, which forces shortcuts into ergonomic edge cases (modifier-key combinations, function-key rows, mouse menus). In a modal editor, the entire keyboard is available for commands when you are in normal mode, which means commands can be short single letters that compose like words in a sentence. Verb plus noun. Operator plus motion. The dot-repeat operator is the clearest proof of this design: it works because every edit in Neovim has a parseable verb-and-object structure, which lets the editor re-execute the last edit as a unit. No modeless editor has anything comparable, and once you have used dot-repeat for a week you understand viscerally why people who use it never want to give it up.</p>
+
+      <p>This composability is the inheritance from <strong>vi</strong>, which Bill Joy wrote at Berkeley in the late 1970s on a teletype connection where character-by-character editing was painfully slow and command-based editing was a survival tactic. Bram Moolenaar&#39;s <strong>Vim</strong>, beginning in 1991, kept the same model and built outward from it for three decades. <strong>Neovim</strong>, which began in 2014 as a fork aimed at modernizing the codebase, kept the model again. Across roughly five decades, the mode-based composition idea has not been seriously improved upon for text editing at speed. It is genuinely a good design. The learning curve is real, but the curve flattens into something faster than every modeless editor you have ever used.</p>
+
+      <div class="widget" id="mode-explorer">
+        <div class="widget-head">
+          <div>
+            <div class="widget-eyebrow">Live · Mode Explorer</div>
+            <h3 class="widget-title">Same nine keystrokes. Four modes. Watch the meanings flip.</h3>
+          </div>
+          <div class="seg" role="tablist" aria-label="Editor mode">
+            <button type="button" data-mode="normal" aria-pressed="true">Normal</button>
+            <button type="button" data-mode="insert" aria-pressed="false">Insert</button>
+            <button type="button" data-mode="visual" aria-pressed="false">Visual</button>
+            <button type="button" data-mode="cmdline" aria-pressed="false">Cmdline</button>
+          </div>
+        </div>
+        <div class="widget-body">
+          <div class="mode-grid" id="mode-grid">
+            <!-- Filled by JS -->
+          </div>
+          <div class="flavor-legend" id="mode-legend">
+            <!-- Filled by JS -->
+          </div>
+          <div class="widget-caption" id="mode-caption">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+      </div>
+
+      <details class="hideaway">
+        <summary>Why didn&#39;t modeless editors win?</summary>
+        <p>They did, mostly. Every editor you&#39;ve used outside the vi family &mdash; VSCode, Sublime, Obsidian itself &mdash; is modeless. The trade is real and worth naming: modeless editors are easier on day one because every key types itself, and harder at the upper bound because every command needs a modifier-key chord (Ctrl, Cmd, Alt) to coexist with typing. Modal editors are harder on day one because <em>d</em> isn&#39;t a <em>d</em>, but easier at the upper bound because the entire alphabet is free to be a verb. The mode toggle is the cost; the composability is the payoff. People who&#39;ve used both for long enough often describe modeless editing as &ldquo;typing with my pinkies on Ctrl forever&rdquo; once they&#39;ve internalized modal &mdash; not because modeless is bad, but because the ergonomic price becomes legible only in contrast.</p>
+      </details>
+
+      <p><strong>Buffers and windows.</strong> These are easy to confuse because most editors collapse them into one concept. A <em>buffer</em> is the in-memory representation of a file. A <em>window</em> is a viewport that displays a buffer. The relationship is many-to-many: one buffer can be displayed in two windows simultaneously (useful for looking at two parts of the same long note), and one window can be swapped to show a different buffer without changing the file on disk. When you run <span class="chip" data-source="Neovim Ex command">:bd</span> (buffer delete), you remove the buffer from memory; when you run <span class="chip" data-source="Neovim Ex command">:q</span>, you close a window. Closing the last window that displays a buffer does <em>not</em> delete the buffer &mdash; it stays loaded in the background, navigable via the buffer picker. This distinction will trip you up exactly once, when you discover that a file you thought you had closed is still hanging around in memory; afterwards it makes sense and becomes a feature rather than a confusion.</p>
+
+      <p><strong>Splits and tabs.</strong> A split is the act of dividing the current window horizontally or vertically into two windows. <span class="chip" data-source="Neovim Ex command">:split</span> stacks; <span class="chip" data-source="Neovim Ex command">:vsplit</span> divides side-by-side. Tabs in Neovim are <em>not</em> what tabs are in your browser &mdash; they are layouts of windows, a way to save a particular arrangement of splits and switch between arrangements. For someone coming from Obsidian, a Neovim tab is closer to an Obsidian &ldquo;workspace&rdquo; than to an Obsidian tab. Most working Neovim users barely use tabs in practice; they live in splits and use a picker to switch buffers, which is faster than tab-switching and avoids the cognitive cost of managing tab state.</p>
+
+      <p><strong>Leader keys.</strong> The leader key is a configurable prefix that namespaces your custom keymaps. By long-standing Vim convention, the variable <code>mapleader</code> sets this prefix, and the literal token <code>&lt;leader&gt;</code> in a keymap definition refers to whatever you have set. In most modern community configs &mdash; LazyVim, kickstart.nvim, and the broader Lua-era ecosystem &mdash; the leader is <span class="chip" data-source="LazyVim &amp; kickstart.nvim defaults">space</span>. The reason for the leader-key convention is namespacing. Without a prefix, every user-defined shortcut competes with built-in commands for keyboard real estate, and conflicts proliferate. With a leader, you get an entire second-tier menu: <span class="chip" data-source="LazyVim defaults">&lt;leader&gt;ff</span> can mean &ldquo;find file&rdquo; without colliding with the built-in <span class="chip" data-source="Vim/Neovim find-on-line motion">f</span> (find character on line). That&#39;s the trick. Leader keys turn the keyboard into a hierarchical menu rather than a flat surface, which is what lets a single config scale to hundreds of personal keymaps without going unhinged.</p>
+
+      <p><strong>The Lua plugin ecosystem.</strong> Vim plugins were historically written in vimscript, the language Bram Moolenaar created for Vim configuration. Vimscript is functional but slow, idiosyncratic, and hard to write at any scale. Neovim included Lua as a first-class scripting language from the project&#39;s earlier days, and the release of <span class="callout-num">0.5</span> in July 2021 made Lua a complete platform for plugins by adding built-in Language Server Protocol support and Treesitter-powered syntax to the Lua API. The community pivoted hard. Almost every plugin you will install in 2026 is Lua-based. The plugins you&#39;ll meet in this series &mdash; Telescope, obsidian.nvim, Snacks, Harpoon &mdash; are all Lua plugins, and they form a recognizable family with shared conventions: a config table passed to a <code>setup()</code> function, opt-in keymaps you define in your own config, lazy-loading triggers managed by a plugin manager. Once you have read three Lua plugin READMEs you have effectively read all of them, the way once you&#39;ve used three Obsidian plugins their settings UIs feel interchangeable.</p>
+    </section>
+
+    <hr class="divider">
+
+    <section id="s3">
+      <span class="section-num">03</span>
+      <h2>The Translation Table</h2>
+
+      <p>Each Obsidian habit you have, paired with what does the same job in Neovim, plus one sentence on why the Neovim version feels different even when it&#39;s doing the same job. Read this section as prose, not as a lookup table &mdash; the &ldquo;why it feels different&rdquo; line is the part that actually saves you confusion on day three.</p>
+
+      <div class="widget" id="translation-toggle">
+        <div class="widget-head">
+          <div>
+            <div class="widget-eyebrow">Live · Translation Toggle</div>
+            <h3 class="widget-title">Eight habits. Swap the whole view at once.</h3>
+          </div>
+          <div class="seg" role="tablist" aria-label="Translation view">
+            <button type="button" data-view="obs" aria-pressed="true">Obsidian</button>
+            <button type="button" data-view="nvim" aria-pressed="false">Neovim</button>
+            <button type="button" data-view="both" aria-pressed="false">Both</button>
+          </div>
+        </div>
+        <div class="widget-body">
+          <div class="trans-grid" id="trans-grid">
+            <!-- Filled by JS -->
+          </div>
+          <div class="widget-caption">
+            The teaching is the <strong>parallel structure</strong>. Toggle between views and notice that the habit (left column) is invariant &mdash; only the <em>home</em> changes. That&#39;s the entire claim of this section in interactive form: your eight Obsidian habits have eight homes in Neovim, and the verbs feel the same.
+          </div>
+        </div>
+      </div>
+
+      <p><strong>Quick switch.</strong> In Obsidian you press <span class="chip" data-source="Obsidian default keymap">Cmd-O</span> and type a few letters of a note title. In Neovim the equivalent is a picker command &mdash; usually named <span class="chip" data-source="Telescope README">:Telescope find_files</span>, bound by convention to <span class="chip" data-source="LazyVim &amp; kickstart.nvim defaults">&lt;leader&gt;ff</span>. The picker opens a floating modal, you type, results filter live, you press enter on the match. The mechanical experience is nearly identical. What feels different: in Obsidian you&#39;re searching note titles inside a vault; in Neovim you&#39;re searching file paths in a directory tree, which means the directory structure becomes legible to you in a way Obsidian deliberately abstracts. You will start to care about how your vault is organized on disk, not just inside Obsidian&#39;s UI.</p>
+
+      <p><strong>Vault search.</strong> Obsidian&#39;s full-text search across the vault has a Neovim analogue called <span class="chip" data-source="Telescope README">live_grep</span>, bound by convention to <span class="chip" data-source="LazyVim defaults">&lt;leader&gt;fg</span>. It is backed by <span class="chip" data-source="BurntSushi/ripgrep">ripgrep</span>, the same fast grep tool that the faster Obsidian community search plugins also reach for under the hood. What feels different: Obsidian&#39;s search blends title-matching and content-matching by default and ranks both together; live_grep is content-only and ferociously fast on any vault under ten thousand notes. You stop searching titles, because <code>find_files</code> already does that better, and you start searching for the phrase you actually remember writing.</p>
+
+      <p><strong>Backlinks.</strong> This is the one most Obsidian users worry about losing. Obsidian maintains a real-time index of every link in your vault and shows the backlinks pane for the current note automatically. Neovim does not maintain that index &mdash; instead, the obsidian.nvim plugin runs a ripgrep search for occurrences of the current note&#39;s filename (as a wiki-link) across the vault when you ask for it, via <span class="chip" data-source="obsidian.nvim README">:Obsidian backlinks</span>. The result is the same list you&#39;d see in Obsidian&#39;s sidebar. What feels different: it&#39;s on-demand rather than always-visible. You don&#39;t see a backlinks pane until you ask, which has the side effect of making the operation feel deliberate, more like a search and less like ambient context. Some users find this clarifying; others miss the at-a-glance count. It&#39;s a real trade-off, and worth noticing rather than papering over.</p>
+
+      <p><strong>Daily notes.</strong> Obsidian&#39;s Daily Notes plugin opens today&#39;s note, creating it from a template if it doesn&#39;t exist. obsidian.nvim&#39;s <span class="chip" data-source="obsidian.nvim README">:Obsidian today</span> does exactly the same thing, and there are <span class="chip" data-source="obsidian.nvim README">:Obsidian yesterday</span> and <span class="chip" data-source="obsidian.nvim README">:Obsidian tomorrow</span> as well. What feels different: not much, honestly. This is the most one-to-one translation in the table. The template format obsidian.nvim expects matches the format Obsidian&#39;s Templates plugin uses, with the same date-placeholder syntax, which means you can usually drop your existing template files in without modification.</p>
+
+      <p><strong>Follow link.</strong> Obsidian&#39;s &ldquo;follow link under cursor&rdquo; is <span class="chip" data-source="Obsidian default keymap">Cmd-Click</span> or <span class="chip" data-source="Obsidian default keymap">Cmd-Enter</span> in most setups. obsidian.nvim&#39;s <span class="chip" data-source="obsidian.nvim README">:Obsidian follow_link</span> does the same job, jumping to the linked note or creating it if it doesn&#39;t exist. There is also a generic Neovim command, <span class="chip" data-source="Vim/Neovim built-in command">gf</span> (&ldquo;goto file&rdquo;), that works on plain filesystem paths but doesn&#39;t understand wiki-link syntax &mdash; it&#39;ll fail on <code>[[Note Title]]</code> because it expects a literal filename. The obsidian.nvim command is the one you want for note-style following. What feels different: the link-following is a deliberate command rather than a mouse gesture, which initially feels slower until you realize you&#39;re already in normal mode and the keystroke cost is two characters.</p>
+
+      <p><strong>Insert link via <code>[[</code>.</strong> Obsidian&#39;s <code>[[</code> trigger pops up an autocomplete list of every note in your vault. obsidian.nvim provides this through a completion source that plugs into nvim-cmp or blink.cmp (the two dominant completion engines in the Lua era), and also through explicit commands like <span class="chip" data-source="obsidian.nvim README">:Obsidian link_new</span> and <span class="chip" data-source="obsidian.nvim README">:Obsidian link</span>. What feels different: in Obsidian the trigger is automatic and ambient; in Neovim you&#39;ll usually need to install and configure a completion plugin to get the same ambient feel. The trade-off is that the completion engine you set up serves every other completion you&#39;d want, too &mdash; file paths, LSP suggestions, snippets, emoji, buffer text &mdash; not just wiki-links. One config, every kind of autocomplete.</p>
+
+      <p><strong>Templates.</strong> obsidian.nvim has a template system that mirrors Obsidian&#39;s, with placeholders for date, title, and arbitrary user-defined variables. You invoke it with <span class="chip" data-source="obsidian.nvim README">:Obsidian template</span>, which opens a picker to choose from your templates directory. Same template files, same placeholders, same result. What feels different: the template invocation flows through a picker, like nearly everything else in modern Neovim, which is a moment that will start feeling deeply familiar by the time you finish Section 4 of this artifact.</p>
+
+      <p><strong>Workspaces.</strong> Obsidian workspaces save layout state &mdash; which notes are open, in which panes, at which scroll positions. obsidian.nvim has a different kind of workspace: in its config you can register multiple vault directories and switch between them with <span class="chip" data-source="obsidian.nvim README">:Obsidian workspace</span>. So an obsidian.nvim &ldquo;workspace&rdquo; is closer to an Obsidian <em>vault</em> than to an Obsidian <em>workspace</em>. The vocabulary collision is initially confusing. Neovim has separate session-management plugins (persisted.nvim, auto-session, possession.nvim, and others) for the layout-state idea, decoupled from the vault concept. The two-concept split is cleaner once you adjust to it, because layout-state and vault-state are genuinely different things that Obsidian happened to fold into a single feature.</p>
+
+      <p>Underneath all of these translations, a pattern recurs: the Neovim version routes through a picker. Quick-switch picker. Vault-search picker. Backlinks picker. Templates picker. Workspace picker. The picker is the protagonist of Part 1, which is what the next section is about.</p>
+    </section>
+
+    <hr class="divider">
+
+    <section id="s4">
+      <span class="section-num">04</span>
+      <h2>The Picker Pattern &mdash; Protagonist of Part 1</h2>
+
+      <p>Of every new thing you&#39;ll encounter moving from Obsidian to Neovim, the picker is the one that does the most work for you and the one whose shape rewards understanding the most. Once you grok pickers, ninety percent of the search-and-navigate operations you used to do in Obsidian have an obvious home in Neovim, and a lot of operations you couldn&#39;t do in Obsidian start to feel obvious too.</p>
+
+      <p>A picker is a modal floating window with three components. The top is a <strong>prompt</strong>: a one-line input where you type. The middle is a <strong>result list</strong>: a scrollable, fuzzy-filtered set of candidates that updates live as you type. The bottom &mdash; or the side, depending on layout &mdash; is a <strong>previewer</strong>: a window that shows the contents of whichever result is currently highlighted. You move through the list with <span class="chip" data-source="picker family convention">Ctrl-n</span> and <span class="chip" data-source="picker family convention">Ctrl-p</span> (or arrow keys), preview the highlighted item, and press <span class="chip" data-source="picker family convention">Enter</span> to act on it. The action depends on the picker &mdash; for files, it opens the file; for commands, it runs the command; for git branches, it checks out the branch. That is the entire UI. It is the same UI as Obsidian&#39;s quick switcher, generalized to arbitrary sources of candidates.</p>
+
+      <div class="widget" id="picker-widget">
+        <div class="widget-head">
+          <div>
+            <div class="widget-eyebrow">Live · Fuzzy Picker</div>
+            <h3 class="widget-title">Same UI. Four sources. Swap them with one click.</h3>
+          </div>
+          <div style="font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.1em;">type to filter · ↑↓ to move</div>
+        </div>
+        <div class="widget-body">
+          <div class="picker" id="picker">
+            <div class="picker-source" role="tablist" aria-label="Picker source">
+              <button type="button" data-source="files" aria-pressed="true">find_files</button>
+              <button type="button" data-source="buffers" aria-pressed="false">buffers</button>
+              <button type="button" data-source="commands" aria-pressed="false">commands</button>
+              <button type="button" data-source="grep" aria-pressed="false">live_grep</button>
+            </div>
+            <div class="picker-prompt">
+              <span class="sigil">&gt;</span>
+              <input id="picker-input" type="text" autocomplete="off" spellcheck="false" placeholder="type to filter…" aria-label="Picker prompt">
+              <span class="count" id="picker-count">0 / 0</span>
+            </div>
+            <div class="picker-main">
+              <div class="picker-results" id="picker-results" role="listbox" tabindex="0"></div>
+              <div class="picker-preview" id="picker-preview">
+                <div class="preview-title">Preview</div>
+                <pre id="picker-preview-content">No selection.</pre>
+              </div>
+            </div>
+            <div class="picker-foot">
+              <span><kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>↵</kbd> open · <kbd>Esc</kbd> clear</span>
+              <span id="picker-source-label">find_files</span>
+            </div>
+          </div>
+          <div class="widget-caption">
+            Watch what stays still and what changes. The <strong>chrome</strong> &mdash; prompt, results pane, preview pane, footer hints &mdash; is identical across all four sources. Only the <em>candidates</em> and the <em>preview content</em> swap underneath. That invariance is the abstraction that lets dozens of unrelated plugins reuse the same search modal without inventing their own.
+          </div>
+        </div>
+      </div>
+
+      <p>The history of how Neovim arrived at this pattern is worth knowing because it explains why every modern Lua plugin assumes you have a picker installed. The pivotal plugin is <span class="chip" data-source="github.com/nvim-telescope/telescope.nvim">Telescope</span>, which emerged from the Neovim community around 2020 and was developed under the nvim-telescope GitHub organization with TJ DeVries &mdash; also a Neovim core contributor and the maintainer of kickstart.nvim &mdash; as one of its leading authors. Telescope took an idea that had existed in Vim before (fzf.vim, ctrlp.vim, denite.nvim, unite.vim) and rebuilt it as a properly composable Lua framework. The framework introduced a pipeline that has since become the lingua franca of the picker family: a <strong>finder</strong> that produces candidates, a <strong>sorter</strong> that ranks them by relevance to the prompt, and a <strong>previewer</strong> that knows how to display whichever candidate is highlighted. Plug any finder into any sorter into any previewer and you have a custom picker, defined declaratively in a few lines of Lua.</p>
+
+      <details class="hideaway">
+        <summary>What finder / sorter / previewer actually do</summary>
+        <p>A <strong>finder</strong> is a function that produces a list of candidates. The simplest finders just shell out to <code>fd</code> or <code>rg --files</code> and return the lines. More complex finders are async generators &mdash; they stream candidates in as they&#39;re discovered, which is how Telescope can start showing results before the full file walk completes on a large vault. A finder doesn&#39;t know how to filter, sort, or display; it only knows how to produce.</p>
+        <p>A <strong>sorter</strong> takes the current prompt string and the candidate list and returns a ranked subset. The default sorter is fuzzy: it scores candidates higher when the prompt characters appear close together, when they start at word boundaries, and when matches are early in the string. The fancier sorters use the <span class="chip" data-source="github.com/nvim-telescope/telescope-fzf-native.nvim">fzf-native</span> C extension for orders-of-magnitude speedup on big result sets.</p>
+        <p>A <strong>previewer</strong> takes the currently-highlighted candidate and renders a representation of it into the floating preview window. For files, it loads the buffer with Treesitter highlighting. For git commits, it shells out to <code>git show</code>. For LSP symbols, it jumps the preview to the line. The previewer interface is the cleanest part of the abstraction &mdash; once you understand it, you can write your own previewer for any kind of object in about thirty lines of Lua.</p>
+      </details>
+
+      <p>That pipeline is the abstraction that made pickers eat Neovim. Because the three parts are pluggable, the same Telescope core can search files, grep contents, list buffers, browse git commits, jump to LSP symbols, navigate help tags, switch colorschemes, browse keymaps, and approximately a hundred other operations that older Vim users used to spread across a dozen separate plugins. The naming convention reflects this: <span class="chip" data-source="Telescope README">:Telescope find_files</span>, <span class="chip" data-source="Telescope README">:Telescope live_grep</span>, <span class="chip" data-source="Telescope README">:Telescope buffers</span>, <span class="chip" data-source="Telescope README">:Telescope oldfiles</span>, <span class="chip" data-source="Telescope README">:Telescope commands</span>, <span class="chip" data-source="Telescope README">:Telescope help_tags</span>. Each one is a different finder&#43;sorter&#43;previewer combination, exposed as a single Ex command. The mental cost of learning a new one is &ldquo;remember a new word after <code>:Telescope</code>,&rdquo; not &ldquo;install a whole new plugin.&rdquo;</p>
+
+      <p>In community configs the cluster of Telescope commands typically lives under the <span class="chip" data-source="LazyVim &amp; kickstart.nvim conventions">&lt;leader&gt;f</span> prefix &mdash; <em>f</em> for &ldquo;find.&rdquo; You get a chord vocabulary that fits comfortably in muscle memory: <span class="chip" data-source="LazyVim defaults">&lt;leader&gt;ff</span> for find files, <span class="chip" data-source="LazyVim defaults">&lt;leader&gt;fg</span> for live grep, <span class="chip" data-source="LazyVim defaults">&lt;leader&gt;fb</span> for buffers, <span class="chip" data-source="LazyVim defaults">&lt;leader&gt;fr</span> for recent files, <span class="chip" data-source="LazyVim defaults">&lt;leader&gt;fh</span> for help. The mnemonic is two letters: <em>find&#43;thing</em>. After a few days the chord is faster than thinking about it, and you have replaced everything Obsidian&#39;s quick switcher did with a more general, more composable tool that you can extend yourself when you need to.</p>
+
+      <p>There is one structural difference between Obsidian&#39;s quick switcher and the Neovim picker family that&#39;s worth naming out loud, because it&#39;s the thing that makes the picker land harder than a beginner expects. Obsidian&#39;s switcher is a feature inside Obsidian. The picker, in Neovim, is <em>infrastructure</em> that other features build on top of. When you install Telescope or Snacks.picker or fzf-lua, you are not just installing a quick-switch dialog &mdash; you are installing the mechanism by which dozens of other plugins will surface their own pickable interfaces. The LSP integration uses your picker for symbol search and code-action selection. The git plugin uses your picker for branch selection and commit browsing. The diagnostic plugin uses your picker for error navigation. obsidian.nvim, the bridge plugin in Section 5, uses your picker for note selection. You install the picker once and every well-behaved plugin in your config benefits from it without further configuration on your part.</p>
+
+      <p>This is a different mental model from Obsidian, where each feature ships with its own search-modal implementation and the styles vary subtly across plugins. In Neovim, search modals are a shared resource. The Lua plugin community converged on this convention deliberately during the post-2021 Lua boom, in part because Telescope&#39;s framework made it cheap to do well, and in part because the alternative &mdash; every plugin shipping its own search UI &mdash; produced visible inconsistency in user configs that everyone agreed was ugly and unnecessary. The convention got formalized in the built-in <span class="chip" data-source="Neovim built-in API">vim.ui.select</span> escape hatch, discussed below.</p>
+
+      <p>Telescope&#39;s success spawned a generation of descendants, each making different trade-offs against the original. They&#39;re worth knowing about because the choice between them is the first non-trivial configuration decision an Obsidian user lands on when they move into Neovim.</p>
+
+      <p><span class="chip" data-source="github.com/folke/snacks.nvim">Snacks.picker</span>, by folke (the maintainer of LazyVim, lazy.nvim, which-key.nvim, noice.nvim, and a long list of widely-used plugins), is part of the broader Snacks.nvim suite &mdash; a collection of small, tightly-integrated utilities released in 2024 that share configuration and aesthetic. Snacks.picker is faster than Telescope for many operations because it avoids some of the abstraction overhead the framework approach introduced, and it integrates cleanly with other Snacks modules like the dashboard, the bigfile handler, and the scratch-buffer system. If you start with a fresh LazyVim install today, you are likely to have Snacks.picker available out of the box, often alongside Telescope for backward compatibility with older plugin instructions.</p>
+
+      <p><span class="chip" data-source="github.com/ibhagwan/fzf-lua">fzf-lua</span>, by ibhagwan, takes a different bet: rather than implementing the fuzzy-matching in Lua, it shells out to the <span class="chip" data-source="github.com/junegunn/fzf">fzf</span> binary that Junegunn Choi wrote in Go years before Telescope existed. fzf is one of the fastest fuzzy finders ever written, and the speed difference shows on massive result sets &mdash; searching a monorepo with hundreds of thousands of files, grepping a Linux-kernel-sized codebase. For vaults that have grown into the tens of thousands of notes, fzf-lua is consistently the snappiest option. It is also the picker most likely to feel familiar to users who came from terminal fzf workflows before they ever opened Neovim.</p>
+
+      <p><span class="chip" data-source="github.com/echasnovski/mini.nvim">mini.pick</span>, part of echasnovski&#39;s mini.nvim suite, is the minimalist option. The mini.nvim project&#39;s design philosophy is to provide small, dependency-free modules that each cover one concept thoroughly. mini.pick gives you a working picker in a fraction of the configuration surface Telescope requires, with deliberate restraint about scope. If you are the kind of person who reads a 400-line README and wishes it were 80 lines, mini.pick is calibrated for you.</p>
+
+      <p>And underneath all of these, Neovim itself ships a primitive function called <span class="chip" data-source="Neovim built-in API">vim.ui.select</span>. It is the native API that asks the user to pick from a list. By default it falls back to a numbered prompt in the command line &mdash; ugly but functional. Any of the pickers above can override <code>vim.ui.select</code> so that when <em>any plugin</em> in your config asks the user to pick from a list, the request is routed through your chosen picker instead of the ugly fallback. This is the escape hatch that makes plugin authors safe: they don&#39;t have to depend on a specific picker; they call <code>vim.ui.select</code> and trust that the user&#39;s environment has wired up something reasonable underneath.</p>
+
+      <p>Previewing is the other piece worth understanding before you install any of these. The previewer in a picker is a real Neovim buffer rendered in a floating window, which means it can do anything Neovim can do: syntax highlighting via Treesitter, LSP hover information, image rendering (with an appropriate plugin), even editing if the picker chooses to allow it. When you fuzzy-search your vault with live_grep and the previewer is showing matched lines with surrounding context and full markdown highlighting, the experience can feel more capable than Obsidian&#39;s search-results pane, which is rendered in Obsidian&#39;s reading-mode CSS and is read-only. The picker preview is, in a sense, a small editor inside the search dialog, which is the kind of small detail that quietly tips your daily workflow.</p>
+
+      <p>The practical consequence for an Obsidian user landing here: pick a picker. Any of the four above. The choice is mostly aesthetic and somewhat performance-sensitive. LazyVim users default to Snacks.picker and rarely think about it again; kickstart.nvim users default to Telescope and rarely think about it again; both are fine starting positions. Once you have a picker, your Obsidian search habits &mdash; quick switch, vault search, recent files, command palette &mdash; all have homes. The remaining work is wiring obsidian.nvim&#39;s vault-aware commands into the same picker, which is what the next section is about.</p>
+    </section>
+
+    <hr class="divider">
+
+    <section id="s5">
+      <span class="section-num">05</span>
+      <h2>obsidian.nvim &mdash; The Bridge Plugin</h2>
+
+      <p>If pickers are the protagonist of Part 1, obsidian.nvim is the supporting character that ties Neovim&#39;s general-purpose machinery back to the specifically-Obsidian conventions you&#39;ve spent years internalizing. It is the bridge plugin, and it is the single most important plugin to install if you are coming from Obsidian and want your existing vault to keep working without restructuring.</p>
+
+      <p><span class="chip" data-source="github.com/epwalsh/obsidian.nvim">obsidian.nvim</span> was originally created and maintained by <span class="chip" data-source="obsidian.nvim README">epwalsh</span>. Its purpose is to teach Neovim about the conventions Obsidian uses to organize a vault: the wiki-link syntax <code>[[Note Title]]</code>, the YAML frontmatter at the top of each note, the daily-notes folder, the templates folder, the conventional places where attachments live, the existence of multiple vaults. None of these are concepts Neovim has out of the box &mdash; to a stock Neovim, a markdown file with wiki-links is just text with some funny brackets in it. With obsidian.nvim installed and pointed at your vault directory, Neovim becomes vault-aware: it recognizes wiki-links as navigable, autocompletes note titles when you type <code>[[</code>, can create new notes from templates, and can search the vault using whichever picker you have configured.</p>
+
+      <p>That last clause is the important one. obsidian.nvim does not implement its own picker. It has a config option, typically written as <code>picker = "telescope.nvim"</code> or <code>picker = "snacks.pick"</code> or <code>picker = "fzf-lua"</code> or <code>picker = "mini.pick"</code>, that tells it which picker installed in your environment to route through. When you invoke <span class="chip" data-source="obsidian.nvim README">:Obsidian quick_switch</span> or <span class="chip" data-source="obsidian.nvim README">:Obsidian search</span> or <span class="chip" data-source="obsidian.nvim README">:Obsidian backlinks</span>, the picker that opens is the picker you already use everywhere else in Neovim, populated with vault-specific candidates. The result is that your &ldquo;search the vault&rdquo; muscle and your &ldquo;search anything in Neovim&rdquo; muscle become the same muscle, just with different content underneath. This is the single best UX outcome of the bridge-plugin architecture, and it&#39;s the reason this plugin matters so much for Obsidian users specifically.</p>
+
+      <p>In community configurations &mdash; and in the obsidian.nvim README&#39;s own example mappings &mdash; the Obsidian-specific commands are commonly clustered under the <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;o</span> namespace, where the second letter selects an action. Common mappings you&#39;ll see, presented as illustrative rather than universal: <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;oo</span> to open the Obsidian command menu (the picker over all <code>:Obsidian</code> subcommands), <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;oq</span> for quick switch, <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;os</span> for search, <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;od</span> for today&#39;s daily, <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;on</span> for new note, <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;ob</span> for backlinks of the current note, <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;ot</span> for inserting a template, and <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;ol</span> for following the link under the cursor. Your config will end up with its own variation; treat these as the pattern, not the prescription.</p>
+
+      <div class="widget" id="leader-tree">
+        <div class="widget-head">
+          <div>
+            <div class="widget-eyebrow">Live · Leader Chord Tree</div>
+            <h3 class="widget-title">Walk the namespace. Press a letter, watch it open.</h3>
+          </div>
+          <div style="font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.1em;">click keys · or type them · <kbd style="background: rgba(216,180,254,0.10); padding: 1px 5px; border-radius: 2px; color: var(--lavender);">Backspace</kbd> goes up</div>
+        </div>
+        <div class="widget-body">
+          <div class="chord" id="chord">
+            <div class="chord-bar">
+              <div class="chord-pressed" id="chord-pressed">
+                <!-- Filled by JS -->
+              </div>
+              <button class="chord-reset" id="chord-reset" type="button">Reset</button>
+            </div>
+            <div class="chord-grid" id="chord-grid">
+              <!-- Filled by JS -->
+            </div>
+            <div id="chord-leaf"></div>
+          </div>
+          <div class="widget-caption">
+            This is what <strong>which-key.nvim</strong> draws on your screen the moment you press Space and pause. The grid <em>is</em> the menu. Each top-level letter is a <em>namespace</em> &mdash; a small grammar of what comes next &mdash; not a single action. <code>&lt;leader&gt;o</code> doesn&#39;t mean &ldquo;do an Obsidian thing&rdquo;; it means &ldquo;I&#39;m about to specify which Obsidian thing.&rdquo; Two-key chords scale to hundreds of mappings because each prefix limits the next step to a handful of options. Press, then press, then act.
+          </div>
+        </div>
+      </div>
+
+      <p>The pattern itself &mdash; why a single-letter action namespace, why these particular verbs cluster &mdash; is worth unpacking, because once you see why it works for Obsidian operations, you&#39;ll start using it for your own keymap groupings everywhere else. The single-letter namespace gives you a memory-anchor: <em>o</em> means &ldquo;I&#39;m about to do something Obsidian-related.&rdquo; The second letter is mnemonic on the verb: <em>d</em> for daily, <em>n</em> for new, <em>b</em> for backlinks, <em>t</em> for template, <em>l</em> for link. After roughly a week of use, the muscle memory shifts from &ldquo;press space, then o, then think about which letter&rdquo; to &ldquo;press space-o-d as a chord,&rdquo; in the same way that pianists eventually stop thinking about individual notes inside a scale. This chunking is what makes leader-key configurations scale to hundreds of mappings without becoming unmanageable: each prefix is a small grammar.</p>
+
+      <p>The verbs cluster the way they do because they are the verbs that matter for note-taking specifically. Switch, search, today, new, backlinks, template, follow-link. Look at that list as a complete description of what an Obsidian user does in a vault session and you&#39;ll see that it is essentially complete. There are advanced operations &mdash; renaming a note and updating its links, tagging a note, working with extended frontmatter, archiving an old note &mdash; but the seven verbs above cover something like ninety percent of the operations a vault sees in a week. The namespace is small because the work it represents is small. That&#39;s a design choice obsidian.nvim shares with Obsidian itself: keep the verbs few and the surface clean, push everything else into commands you can find when you need them.</p>
+
+      <p>A note on maintenance state. Open-source maintenance is fluid; the question of who actively maintains obsidian.nvim has evolved since the plugin was first created, and may evolve again before you read this. If you install it through a community config like LazyVim, the config will pin to whichever fork or version the maintainers consider current; that&#39;s usually the right answer. If you install it directly, read the current README for the canonical command list and config schema, because plugin command names occasionally rename between major versions. Treat the mappings in this section as examples of the <em>pattern</em> rather than canonical defaults, because exact bindings are a config-level concern and obsidian.nvim leaves most of them to the user by design.</p>
+
+      <details class="hideaway">
+        <summary>How which-key.nvim makes the namespace discoverable</summary>
+        <p>The chord-tree widget above is not just a learning toy &mdash; it&#39;s a near-replica of what <span class="chip" data-source="github.com/folke/which-key.nvim">which-key.nvim</span> draws on your screen the moment you press a leader prefix and hold for a configurable timeout (default around 300ms). The plugin watches the keymap table you&#39;ve declared in your config, groups bindings by their common prefix, and renders a floating menu of &ldquo;here are the next keys that lead somewhere, and here is what they do.&rdquo;</p>
+        <p>This solves the discoverability problem that leader-key configs have always had: a flat list of two-key chords is unmemorable, but a hierarchical menu that surfaces itself on demand is browseable. You don&#39;t have to remember <code>&lt;leader&gt;od</code>; you press <code>&lt;leader&gt;o</code>, pause, and the menu reminds you. Most LazyVim users have which-key installed by default and rarely think about it, the same way they rarely think about the picker &mdash; it&#39;s infrastructure that quietly makes the rest of the config legible. If your future config grows large enough to feel unmanageable, which-key is usually the first thing that makes it feel manageable again.</p>
+      </details>
+
+      <p>The takeaway, for an Obsidian user landing in Neovim: install one picker, then install obsidian.nvim and point it at your vault. Configure the <span class="chip" data-source="obsidian.nvim README &mdash; example mappings">&lt;leader&gt;o</span> namespace with the verbs you actually use. Within a few days, the muscle memory of &ldquo;I want to find this note&rdquo; or &ldquo;let me open today&#39;s daily&rdquo; will run on Neovim keystrokes instead of Obsidian ones, and you will have ported your most fundamental knowledge work into a terminal without losing the vault, the notes, the links, or any of the years of accumulated structure underneath.</p>
+    </section>
+
+    <hr class="divider">
+
+    <section id="s6">
+      <span class="section-num">06</span>
+      <h2>What&#39;s Next &mdash; Series Map</h2>
+
+      <p>This artifact is Part <span class="callout-num">1</span> of a planned series, and the restraint is intentional. Neovim is famously deep &mdash; modal editing alone could fill a book; the LSP integration, treesitter parsing, debug-adapter protocol, async runtime, and configuration ecosystem each could fill another. Trying to compress all of it into a single learning artifact would produce the same shape of failure that &ldquo;Top 50 Obsidian Plugins&rdquo; articles produce: comprehensive in scope, useless in practice, forgotten by the reader within an hour. So this first piece deliberately limits itself to the one thing that matters most for an Obsidian user on day one &mdash; the picker pattern and the bridge plugin that connects it to your vault &mdash; and leaves the rest for later.</p>
+
+      <p>The follow-ups in this series will take roughly this shape. <strong>The Picker Family Tree</strong> will be a standalone piece comparing Telescope, Snacks.picker, fzf-lua, and mini.pick on the dimensions that actually matter for an everyday user: speed on large vaults, configuration surface, integration with other plugins, aesthetic options, and the question of when (and why) to switch between them. <strong>Motions and Text Objects, In Notes</strong> will introduce the verb-and-noun grammar of normal-mode editing in the specific context of editing markdown &mdash; what <code>ciw</code>, <code>dap</code>, and <code>vit</code> actually do when the buffer you&#39;re in is a long-form note rather than source code. Different from the general-purpose Vim tutorials, because the editing patterns for prose are not the editing patterns for code, and the existing tutorials almost universally assume code. <strong>Harpoon, and the Marks-Stack Idea</strong> will introduce <span class="chip" data-source="github.com/ThePrimeagen/harpoon">Harpoon</span>, ThePrimeagen&#39;s small file-pinning plugin: a four-slot stack of &ldquo;pinned&rdquo; files you can teleport between with a single keystroke, regardless of where you are in your vault. You&#39;ll meet Harpoon early in your Neovim career and it will become one of the keystroke patterns you use the most; it&#39;s simple enough to grok on first contact, and it deserves its own short piece because the marks-stack idea generalizes well beyond Harpoon itself.</p>
+
+      <p>And then a long-form history piece, separate from the practical guides: <strong>The Vim &rarr; Neovim &rarr; Lua Lineage</strong>, tracing the line from Bill Joy&#39;s vi in the late 1970s through Bram Moolenaar&#39;s Vim through the 2014 Neovim fork through the 2021 Lua-and-LSP renaissance to the current moment. It&#39;s a genuinely fun history. Understanding it makes the design choices in your config legible in a way that the practical-only tutorials don&#39;t reach, and it gives you context for why the community argues the way it does about plugins and conventions.</p>
+
+      <p>Your next move, before any of the above arrives, is to open Neovim and try something. Install a picker. Install obsidian.nvim. Point it at your vault. Press <span class="chip" data-source="LazyVim defaults">&lt;leader&gt;ff</span> and watch your vault appear in a fuzzy-searchable list. Type four letters of a note title and press enter. You just did Obsidian quick switch in Neovim. That&#39;s the foundation, and everything else in this series builds on it. Close the artifact, open the terminal, and try one thing.</p>
+    </section>
+
+    <footer>
+      <span>Part 01 &middot; Translation Series</span>
+      <span>Updated 2026</span>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+(function() {
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  const sections = document.querySelectorAll('main section[id]');
+  const STORAGE_KEY = 'nvim-translated-last-read';
+
+  function setActive(id) {
+    tocLinks.forEach(function(link) {
+      if (link.dataset.target === id) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  // IntersectionObserver: highlight the section currently in the upper-middle band
+  const observer = new IntersectionObserver(function(entries) {
+    // Find the topmost intersecting section
+    let topMost = null;
+    let topMostY = Infinity;
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        const y = entry.boundingClientRect.top;
+        if (y < topMostY) {
+          topMostY = y;
+          topMost = entry.target;
+        }
+      }
+    });
+    if (topMost) {
+      const id = topMost.id;
+      setActive(id);
+      try {
+        localStorage.setItem(STORAGE_KEY, id);
+      } catch (e) { /* localStorage may be disabled */ }
+    }
+  }, {
+    rootMargin: '-25% 0px -55% 0px',
+    threshold: 0
+  });
+
+  sections.forEach(function(section) {
+    observer.observe(section);
+  });
+
+  // On load, optionally restore the user's last-read section.
+  // Only restore if the user hasn't already scrolled and the target isn't the first section.
+  window.addEventListener('load', function() {
+    try {
+      const last = localStorage.getItem(STORAGE_KEY);
+      if (last && last !== 's1' && window.scrollY === 0 && !window.location.hash) {
+        const el = document.getElementById(last);
+        if (el) {
+          el.scrollIntoView({ block: 'start' });
+        }
+      }
+    } catch (e) { /* ignore */ }
+  });
+
+  // Smooth-ish anchor jumps via the TOC: use native behavior, no JS animation needed
+})();
+</script>
+
+<script>
+/* ============================================================
+   WIDGET 1 — Mode Explorer
+   Same 9 keystrokes. Four modes. Meanings flip.
+   ============================================================ */
+(function() {
+  const KEYS = ['d', 'w', '3', 'i', 'a', 'o', ':', 'w', 'q'];
+
+  const MODES = {
+    normal: {
+      caption: 'Keys are <strong>commands</strong>. <em>d</em> is the delete operator and waits for a motion. <em>w</em> moves forward by word. Together: <em>dw</em> deletes one word; <em>d3w</em> deletes three. <em>i</em>, <em>a</em>, <em>o</em> all enter Insert mode &mdash; from different positions. <em>:</em> opens the cmdline. Notice almost no key types itself.',
+      meanings: [
+        { glyph: 'd', flavor: 'op',     role: 'delete<br>(awaits motion)' },
+        { glyph: 'w', flavor: 'motion', role: 'word forward' },
+        { glyph: '3', flavor: 'count',  role: 'count prefix · ×3' },
+        { glyph: 'i', flavor: 'mode',   role: 'insert<br>before cursor' },
+        { glyph: 'a', flavor: 'mode',   role: 'insert<br>after cursor' },
+        { glyph: 'o', flavor: 'mode',   role: 'open line below<br>+ insert' },
+        { glyph: ':', flavor: 'mode',   role: 'enter cmdline' },
+        { glyph: 'w', flavor: 'motion', role: 'word forward' },
+        { glyph: 'q', flavor: 'op',     role: 'record macro<br>(into register)' }
+      ]
+    },
+    insert: {
+      caption: 'The typewriter. <strong>Every key types its literal character.</strong> This is the only mode that behaves like every other editor you&#39;ve used. Notice the cost &mdash; you traded the entire alphabet&#39;s expressive power for being able to add text. That&#39;s why pure-modal advocates argue Insert should be a short visit, not a residence.',
+      meanings: KEYS.map(k => ({ glyph: k, flavor: 'literal', role: `type &ldquo;${k}&rdquo;` }))
+    },
+    visual: {
+      caption: 'You&#39;re holding a <strong>selection</strong>. Operators act on the whole range without waiting for a motion: <em>d</em> deletes the selection immediately. Motions <em>extend</em> the selection. <em>i</em> and <em>a</em> become text-object modifiers (next: <em>iw</em> = inner word, <em>ap</em> = around paragraph). <em>o</em> swaps which end of the selection your cursor is anchored to.',
+      meanings: [
+        { glyph: 'd', flavor: 'op',     role: 'delete<br>the selection' },
+        { glyph: 'w', flavor: 'motion', role: 'extend<br>by word' },
+        { glyph: '3', flavor: 'count',  role: 'count prefix · ×3' },
+        { glyph: 'i', flavor: 'op',     role: '&ldquo;inner&rdquo;<br>(awaits noun)' },
+        { glyph: 'a', flavor: 'op',     role: '&ldquo;around&rdquo;<br>(awaits noun)' },
+        { glyph: 'o', flavor: 'motion', role: 'swap cursor<br>to other end' },
+        { glyph: ':', flavor: 'mode',   role: 'cmdline<br>scoped to range' },
+        { glyph: 'w', flavor: 'motion', role: 'extend<br>by word' },
+        { glyph: 'q', flavor: 'literal',role: 'no special role' }
+      ]
+    },
+    cmdline: {
+      caption: 'You&#39;re typing into the prompt at the bottom of the screen. Every key is a literal character &mdash; just text. But notice the punchline: the last two keys typed in this mode become <code>:wq</code>, the famous write-and-quit. The legend isn&#39;t magic; it&#39;s just two letters in the right context.',
+      meanings: KEYS.map((k, i) => {
+        if (i === 7) return { glyph: 'w', flavor: 'mode', role: 'type w · the<br><strong>:wq</strong> begins' };
+        if (i === 8) return { glyph: 'q', flavor: 'mode', role: 'type q · <strong>:wq</strong><br>= write &amp; quit' };
+        return { glyph: k, flavor: 'literal', role: `type &ldquo;${k}&rdquo;<br>into cmdline` };
+      })
+    }
+  };
+
+  const grid = document.getElementById('mode-grid');
+  const legend = document.getElementById('mode-legend');
+  const caption = document.getElementById('mode-caption');
+  if (!grid) return;
+
+  const buttons = document.querySelectorAll('#mode-explorer .seg button');
+
+  legend.innerHTML = ''
+    + '<span class="op">operator</span>'
+    + '<span class="motion">motion</span>'
+    + '<span class="count">count</span>'
+    + '<span class="mode">mode-switch</span>'
+    + '<span class="literal">literal text</span>';
+
+  function render(mode) {
+    const m = MODES[mode];
+    grid.innerHTML = m.meanings.map(k => (
+      '<div class="mode-key" data-flavor="' + k.flavor + '">'
+      + '<div class="glyph">' + k.glyph + '</div>'
+      + '<div class="role">' + k.role + '</div>'
+      + '</div>'
+    )).join('');
+    caption.innerHTML = m.caption;
+    buttons.forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode ? 'true' : 'false'));
+  }
+
+  buttons.forEach(b => b.addEventListener('click', () => render(b.dataset.mode)));
+  render('normal');
+})();
+
+/* ============================================================
+   WIDGET 2 — Translation Toggle
+   Eight Obsidian habits. Swap the whole view at once.
+   ============================================================ */
+(function() {
+  const ROWS = [
+    {
+      habit: 'Quick switch',
+      obs: { trigger: 'Cmd-O', note: 'Type a few letters of a note title. Picker filters live; enter opens.' },
+      nvim: { trigger: ':Telescope find_files<br>&lt;leader&gt;ff', note: 'Same modal, but file <em>paths</em> in a directory tree &mdash; structure becomes legible.' }
+    },
+    {
+      habit: 'Vault search',
+      obs: { trigger: 'Cmd-Shift-F', note: 'Full-text across vault; blends title + content matching by default.' },
+      nvim: { trigger: ':Telescope live_grep<br>&lt;leader&gt;fg', note: 'Content-only, ripgrep-backed, ferociously fast. You stop searching titles.' }
+    },
+    {
+      habit: 'Backlinks',
+      obs: { trigger: 'Always-visible sidebar pane', note: 'Real-time index of every link, updated as you type.' },
+      nvim: { trigger: ':Obsidian backlinks', note: 'On-demand ripgrep, not always-visible. More deliberate; less ambient.' }
+    },
+    {
+      habit: 'Daily notes',
+      obs: { trigger: 'Daily Notes plugin · Cmd-D', note: 'Opens today; creates from template if missing.' },
+      nvim: { trigger: ':Obsidian today', note: 'Identical behavior. Same template format. <em>Most one-to-one in the table.</em>' }
+    },
+    {
+      habit: 'Follow link',
+      obs: { trigger: 'Cmd-Click · Cmd-Enter', note: 'Jump to linked note. Mouse gesture or modifier chord.' },
+      nvim: { trigger: ':Obsidian follow_link<br>&lt;leader&gt;ol', note: 'Two keystrokes from Normal mode &mdash; feels slower until you&#39;re already there.' }
+    },
+    {
+      habit: 'Insert link [[',
+      obs: { trigger: 'Auto-trigger on [[', note: 'Ambient autocomplete of every note in vault. Just works.' },
+      nvim: { trigger: 'nvim-cmp · blink.cmp', note: 'Needs a completion engine &mdash; which then serves <em>every</em> kind of autocomplete, not just links.' }
+    },
+    {
+      habit: 'Templates',
+      obs: { trigger: 'Templates plugin · pick from list', note: 'Date / title placeholders; dropdown picker.' },
+      nvim: { trigger: ':Obsidian template', note: 'Same template files. Same placeholders. Invocation flows through a picker.' }
+    },
+    {
+      habit: 'Workspaces',
+      obs: { trigger: 'Saved layout state', note: 'Which notes are open, in which panes, at which scroll positions.' },
+      nvim: { trigger: ':Obsidian workspace', note: 'Different meaning &mdash; switches <em>vault directories</em>. Layout-state lives in a separate plugin.' }
+    }
+  ];
+
+  const grid = document.getElementById('trans-grid');
+  if (!grid) return;
+  const buttons = document.querySelectorAll('#translation-toggle .seg button');
+
+  function render(view) {
+    if (view === 'both') {
+      grid.innerHTML = ROWS.map(r => (
+        '<div class="trans-row both">'
+        + '<div class="trans-habit">' + r.habit + '</div>'
+        + '<div class="trans-cell obs">'
+          + '<span class="label">Obsidian</span>'
+          + '<span class="trigger">' + r.obs.trigger + '</span>'
+          + '<span class="note">' + r.obs.note + '</span>'
+        + '</div>'
+        + '<div class="trans-cell nvim">'
+          + '<span class="label">Neovim</span>'
+          + '<span class="trigger">' + r.nvim.trigger + '</span>'
+          + '<span class="note">' + r.nvim.note + '</span>'
+        + '</div>'
+        + '</div>'
+      )).join('');
+    } else {
+      const side = view === 'obs' ? 'obs' : 'nvim';
+      const label = view === 'obs' ? 'Obsidian' : 'Neovim';
+      grid.innerHTML = ROWS.map(r => (
+        '<div class="trans-row">'
+        + '<div class="trans-habit">' + r.habit + '</div>'
+        + '<div class="trans-cell ' + side + '">'
+          + '<span class="label">' + label + '</span>'
+          + '<span class="trigger">' + r[side].trigger + '</span>'
+          + '<span class="note">' + r[side].note + '</span>'
+        + '</div>'
+        + '</div>'
+      )).join('');
+    }
+    buttons.forEach(b => b.setAttribute('aria-pressed', b.dataset.view === view ? 'true' : 'false'));
+  }
+
+  buttons.forEach(b => b.addEventListener('click', () => render(b.dataset.view)));
+  render('obs');
+})();
+
+/* ============================================================
+   WIDGET 3 — Live Picker
+   Real fuzzy filtering. Four interchangeable sources.
+   ============================================================ */
+(function() {
+  const SOURCES = {
+    files: {
+      label: 'find_files',
+      items: [
+        { path: 'inbox/2026-05-18.md' },
+        { path: 'inbox/2026-05-17.md' },
+        { path: 'projects/gddp/README.md' },
+        { path: 'projects/gddp/architecture.md' },
+        { path: 'projects/gddp/agents-spec.md' },
+        { path: 'projects/myapi/README.md' },
+        { path: 'projects/myapi/retrieval-notes.md' },
+        { path: 'projects/dag-generator/spec.md' },
+        { path: 'projects/solvebench/dashboard-design.md' },
+        { path: 'literature-notes/picker-pattern.md' },
+        { path: 'literature-notes/modal-editing.md' },
+        { path: 'literature-notes/treesitter-grammar.md' },
+        { path: 'permanent-notes/composition-as-design.md' },
+        { path: 'permanent-notes/lua-vs-vimscript.md' },
+        { path: 'permanent-notes/leader-key-namespaces.md' },
+        { path: 'daily/2026-05-18.md' },
+        { path: 'daily/2026-05-17.md' },
+        { path: 'daily/2026-05-16.md' },
+        { path: 'templates/daily.md' },
+        { path: 'templates/literature.md' },
+        { path: 'templates/project.md' },
+        { path: 'README.md' }
+      ]
+    },
+    buffers: {
+      label: 'buffers',
+      items: [
+        { num: 1, path: 'init.lua' },
+        { num: 2, path: 'lua/plugins/obsidian.lua' },
+        { num: 3, path: 'lua/plugins/snacks.lua' },
+        { num: 4, path: 'lua/plugins/treesitter.lua' },
+        { num: 5, path: 'projects/gddp/README.md' },
+        { num: 6, path: 'inbox/2026-05-18.md' },
+        { num: 7, path: '[No Name]' }
+      ]
+    },
+    commands: {
+      label: 'commands',
+      items: [
+        { cmd: ':write', desc: 'save buffer' },
+        { cmd: ':write !sudo tee %', desc: 'save as root (famously)' },
+        { cmd: ':bdelete', desc: 'delete buffer from memory' },
+        { cmd: ':vsplit', desc: 'vertical split current window' },
+        { cmd: ':split', desc: 'horizontal split current window' },
+        { cmd: ':tabnew', desc: 'open a new tab page' },
+        { cmd: ':terminal', desc: 'open built-in terminal' },
+        { cmd: ':source $MYVIMRC', desc: 'reload your config' },
+        { cmd: ':Telescope find_files', desc: 'picker over project files' },
+        { cmd: ':Telescope live_grep', desc: 'ripgrep across project' },
+        { cmd: ':Telescope buffers', desc: 'pick from open buffers' },
+        { cmd: ':Telescope oldfiles', desc: 'recently used files' },
+        { cmd: ':Telescope commands', desc: 'pick from all Ex commands' },
+        { cmd: ':Telescope help_tags', desc: 'search Neovim help' },
+        { cmd: ':Obsidian quick_switch', desc: 'jump to a note by name' },
+        { cmd: ':Obsidian search', desc: 'grep your vault' },
+        { cmd: ':Obsidian today', desc: 'open today\'s daily note' },
+        { cmd: ':Obsidian backlinks', desc: 'find links pointing here' },
+        { cmd: ':Obsidian template', desc: 'insert from templates folder' },
+        { cmd: ':Obsidian new', desc: 'create new note from template' },
+        { cmd: ':Obsidian follow_link', desc: 'jump to link under cursor' },
+        { cmd: ':Lazy', desc: 'open lazy.nvim plugin manager' },
+        { cmd: ':Mason', desc: 'LSP / DAP / linter installer' },
+        { cmd: ':LspInfo', desc: 'show LSP status for buffer' },
+        { cmd: ':checkhealth', desc: 'diagnose your Neovim install' }
+      ]
+    },
+    grep: {
+      label: 'live_grep',
+      items: [
+        { file: 'projects/gddp/README.md', line: 12, text: '# Graph-Driven Development Pipeline' },
+        { file: 'projects/gddp/README.md', line: 47, text: 'The founding insight: agents silently rewrote the truth graph' },
+        { file: 'projects/gddp/architecture.md', line: 8, text: '## Two-repo split: gddp-config vs gddp-runtime' },
+        { file: 'projects/gddp/architecture.md', line: 55, text: 'Verdicts: PASS / BLOCK / ESCALATE' },
+        { file: 'projects/myapi/README.md', line: 3, text: 'Personal context retrieval over Obsidian + AI chat history' },
+        { file: 'projects/myapi/retrieval-notes.md', line: 42, text: 'Added cross-encoder reranking step' },
+        { file: 'literature-notes/picker-pattern.md', line: 5, text: 'Pipeline: finder + sorter + previewer' },
+        { file: 'literature-notes/picker-pattern.md', line: 33, text: 'vim.ui.select is the native escape hatch' },
+        { file: 'literature-notes/modal-editing.md', line: 17, text: 'Composition: verb + count + motion' },
+        { file: 'permanent-notes/composition-as-design.md', line: 18, text: 'Dot-repeat is the proof of composability' },
+        { file: 'permanent-notes/leader-key-namespaces.md', line: 6, text: 'Hierarchical menu, not a flat shortcut surface' },
+        { file: 'daily/2026-05-18.md', line: 14, text: 'Got SSD boot working — JMS583 needed auto_initramfs=0' },
+        { file: 'daily/2026-05-17.md', line: 9, text: 'Closed the Jay collaboration thread — not worth pursuing' },
+        { file: 'inbox/2026-05-18.md', line: 3, text: 'nvim translation series — part 1 draft' },
+        { file: 'projects/solvebench/dashboard-design.md', line: 21, text: 'DuckDB as backing store' }
+      ]
+    }
+  };
+
+  // Fuzzy match: subsequence with consecutive-run and word-boundary bonuses
+  function fuzzyMatch(needle, hay) {
+    if (!needle) return { score: 0, indices: [] };
+    needle = needle.toLowerCase();
+    const h = hay.toLowerCase();
+    const indices = [];
+    let ni = 0, lastIdx = -2, score = 0, run = 0;
+    for (let i = 0; i < h.length && ni < needle.length; i++) {
+      if (h[i] === needle[ni]) {
+        indices.push(i);
+        if (i === lastIdx + 1) { run++; score += 3 + run; }
+        else { run = 0; score += 1; }
+        if (i === 0 || /[\W_\/.-]/.test(h[i-1])) score += 5;
+        lastIdx = i;
+        ni++;
+      }
+    }
+    if (ni < needle.length) return null;
+    score -= (h.length - needle.length) * 0.05;
+    return { score, indices };
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function highlight(text, indices) {
+    if (!indices || !indices.length) return escapeHtml(text);
+    const set = new Set(indices);
+    let out = '';
+    for (let i = 0; i < text.length; i++) {
+      if (set.has(i)) out += '<span class="match">' + escapeHtml(text[i]) + '</span>';
+      else out += escapeHtml(text[i]);
+    }
+    return out;
+  }
+
+  // Source-specific search target + display target
+  function searchString(source, item) {
+    switch (source) {
+      case 'files':    return item.path;
+      case 'buffers':  return item.path;
+      case 'commands': return item.cmd + ' ' + item.desc;
+      case 'grep':     return item.text + ' ' + item.file;
+    }
+  }
+  function highlightTarget(source, item) {
+    switch (source) {
+      case 'files':    return item.path;
+      case 'buffers':  return item.path;
+      case 'commands': return item.cmd;
+      case 'grep':     return item.text;
+    }
+  }
+
+  function buildPreview(source, item) {
+    if (!item) return 'No selection.';
+    if (source === 'files') {
+      const base = item.path.split('/').pop().replace('.md', '');
+      const folder = item.path.includes('/') ? item.path.split('/').slice(0, -1).join('/') + '/' : '';
+      return escapeHtml(item.path) + '\n\n'
+        + '<span class="hl-line">[ would open in current window ]</span>\n\n'
+        + '# ' + escapeHtml(base) + '\n\n'
+        + 'This is a markdown buffer in your vault.\n'
+        + 'In Neovim, the preview pane is a real buffer\n'
+        + 'in a floating window — fully Treesitter-\n'
+        + 'highlighted, scrollable, even editable if\n'
+        + 'the picker chooses to allow it.\n\n'
+        + escapeHtml(folder ? '~/vault/' + folder : '~/vault/') + '\n';
+    }
+    if (source === 'buffers') {
+      return 'Buffer #' + item.num + ': ' + escapeHtml(item.path) + '\n\n'
+        + '<span class="hl-line">Status: loaded in memory</span>\n\n'
+        + 'A buffer is the in-memory copy of a file.\n'
+        + 'Multiple windows can show the same buffer.\n'
+        + 'Closing the last window showing a buffer\n'
+        + 'does NOT delete the buffer — use :bdelete.\n\n'
+        + 'Press <Enter> to display this buffer in\n'
+        + 'the current window.';
+    }
+    if (source === 'commands') {
+      return escapeHtml(item.cmd) + '\n\n'
+        + '<span class="hl-line">' + escapeHtml(item.desc) + '</span>\n\n'
+        + 'Ex commands are run from command-line mode\n'
+        + '(entered with ":"). Most pickers will run\n'
+        + 'the selected command directly on <Enter>\n'
+        + '— no need to type the colon yourself.';
+    }
+    if (source === 'grep') {
+      const before = '  ' + (item.line - 1) + '  …\n';
+      const matchLine = '<span class="hl-line">  ' + item.line + '  ' + escapeHtml(item.text) + '</span>\n';
+      const after = '  ' + (item.line + 1) + '  …\n';
+      return escapeHtml(item.file) + ':' + item.line + '\n\n'
+        + before + matchLine + after + '\n'
+        + 'The previewer shows the matched line in\n'
+        + 'context with surrounding lines, syntax-\n'
+        + 'highlighted by Treesitter. The pane is a\n'
+        + 'real Neovim buffer, not static text.';
+    }
+    return '';
+  }
+
+  // State
+  let currentSource = 'files';
+  let activeIdx = 0;
+  let matches = [];
+
+  const input = document.getElementById('picker-input');
+  if (!input) return;
+  const resultsEl = document.getElementById('picker-results');
+  const previewEl = document.getElementById('picker-preview-content');
+  const countEl = document.getElementById('picker-count');
+  const sourceLabel = document.getElementById('picker-source-label');
+  const sourceButtons = document.querySelectorAll('#picker .picker-source button');
+
+  function renderItem(item, indices, isActive, idx) {
+    let main = '', meta = '';
+    if (currentSource === 'files') {
+      main = highlight(item.path, indices);
+    } else if (currentSource === 'buffers') {
+      main = highlight(item.path, indices);
+      meta = '#' + item.num;
+    } else if (currentSource === 'commands') {
+      main = highlight(item.cmd, indices) + ' <span style="color: var(--muted); font-size: 11px;">— ' + escapeHtml(item.desc) + '</span>';
+    } else if (currentSource === 'grep') {
+      main = highlight(item.text, indices);
+      meta = item.file.split('/').pop() + ':' + item.line;
+    }
+    return '<div class="item ' + (isActive ? 'active' : '') + '" data-idx="' + idx + '">'
+      + '<span class="content" style="overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">' + main + '</span>'
+      + '<span class="meta">' + escapeHtml(meta) + '</span>'
+      + '</div>';
+  }
+
+  function filter() {
+    const q = input.value.trim();
+    const items = SOURCES[currentSource].items;
+    if (!q) {
+      matches = items.map(item => ({ item, indices: [], score: 0 }));
+    } else {
+      matches = items.map(item => {
+        const m = fuzzyMatch(q, searchString(currentSource, item));
+        if (!m) return null;
+        const hm = fuzzyMatch(q, highlightTarget(currentSource, item));
+        return { item, indices: hm ? hm.indices : [], score: m.score };
+      }).filter(Boolean).sort((a, b) => b.score - a.score);
+    }
+    activeIdx = 0;
+    render();
+  }
+
+  function render() {
+    if (matches.length === 0) {
+      resultsEl.innerHTML = '<div class="empty">no matches</div>';
+      previewEl.innerHTML = 'No matches.';
+      countEl.textContent = '0 / ' + SOURCES[currentSource].items.length;
+      return;
+    }
+    if (activeIdx >= matches.length) activeIdx = matches.length - 1;
+    if (activeIdx < 0) activeIdx = 0;
+    resultsEl.innerHTML = matches.map((m, i) =>
+      renderItem(m.item, m.indices, i === activeIdx, i)
+    ).join('');
+    countEl.textContent = matches.length + ' / ' + SOURCES[currentSource].items.length;
+    previewEl.innerHTML = buildPreview(currentSource, matches[activeIdx].item);
+    const activeEl = resultsEl.querySelector('.item.active');
+    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+  }
+
+  sourceButtons.forEach(b => {
+    b.addEventListener('click', () => {
+      currentSource = b.dataset.source;
+      sourceButtons.forEach(bb => bb.setAttribute('aria-pressed', bb === b ? 'true' : 'false'));
+      sourceLabel.textContent = SOURCES[currentSource].label;
+      input.value = '';
+      filter();
+      input.focus();
+    });
+  });
+
+  input.addEventListener('input', filter);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n')) {
+      e.preventDefault(); activeIdx++; render();
+    } else if (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'p')) {
+      e.preventDefault(); activeIdx--; render();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const target = matches[activeIdx];
+      if (target) {
+        previewEl.innerHTML = '<span style="color: var(--mint); font-weight: 700;">▶ would open</span>\n\n' + buildPreview(currentSource, target.item);
+      }
+    } else if (e.key === 'Escape') {
+      input.value = '';
+      filter();
+    }
+  });
+
+  resultsEl.addEventListener('click', e => {
+    const item = e.target.closest('.item');
+    if (item) {
+      activeIdx = parseInt(item.dataset.idx, 10);
+      render();
+      input.focus();
+    }
+  });
+
+  filter();
+})();
+
+/* ============================================================
+   WIDGET 4 — Leader Chord Tree
+   Press leader → press a letter → press another. Watch the namespace open.
+   ============================================================ */
+(function() {
+  const TREE = {
+    label: 'leader',
+    children: {
+      'f': {
+        label: 'find',
+        children: {
+          'f': { label: 'find files',     action: ':Telescope find_files' },
+          'g': { label: 'live grep',      action: ':Telescope live_grep' },
+          'b': { label: 'buffers',        action: ':Telescope buffers' },
+          'r': { label: 'recent files',   action: ':Telescope oldfiles' },
+          'h': { label: 'help tags',      action: ':Telescope help_tags' },
+          'c': { label: 'commands',       action: ':Telescope commands' }
+        }
+      },
+      'o': {
+        label: 'obsidian',
+        children: {
+          'o': { label: 'command menu',   action: ':Obsidian' },
+          'q': { label: 'quick switch',   action: ':Obsidian quick_switch' },
+          's': { label: 'search vault',   action: ':Obsidian search' },
+          'd': { label: "today's daily",  action: ':Obsidian today' },
+          'n': { label: 'new note',       action: ':Obsidian new' },
+          'b': { label: 'backlinks',      action: ':Obsidian backlinks' },
+          't': { label: 'template',       action: ':Obsidian template' },
+          'l': { label: 'follow link',    action: ':Obsidian follow_link' }
+        }
+      },
+      'g': {
+        label: 'goto (LSP)',
+        children: {
+          'd': { label: 'definition',         action: 'vim.lsp.buf.definition()' },
+          'r': { label: 'references',         action: 'vim.lsp.buf.references()' },
+          'i': { label: 'implementation',     action: 'vim.lsp.buf.implementation()' },
+          't': { label: 'type definition',    action: 'vim.lsp.buf.type_definition()' }
+        }
+      },
+      'b': {
+        label: 'buffer',
+        children: {
+          'd': { label: 'delete buffer',   action: ':bdelete' },
+          'n': { label: 'next buffer',     action: ':bnext' },
+          'p': { label: 'previous buffer', action: ':bprev' },
+          'b': { label: 'pick buffer',     action: ':Telescope buffers' }
+        }
+      },
+      'w': {
+        label: 'window',
+        children: {
+          's': { label: 'split horizontal',  action: ':split' },
+          'v': { label: 'split vertical',    action: ':vsplit' },
+          'q': { label: 'close window',      action: ':q' },
+          'h': { label: 'focus left',        action: '<C-w>h' },
+          'l': { label: 'focus right',       action: '<C-w>l' }
+        }
+      },
+      'h': {
+        label: 'harpoon',
+        children: {
+          'a': { label: 'add to harpoon',  action: 'harpoon:add()' },
+          'h': { label: 'open menu',       action: 'harpoon:list()' },
+          '1': { label: 'jump to slot 1',  action: 'harpoon:select(1)' },
+          '2': { label: 'jump to slot 2',  action: 'harpoon:select(2)' },
+          '3': { label: 'jump to slot 3',  action: 'harpoon:select(3)' },
+          '4': { label: 'jump to slot 4',  action: 'harpoon:select(4)' }
+        }
+      }
+    }
+  };
+
+  let path = [];
+
+  const gridEl = document.getElementById('chord-grid');
+  if (!gridEl) return;
+  const pressedEl = document.getElementById('chord-pressed');
+  const leafEl = document.getElementById('chord-leaf');
+  const resetBtn = document.getElementById('chord-reset');
+
+  function nodeAt(p) {
+    let n = TREE;
+    for (const k of p) {
+      if (!n.children || !n.children[k]) return null;
+      n = n.children[k];
+    }
+    return n;
+  }
+
+  function render() {
+    leafEl.innerHTML = '';
+
+    // Breadcrumb
+    let html = '<span class="crumb">chord:</span><span class="key">SPC</span>';
+    path.forEach(k => {
+      html += '<span class="sep">›</span><span class="key">' + k + '</span>';
+    });
+    const node = nodeAt(path);
+    if (path.length === 0) {
+      html += '<span class="sep">›</span><span class="key placeholder">?</span>';
+    } else if (node && node.children) {
+      html += '<span class="sep">›</span><span class="key placeholder">?</span>';
+    }
+    if (node && node.label && path.length > 0) {
+      html += '<span style="color: var(--muted); font-size: 11px; margin-left: 8px;">— ' + node.label + '</span>';
+    } else if (path.length === 0) {
+      html += '<span style="color: var(--muted); font-size: 11px; margin-left: 8px;">— pick a namespace</span>';
+    }
+    pressedEl.innerHTML = html;
+
+    // Grid or leaf
+    if (!node) {
+      gridEl.innerHTML = '<div style="padding: 26px; text-align: center; color: var(--muted); font-size: 12px;">No mapping for that chord. Press Reset.</div>';
+      return;
+    }
+    if (node.action) {
+      gridEl.innerHTML = '';
+      leafEl.innerHTML = ''
+        + '<div class="chord-leaf-result">'
+        +   '<span class="badge">runs</span>'
+        +   '<code>' + node.action + '</code>'
+        +   '<span style="color: var(--muted); margin-left: auto;">' + node.label + '</span>'
+        + '</div>';
+      return;
+    }
+    if (!node.children) {
+      gridEl.innerHTML = '';
+      return;
+    }
+    const keys = Object.keys(node.children);
+    gridEl.innerHTML = keys.map(k => {
+      const child = node.children[k];
+      const isGroup = !!child.children;
+      return '<button class="chord-option ' + (isGroup ? 'group' : '') + '" data-key="' + k + '" type="button">'
+        + '<span class="k">' + k + '</span>'
+        + '<span class="desc">' + child.label + '</span>'
+        + '</button>';
+    }).join('');
+  }
+
+  function descend(k) {
+    const node = nodeAt(path);
+    if (!node || !node.children || !node.children[k]) return;
+    path.push(k);
+    render();
+  }
+
+  function ascend() {
+    if (path.length > 0) {
+      // If we're on a leaf (action), pop back to its parent
+      path.pop();
+      render();
+    }
+  }
+
+  function reset() {
+    path = [];
+    render();
+  }
+
+  gridEl.addEventListener('click', e => {
+    const btn = e.target.closest('.chord-option');
+    if (btn) descend(btn.dataset.key);
+  });
+
+  resetBtn.addEventListener('click', reset);
+
+  // Keyboard: when widget is in viewport and no input is focused
+  document.addEventListener('keydown', e => {
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    const widget = document.getElementById('leader-tree');
+    if (!widget) return;
+    const rect = widget.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const visiblePx = Math.min(rect.bottom, vh) - Math.max(rect.top, 0);
+    if (visiblePx < 120) return;
+
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      ascend();
+      return;
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      reset();
+      return;
+    }
+    if (/^[a-zA-Z0-9]$/.test(e.key)) {
+      const k = e.key.toLowerCase();
+      const node = nodeAt(path);
+      if (node && node.children && node.children[k]) {
+        e.preventDefault();
+        descend(k);
+      }
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

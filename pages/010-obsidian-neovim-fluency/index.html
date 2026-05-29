@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian → Neovim Power Fluency Lab</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --surface-color: #1e293b;
+            --border-color: #334155;
+            --primary-color: #38bdf8;
+            --secondary-color: #94a3b8;
+            --accent-color: #a78bfa;
+            --success-color: #4ade80;
+            --danger-color: #f87171;
+            --code-bg: #0f172a;
+            --font-sys: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-sys);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 { margin-top: 2rem; margin-bottom: 1rem; font-weight: 600; letter-spacing: -0.02em; }
+        h1 { font-size: 2.4rem; }
+        h2 { font-size: 1.7rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.25rem; color: var(--primary-color); }
+        p { margin-bottom: 1rem; }
+        code, kbd {
+            font-family: var(--font-mono);
+            background-color: #1e293b;
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+        }
+        kbd { background-color: #334155; }
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .grid { display: grid; gap: 1rem; }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+        .chip {
+            display: inline-block;
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+            margin: 0.25rem 0.25rem 0.25rem 0;
+        }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background: #1e293b; font-weight: 600; }
+        .search-input {
+            width: 100%; padding: 0.75rem 1rem;
+            background: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 0.5rem; color: var(--text-color); font-size: 1rem; margin-bottom: 1rem;
+        }
+        .drill {
+            background: #1e293b; border: 1px solid var(--primary-color);
+            border-radius: 0.75rem; padding: 1.5rem; margin-top: 1rem;
+        }
+        .option-btn {
+            display: block; width: 100%; text-align: left; padding: 1rem; margin: 0.5rem 0;
+            background: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 0.5rem; color: var(--text-color); cursor: pointer;
+            transition: all 0.1s ease; font-size: 1rem;
+        }
+        .option-btn:hover { border-color: var(--primary-color); }
+        .option-btn.correct { background: rgba(74, 222, 128, 0.15); border-color: var(--success-color); }
+        .option-btn.wrong { background: rgba(248, 113, 113, 0.15); border-color: var(--danger-color); }
+        .feedback { padding: 1rem; border-radius: 0.5rem; margin-top: 1rem; display: none; }
+        .feedback.show { display: block; }
+        .feedback.success { background: rgba(74, 222, 128, 0.1); border: 1px solid var(--success-color); color: var(--success-color); }
+        .feedback.error { background: rgba(248, 113, 113, 0.1); border: 1px solid var(--danger-color); color: var(--danger-color); }
+        .progress-bar { height: 8px; background: #334155; border-radius: 9999px; overflow: hidden; margin: 0.5rem 0; }
+        .progress-fill { height: 100%; background: var(--success-color); transition: width 0.3s ease; }
+        .mapping-row:hover { background: #1e293b; }
+        .tip {
+            font-size: 0.9rem; padding: 1rem;
+            background: rgba(167, 139, 250, 0.1);
+            border-left: 4px solid var(--accent-color);
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <header style="text-align: center; margin-bottom: 2rem;">
+        <h1>Obsidian → Neovim<br>Power Fluency Lab</h1>
+        <p style="color: var(--secondary-color); max-width: 700px; margin: 0 auto; font-size: 1.15rem;">
+            You're already a power user in Obsidian. Use that intuition as rocket fuel to reach <strong>lightning-fast Neovim fluency</strong> as an emerging intermediate user.
+        </p>
+        <div style="margin-top: 1rem;">
+            <span class="chip">Learning Artifact</span>
+            <span class="chip">Single-file • Offline</span>
+            <span class="chip">Builds on pages/006</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Why This Bridge Works -->
+        <section class="card">
+            <h2>Why This Bridge Works So Well</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3>Your Obsidian Superpowers</h3>
+                    <ul style="margin-left: 1.25rem; line-height: 1.8;">
+                        <li>Instant mental model of <strong>linked thinking</strong> and backlinks</li>
+                        <li>Fast search &amp; discovery across a large knowledge base</li>
+                        <li>Daily notes + templating discipline</li>
+                        <li>Comfort with plugins and customization</li>
+                        <li>Structured markdown editing</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>What Neovim Adds</h3>
+                    <ul style="margin-left: 1.25rem; line-height: 1.8;">
+                        <li><strong>Modal precision</strong> — operators + motions + text objects = surgical edits</li>
+                        <li><strong>Repeatability</strong> — <code>.</code> and macros everywhere</li>
+                        <li><strong>Composability</strong> — everything is a building block</li>
+                        <li>Blazing fast navigation once muscle memory locks in</li>
+                        <li>obsidian.nvim brings your favorite Obsidian commands into the editor</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="tip" style="margin-top: 1.5rem;">
+                <strong>Strategy</strong>: Map every Obsidian habit you love to its Neovim equivalent + one power-user upgrade. Drill the upgrade until it feels automatic.
+            </div>
+        </section>
+
+        <!-- Mental Model Mapping -->
+        <section class="card">
+            <h2>Obsidian Concept → Neovim Mapping + Power Moves</h2>
+            <p>Use the search to quickly find mappings. Click rows for quick personal notes (saved in localStorage).</p>
+            
+            <input type="text" id="search-input" class="search-input" placeholder="Search Obsidian action, Neovim key, or concept... (e.g. quick switch, link, daily, search)">
+            
+            <table id="mapping-table">
+                <thead>
+                    <tr>
+                        <th>Obsidian Action</th>
+                        <th>Basic Neovim</th>
+                        <th>Power Neovim Combo / Plugin</th>
+                        <th>Why It Feels Faster</th>
+                    </tr>
+                </thead>
+                <tbody id="mapping-tbody"></tbody>
+            </table>
+
+            <div class="tip">
+                Pro move: Once a mapping feels natural, add it to your which-key or create a personal leader mapping that mirrors your Obsidian muscle memory.
+            </div>
+        </section>
+
+        <!-- Interactive Drills -->
+        <section class="card">
+            <h2>Interactive Drills — Build Muscle Memory</h2>
+            <p>Real PKM/markdown tasks. Choose the best sequence. Instant feedback + explanation.</p>
+            
+            <div id="drill-container" class="drill">
+                <h3 id="drill-question"></h3>
+                <div id="drill-options"></div>
+                <div id="drill-feedback" class="feedback"></div>
+                <button id="next-drill-btn" class="chip" style="margin-top: 1rem; display: none; background: var(--primary-color); color: white; border: none; padding: 0.6rem 1.2rem; cursor: pointer;">Next Drill</button>
+            </div>
+
+            <div style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--secondary-color);">
+                Tip: Perform these in your real Neovim + obsidian.nvim setup right after for maximum transfer.
+            </div>
+        </section>
+
+        <!-- obsidian.nvim Workflows -->
+        <section class="card">
+            <h2>obsidian.nvim Power Workflows</h2>
+            <div class="grid grid-2">
+                <div class="card" style="margin:0; padding:1.25rem;">
+                    <h3>Daily Notes &amp; Templates</h3>
+                    <div class="chip"><code>&lt;leader&gt;on</code> New daily note</div>
+                    <div class="chip"><code>&lt;leader&gt;ot</code> Templates</div>
+                    <p style="font-size:0.95rem; margin-top:0.75rem;">One keystroke for perfectly templated daily notes.</p>
+                </div>
+                <div class="card" style="margin:0; padding:1.25rem;">
+                    <h3>Search &amp; Navigation</h3>
+                    <div class="chip"><code>&lt;leader&gt;os</code> Quick Switch</div>
+                    <div class="chip"><code>&lt;leader&gt;of</code> Find files / notes</div>
+                    <div class="chip"><code>&lt;leader&gt;ob</code> Backlinks</div>
+                    <p style="font-size:0.95rem; margin-top:0.75rem;">Telescope + obsidian.nvim = Obsidian search with full Neovim power.</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <h3>Recommended Setup Tips (obsidian.nvim + LazyVim)</h3>
+                <ul style="margin-left:1.25rem;">
+                    <li>Use <code>which-key</code> to discover all <code>&lt;leader&gt;o*</code> mappings</li>
+                    <li>Enable obsidian completion source for <code>[[</code> linking</li>
+                    <li>Pair with <code>flash.nvim</code> or <code>leap.nvim</code> for instant jumps in long notes</li>
+                    <li>Map a leader key for “follow link under cursor” that feels like Obsidian clicking</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Fluency Accelerators -->
+        <section class="card">
+            <h2>Fluency Accelerators (The Real Speed Secret)</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3>Discovery</h3>
+                    <p>Never hunt again:</p>
+                    <div class="chip"><kbd>&lt;Space&gt;</kbd> (wait) — which-key menu</div>
+                    <div class="chip"><code>&lt;Space&gt; s k</code> — Telescope keymaps</div>
+                    <p class="tip" style="margin-top:1rem;">Make <strong>which-key</strong> your new command palette habit.</p>
+                </div>
+                <div>
+                    <h3>Motion &amp; Editing Speed</h3>
+                    <ul style="margin-left:1.25rem; line-height:1.7;">
+                        <li><strong>Leap / Flash</strong>: Jump to any visible char in 2–3 keys</li>
+                        <li><strong>Surround</strong>: <code>ysiw`</code>, <code>cs"'</code>, <code>ds"</code></li>
+                        <li><strong>Text objects</strong>: <code>ciw</code>, <code>ca(</code>, <code>vi"</code> in markdown</li>
+                        <li><strong>Repeat</strong>: <code>.</code> for repetitive PKM edits</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Tracker -->
+        <section class="card">
+            <h2>Your Fluency Progress</h2>
+            <p>Check off what feels automatic. Saves in localStorage.</p>
+            <div id="progress-list"></div>
+            <div style="margin-top: 1.5rem;">
+                <div class="progress-bar"><div id="overall-progress" class="progress-fill" style="width: 0%"></div></div>
+                <span id="progress-text" style="font-size: 0.9rem; color: var(--secondary-color);"></span>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Next Steps in Your Actual Vault</h2>
+            <ol style="margin-left: 1.5rem; line-height: 1.8;">
+                <li>Open your Obsidian vault directly in Neovim</li>
+                <li>Set up <strong>obsidian.nvim</strong> (great with LazyVim)</li>
+                <li>Do the drills above in a real note, then apply the power combo immediately</li>
+                <li>10 focused minutes daily on one mapping until it’s automatic</li>
+                <li>Re-test yourself here later</li>
+            </ol>
+            <p style="margin-top: 1rem; font-size: 0.95rem;">This lab + deliberate practice in your real vault = fastest path from intermediate → power user.</p>
+        </section>
+    </main>
+
+    <footer style="text-align:center; margin-top: 3rem; color: var(--secondary-color); font-size: 0.85rem;">
+        Built for offline-interactive-pages • Follows doctrine • Complements pages/006-neovim-lazyvim-lab
+    </footer>
+
+    <script>
+        // Mapping data
+        const mappings = [
+            { obsidian: "Quick Switch / Open note", basic: "<Space> <Space> or Telescope", power: "<leader>os (obsidian.nvim) + Telescope", why: "Same speed as Obsidian, stays in modal flow" },
+            { obsidian: "Search in vault", basic: "<Space> s g (live grep)", power: "obsidian.nvim search + flash/leap jumps", why: "Find + jump inside note in < 1s" },
+            { obsidian: "Create new daily note", basic: "Manual file creation", power: "<leader>on + template expansion", why: "One key, perfect structure every day" },
+            { obsidian: "Follow link / Open linked note", basic: "gx or manual", power: "obsidian follow + leap to any heading", why: "Feels like clicking but faster navigation" },
+            { obsidian: "Backlinks / Unlinked mentions", basic: "Manual search", power: "<leader>ob (obsidian backlinks) + Telescope", why: "Instant graph-like view without leaving editor" },
+            { obsidian: "Insert link to note", basic: "Type [[ manually", power: "obsidian completion on [[ + Telescope picker", why: "Autocomplete that understands your vault" },
+            { obsidian: "Templates / Insert template", basic: "Copy-paste", power: "obsidian template command + snippets", why: "Consistent structure with zero friction" },
+            { obsidian: "Rename / Move note", basic: "File explorer rename", power: "obsidian rename + LSP/workspace edit", why: "Updates all links automatically" },
+            { obsidian: "Toggle checkbox / task", basic: "Manual edit", power: "<Space> c t or custom surround/text object", why: "One motion, repeatable with ." },
+            { obsidian: "Focus / Zen mode", basic: "Distraction free plugin", power: "<C-w> o + zen-mode.nvim", why: "True modal focus, instant on/off" }
+        ];
+
+        function renderMappings(filter = '') {
+            const tbody = document.getElementById('mapping-tbody');
+            tbody.innerHTML = '';
+            const lowerFilter = filter.toLowerCase();
+
+            mappings.forEach((m, index) => {
+                if (!lowerFilter ||
+                    m.obsidian.toLowerCase().includes(lowerFilter) ||
+                    m.basic.toLowerCase().includes(lowerFilter) ||
+                    m.power.toLowerCase().includes(lowerFilter) ||
+                    m.why.toLowerCase().includes(lowerFilter)) {
+
+                    const row = document.createElement('tr');
+                    row.className = 'mapping-row';
+                    row.innerHTML = `
+                        <td><strong>${m.obsidian}</strong></td>
+                        <td><code>${m.basic}</code></td>
+                        <td><code>${m.power}</code></td>
+                        <td style="font-size:0.9rem;">${m.why}</td>
+                    `;
+                    row.addEventListener('click', () => {
+                        const note = prompt(`Personal note for: ${m.obsidian}`, localStorage.getItem(`note-${index}`) || '');
+                        if (note !== null) {
+                            localStorage.setItem(`note-${index}`, note);
+                            alert('Note saved to localStorage!');
+                        }
+                    });
+                    tbody.appendChild(row);
+                }
+            });
+        }
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            renderMappings(e.target.value);
+        });
+        renderMappings();
+
+        // Drills
+        const drills = [
+            {
+                question: "You want to create today's daily note with your standard template and start writing immediately.",
+                options: [
+                    { text: "Manually create the file and copy template", correct: false },
+                    { text: "<leader>on then start typing (obsidian.nvim daily + template)", correct: true },
+                    { text: "Use Obsidian app then switch to Neovim", correct: false }
+                ],
+                explanation: "obsidian.nvim daily note + template = exact structure in one command, already inside Neovim."
+            },
+            {
+                question: "You're in a long note and need to jump to a specific heading or link target instantly without scrolling.",
+                options: [
+                    { text: "Use mouse or arrow keys + /search", correct: false },
+                    { text: "Leap/Flash to any visible character or heading (2-3 keys)", correct: true },
+                    { text: "Use Telescope to search headings", correct: false }
+                ],
+                explanation: "Flash or leap turns any visible text into a 2-keystroke target — dramatically faster than scrolling."
+            },
+            {
+                question: "You just created several new notes and want to quickly see backlinks and unlinked mentions.",
+                options: [
+                    { text: "Switch back to Obsidian app", correct: false },
+                    { text: "<leader>ob (obsidian backlinks) + Telescope unlinked mentions", correct: true },
+                    { text: "Manually grep for the note name", correct: false }
+                ],
+                explanation: "obsidian.nvim brings graph-like backlinks directly into Neovim with full Telescope power."
+            },
+            {
+                question: "Surround the current word with backticks for inline code, then repeat on the next similar item.",
+                options: [
+                    { text: "Type the backticks manually each time", correct: false },
+                    { text: "ysiw` then move and use . (repeat)", correct: true },
+                    { text: "Use search and replace", correct: false }
+                ],
+                explanation: "vim-surround (or mini.surround) + dot repeat is one of Neovim’s highest-leverage patterns for repetitive edits."
+            }
+        ];
+
+        let currentDrill = 0;
+
+        function loadDrill(index) {
+            const drill = drills[index];
+            document.getElementById('drill-question').textContent = drill.question;
+            const optionsDiv = document.getElementById('drill-options');
+            optionsDiv.innerHTML = '';
+            document.getElementById('drill-feedback').style.display = 'none';
+            document.getElementById('next-drill-btn').style.display = 'none';
+
+            drill.options.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt.text;
+                btn.onclick = () => handleDrillAnswer(btn, opt.correct, drill.explanation, optionsDiv);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function handleDrillAnswer(btn, isCorrect, explanation, optionsContainer) {
+            if (document.getElementById('drill-feedback').style.display === 'block') return;
+
+            const allBtns = optionsContainer.querySelectorAll('.option-btn');
+            allBtns.forEach(b => {
+                if (b === btn) b.classList.add(isCorrect ? 'correct' : 'wrong');
+            });
+
+            const correctText = drills[currentDrill].options.find(o => o.correct).text;
+            allBtns.forEach(b => {
+                if (b.textContent === correctText) b.classList.add('correct');
+            });
+
+            const feedback = document.getElementById('drill-feedback');
+            feedback.innerHTML = `<strong>${isCorrect ? 'Excellent!' : 'Good try.'}</strong> ${explanation}`;
+            feedback.className = `feedback show ${isCorrect ? 'success' : 'error'}`;
+
+            if (currentDrill < drills.length - 1) {
+                document.getElementById('next-drill-btn').style.display = 'inline-block';
+            } else {
+                document.getElementById('next-drill-btn').textContent = 'Restart Drills';
+                document.getElementById('next-drill-btn').style.display = 'inline-block';
+            }
+        }
+
+        document.getElementById('next-drill-btn').addEventListener('click', () => {
+            currentDrill = (currentDrill < drills.length - 1) ? currentDrill + 1 : 0;
+            loadDrill(currentDrill);
+        });
+
+        loadDrill(0);
+
+        // Progress Tracker
+        const progressItems = [
+            "Basic motions & text objects feel automatic",
+            "which-key discovery is my default habit",
+            "Can create daily note + template in < 3 seconds",
+            "Leap/Flash jumps are second nature in notes",
+            "Surround + dot repeat for repetitive edits",
+            "obsidian.nvim quick switch & backlinks are muscle memory",
+            "Comfortable editing long notes without mouse",
+            "Personal leader mappings feel natural"
+        ];
+
+        function renderProgress() {
+            const container = document.getElementById('progress-list');
+            container.innerHTML = '';
+
+            progressItems.forEach((item, idx) => {
+                const saved = localStorage.getItem(`progress-${idx}`) === 'true';
+                const div = document.createElement('div');
+                div.style.margin = '0.5rem 0';
+                div.innerHTML = `
+                    <label style="display:flex; align-items:center; gap:0.75rem; cursor:pointer;">
+                        <input type="checkbox" ${saved ? 'checked' : ''} data-idx="${idx}">
+                        <span>${item}</span>
+                    </label>
+                `;
+                const checkbox = div.querySelector('input');
+                checkbox.addEventListener('change', () => {
+                    localStorage.setItem(`progress-${idx}`, checkbox.checked);
+                    updateOverallProgress();
+                });
+                container.appendChild(div);
+            });
+            updateOverallProgress();
+        }
+
+        function updateOverallProgress() {
+            let checked = 0;
+            progressItems.forEach((_, idx) => {
+                if (localStorage.getItem(`progress-${idx}`) === 'true') checked++;
+            });
+            const percent = Math.round((checked / progressItems.length) * 100);
+            document.getElementById('overall-progress').style.width = percent + '%';
+            document.getElementById('progress-text').textContent = `${checked} / ${progressItems.length} areas feeling automatic (${percent}%)`;
+        }
+
+        renderProgress();
+    </script>
+</body>
+</html>

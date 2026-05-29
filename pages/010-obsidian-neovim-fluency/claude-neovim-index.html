@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saboor's Field Manual for LazyVim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1115;
+  --bg-elevated: #161922;
+  --bg-sunken: #0a0c11;
+  --border: #232733;
+  --border-strong: #353a4a;
+  --text: #e4e6ed;
+  --text-dim: #9ba1b3;
+  --text-faint: #5c6275;
+  --accent: #7dcfff;
+  --accent-warm: #ebbcba;
+  --success: #9ece6a;
+  --warning: #e0af68;
+  --danger: #f7768e;
+  --code-bg: #0a0c11;
+  --font-sans: 'Inter Tight', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --max-content: 880px;
+  --toc-w: 240px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.65;
+  font-size: 16px;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* subtle grain overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* layout */
+.layout {
+  display: grid;
+  grid-template-columns: var(--toc-w) minmax(0, 1fr);
+  gap: 3rem;
+  max-width: calc(var(--max-content) + var(--toc-w) + 6rem);
+  margin: 0 auto;
+  padding: 3rem 2rem 6rem;
+}
+
+/* sidebar TOC */
+aside.toc {
+  position: sticky;
+  top: 3rem;
+  align-self: start;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+}
+.toc-label {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--text-faint);
+  font-size: 0.7rem;
+  margin-bottom: 1rem;
+}
+.toc-link {
+  display: block;
+  padding: 0.45rem 0 0.45rem 0.85rem;
+  margin-left: -0.85rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: 0.15s;
+}
+.toc-link:hover { color: var(--accent); }
+.toc-link.active {
+  color: var(--text);
+  border-left-color: var(--accent);
+}
+.toc-num {
+  color: var(--text-faint);
+  margin-right: 0.5rem;
+}
+
+/* main */
+main { min-width: 0; }
+
+header.hero {
+  margin-bottom: 4rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.72rem;
+  color: var(--accent);
+  margin-bottom: 1.25rem;
+}
+h1 {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+.subtitle {
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  max-width: 560px;
+}
+
+/* sections */
+section.part {
+  margin-bottom: 6rem;
+  scroll-margin-top: 2rem;
+}
+.part-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.part-num {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+h2 {
+  font-family: var(--font-mono);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  flex: 1;
+}
+h3 {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 2rem 0 0.75rem;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+p { margin-bottom: 1rem; color: var(--text); }
+
+/* keycap */
+kbd, .kbd {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  font-weight: 600;
+  padding: 0.15em 0.5em;
+  background: linear-gradient(180deg, var(--bg-elevated), #1a1e2a);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 var(--border-strong), 0 2px 2px rgba(0,0,0,0.4);
+  color: var(--text);
+  vertical-align: 1px;
+  min-width: 1.5em;
+  text-align: center;
+}
+
+/* inline code */
+code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  color: var(--accent-warm);
+}
+pre {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  font-size: 0.85rem;
+}
+pre code {
+  font-family: var(--font-mono);
+  color: var(--text);
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* details / inline asides */
+details {
+  margin: 1rem 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+details > summary {
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  user-select: none;
+  transition: 0.15s;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before {
+  content: '+';
+  color: var(--accent);
+  font-weight: 700;
+  width: 1em;
+  display: inline-block;
+}
+details[open] > summary::before { content: '−'; }
+details > summary:hover { color: var(--text); }
+details[open] > summary {
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+details .body {
+  padding: 1.1rem;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+details .body p { color: var(--text-dim); }
+
+/* "mine" callout — personal asides */
+.mine {
+  position: relative;
+  padding: 1rem 1.1rem 1rem 1.25rem;
+  margin: 1.25rem 0;
+  background: linear-gradient(90deg, rgba(125, 207, 255, 0.06), transparent 70%);
+  border-left: 2px solid var(--accent);
+  font-size: 0.94rem;
+}
+.mine-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+/* placeholder pill */
+.placeholder {
+  padding: 1.5rem;
+  background: var(--bg-sunken);
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+/* plugin grid (used in section 03) */
+.plugin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+.plugin-tile {
+  padding: 0.9rem 1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.plugin-tile:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.plugin-tile-name {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.plugin-tile-tag {
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; gap: 2rem; padding: 2rem 1.5rem 4rem; }
+  aside.toc { position: static; max-height: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="toc">
+    <div class="toc-label">Field Manual</div>
+    <a class="toc-link" href="#foundations"><span class="toc-num">01</span>Foundations</a>
+    <a class="toc-link" href="#styles"><span class="toc-num">02</span>My Six Styles</a>
+    <a class="toc-link" href="#plugins"><span class="toc-num">03</span>Plugin Decision Tree</a>
+    <a class="toc-link" href="#lab"><span class="toc-num">04</span>Interactive Lab</a>
+    <a class="toc-link" href="#friction"><span class="toc-num">05</span>Friction & Tour</a>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Personal Reference · v0 · Living Doc</div>
+      <h1>Saboor's Field Manual<br>for LazyVim</h1>
+      <p class="subtitle">When to reach for which tool, how to use it, and why the editor stops fighting you once the mental model clicks into place.</p>
+    </header>
+
+    <section class="part" id="foundations">
+      <div class="part-header">
+        <div class="part-num">01</div>
+        <h2>Foundations</h2>
+      </div>
+      <div class="placeholder">[ Mental model · the 8 modes · LazyVim architecture stack — to be written ]</div>
+    </section>
+
+    <section class="part" id="styles">
+      <div class="part-header">
+        <div class="part-num">02</div>
+        <h2>My Six Styles</h2>
+      </div>
+      <div class="placeholder">[ IDE Replacement · Quick Edit · Obsidian Driver · AI Heavy · Debugger · Remote/SSH — to be written ]</div>
+    </section>
+
+    <section class="part" id="plugins">
+      <div class="part-header">
+        <div class="part-num">03</div>
+        <h2>Plugin Decision Tree</h2>
+      </div>
+      <p style="color: var(--text-dim); margin-bottom: 1.5rem;">For each plugin in the config: <em style="color: var(--accent-warm); font-style: normal;">what problem it solves</em> → <em style="color: var(--accent-warm); font-style: normal;">the trigger moment to reach for it</em> → <em style="color: var(--accent-warm); font-style: normal;">keybind & common mistake</em>.</p>
+      <div class="placeholder">[ Plugin tiles · trigger-moment cards · grouping pattern — content TBD this turn ]</div>
+    </section>
+
+    <section class="part" id="lab">
+      <div class="part-header">
+        <div class="part-num">04</div>
+        <h2>Interactive Lab</h2>
+      </div>
+      <div class="placeholder">[ Keybind playground · filterable cheatsheet · copyable lua snippet library — to be written ]</div>
+    </section>
+
+    <section class="part" id="friction">
+      <div class="part-header">
+        <div class="part-num">05</div>
+        <h2>Friction Points & First 30 Minutes</h2>
+      </div>
+      <div class="placeholder">[ Friction accordion (expanded) + linear "fresh install → productive" tour — to be written ]</div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// active TOC link tracking
+const sections = document.querySelectorAll('section.part');
+const links = document.querySelectorAll('.toc-link');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

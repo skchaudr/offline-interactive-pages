@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Neovim, Translated from Obsidian — Interactive Part 1</title>
+<style>
+:root{
+  --bg:#0b0b10;--panel:#101018;--panel2:#141420;--ink:#e5e7eb;--muted:#a1a1aa;--faint:#71717a;
+  --lav:#d8b4fe;--cyan:#7dd3fc;--yellow:#fde047;--mag:#e879f9;--green:#86efac;--line:rgba(216,180,254,.14);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  --measure:720px;--density:1;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--sans);letter-spacing:-.005em}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 12% 5%,rgba(216,180,254,.11),transparent 28rem),radial-gradient(circle at 90% 30%,rgba(125,211,252,.07),transparent 30rem),linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:auto,auto,42px 42px,42px 42px;z-index:-1}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:42px;max-width:1240px;margin:0 auto;padding:38px 30px 96px}.toc{position:sticky;top:24px;align-self:start;max-height:calc(100vh - 48px);overflow:auto}.toc h2{font:700 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin:0 0 16px}.toc a{display:block;position:relative;text-decoration:none;color:var(--muted);font:600 12px/1.35 var(--mono);padding:11px 0;border-bottom:1px solid rgba(216,180,254,.08)}.toc a:after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:0;background:var(--mag);transition:width .2s}.toc a:hover:after,.toc a.active:after{width:100%}.toc a.active{color:var(--ink)}.toc .n{color:var(--yellow);margin-right:6px}.mini{margin-top:18px;padding:12px;border:1px solid var(--line);color:var(--faint);font:12px/1.5 var(--mono)}
+main{max-width:920px;min-width:0}.hero{border:1px solid var(--line);background:linear-gradient(135deg,rgba(216,180,254,.08),rgba(125,211,252,.035));padding:34px;margin-bottom:34px}.eyebrow{font:700 12px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:18px}h1{font-size:clamp(42px,7vw,76px);line-height:.95;letter-spacing:-.06em;color:var(--lav);margin:0 0 18px}.subtitle{font-size:18px;color:var(--muted);max-width:760px;margin:0}.controlbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:22px}.control{border:1px solid var(--line);background:rgba(11,11,16,.4);padding:12px}.control label{display:block;color:var(--cyan);font:700 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}.seg{display:flex;gap:6px;flex-wrap:wrap}.seg button,.ghost{border:1px solid var(--line);background:rgba(16,16,24,.8);color:var(--muted);font:700 12px var(--mono);padding:7px 9px;cursor:pointer}.seg button.active,.ghost.active{border-color:var(--mag);color:var(--ink);background:rgba(232,121,249,.08)}input[type=range]{width:100%;accent-color:var(--mag)}
+section{scroll-margin-top:32px;margin:0 0 50px;padding:0 0 50px;border-bottom:1px solid var(--line)}.section-head{display:grid;grid-template-columns:42px 1fr;gap:16px;margin-bottom:20px}.num{font:800 14px/1 var(--mono);color:var(--yellow);letter-spacing:.12em;padding-top:8px}h2{color:var(--lav);font-size:34px;line-height:1.05;letter-spacing:-.035em;margin:0}.deck{color:var(--muted);font-size:18px;margin:6px 0 0;max-width:760px}h3{color:var(--cyan);font-size:20px;letter-spacing:-.015em;margin:26px 0 10px}p{margin:0 0 calc(15px * var(--density));max-width:var(--measure)}strong{color:white}em{font-style:normal;color:var(--lav)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{border:1px solid var(--line);background:rgba(16,16,24,.72);padding:18px}.card p:last-child{margin-bottom:0}.label{font:800 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:9px}.micro{font:12px/1.5 var(--mono);color:var(--faint)}.callout{border-left:3px solid var(--mag);background:rgba(232,121,249,.06);padding:16px 18px;margin:20px 0;color:var(--muted);max-width:var(--measure)}.callout b{display:block;color:var(--cyan);font:800 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;margin-bottom:7px}.key{position:relative;display:inline-flex;align-items:center;gap:6px;border:2px solid var(--mag);padding:1px 7px;margin:0 2px 2px;background:rgba(232,121,249,.04);font:700 .84em var(--mono);vertical-align:baseline}.key:before{content:"";width:7px;height:7px;background:var(--mag);display:inline-block}.key:after{content:attr(data-source);position:absolute;left:0;bottom:calc(100% + 8px);width:max-content;max-width:260px;padding:6px 8px;background:#181824;border:1px solid var(--line);color:var(--muted);font:11px/1.35 var(--mono);opacity:0;pointer-events:none;transform:translateY(4px);transition:.2s;z-index:5}.key:hover:after{opacity:1;transform:translateY(0)}code{font-family:var(--mono);color:var(--cyan);background:rgba(125,211,252,.07);border:1px solid rgba(125,211,252,.16);padding:1px 5px}
+.diagram{border:1px solid var(--line);background:#0d0d14;margin:22px 0;padding:18px;overflow:hidden}.diagram svg{width:100%;height:auto;display:block}.node{fill:#141420;stroke:rgba(216,180,254,.42);stroke-width:1.4}.node2{fill:#101722;stroke:rgba(125,211,252,.48);stroke-width:1.4}.arrow{stroke:rgba(229,231,235,.48);stroke-width:1.5;marker-end:url(#arrow)}.svgtext{fill:#e5e7eb;font:600 12px var(--mono)}.svgmuted{fill:#a1a1aa;font:11px var(--mono)}.svgy{fill:#fde047;font:800 12px var(--mono)}
+/* novel structures */
+.lens-grid{display:grid;grid-template-columns:260px 1fr;gap:14px}.lens-list{border:1px solid var(--line);padding:8px;background:rgba(16,16,24,.7)}.lens-list button{width:100%;border:0;border-bottom:1px solid rgba(216,180,254,.08);background:transparent;color:var(--muted);padding:12px 10px;text-align:left;font:800 12px var(--mono);cursor:pointer}.lens-list button:last-child{border-bottom:0}.lens-list button.active{color:var(--ink);background:rgba(232,121,249,.08)}.lens-stage{border:1px solid var(--line);background:linear-gradient(135deg,rgba(216,180,254,.07),rgba(125,211,252,.035));padding:18px;min-height:330px}.split-panel{display:grid;grid-template-columns:1fr 44px 1fr;gap:12px;align-items:stretch}.pane{border:1px solid var(--line);background:rgba(11,11,16,.38);padding:14px}.pane b{display:block;color:var(--yellow);font:800 11px var(--mono);letter-spacing:.13em;text-transform:uppercase;margin-bottom:8px}.arrowbox{display:flex;align-items:center;justify-content:center;color:var(--mag);font:900 24px var(--mono)}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.chip{border:1px solid rgba(125,211,252,.25);color:var(--cyan);padding:4px 8px;font:12px var(--mono);background:rgba(125,211,252,.05)}
+.layers{border:1px solid var(--line);background:rgba(16,16,24,.7);margin:20px 0}.layer{border-bottom:1px solid var(--line)}.layer:last-child{border-bottom:0}.layer button{width:100%;background:transparent;border:0;color:var(--ink);padding:16px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;gap:18px;font:800 13px var(--mono)}.layer button span{color:var(--cyan)}.layer .body{display:none;padding:0 18px 18px;color:var(--muted)}.layer.open .body{display:block}.mode-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mode-card{border:1px solid var(--line);background:rgba(20,20,32,.7);padding:14px;cursor:pointer;min-height:122px}.mode-card.active{border-color:var(--cyan);background:rgba(125,211,252,.08)}.mode-card b{display:block;color:var(--cyan);font:800 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}.mode-card small{color:var(--faint);font-family:var(--mono)}.mode-output{border:1px solid rgba(125,211,252,.22);background:rgba(125,211,252,.045);padding:16px;margin-top:10px;color:var(--muted)}
+.mapwrap{position:relative;border:1px solid var(--line);background:#0d0d14;margin:22px 0;padding:16px}.hotnode{cursor:pointer}.hotnode:hover .node,.hotnode.active .node{stroke:var(--mag);fill:rgba(232,121,249,.09)}.map-pop{position:absolute;right:16px;bottom:16px;width:min(360px,calc(100% - 32px));border:1px solid rgba(232,121,249,.35);background:#141420;padding:14px;display:none}.map-pop.show{display:block}.map-pop h3{margin:0 0 8px}.close{float:right;border:1px solid var(--line);background:transparent;color:var(--muted);font:700 12px var(--mono);cursor:pointer;padding:2px 6px}
+.picker-lab{display:grid;grid-template-columns:310px 1fr;gap:14px;margin:20px 0}.terminal{border:1px solid var(--line);background:#09090d;padding:14px;font-family:var(--mono)}.prompt{color:var(--faint);font-size:12px;margin-bottom:8px}.searchbox{width:100%;border:1px solid rgba(125,211,252,.24);background:#101018;color:var(--ink);padding:10px;font:14px var(--mono)}.candidates{margin-top:10px;max-height:240px;overflow:auto}.cand{border-bottom:1px solid rgba(216,180,254,.08);padding:8px;color:var(--muted);font:12px/1.35 var(--mono);cursor:pointer}.cand.active,.cand:hover{background:rgba(232,121,249,.07);color:var(--ink)}.preview{border:1px solid var(--line);background:rgba(16,16,24,.72);padding:16px;min-height:326px}.preview h3{margin-top:0}.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}.pipe{border:1px solid var(--line);padding:14px;background:rgba(16,16,24,.75);cursor:pointer;position:relative}.pipe:after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--faint);font-family:var(--mono)}.pipe:last-child:after{display:none}.pipe.active{border-color:var(--yellow);background:rgba(253,224,71,.06)}.pipe b{display:block;color:var(--yellow);font:800 12px var(--mono);text-transform:uppercase;letter-spacing:.1em}.pipe-detail{border:1px solid rgba(253,224,71,.28);background:rgba(253,224,71,.045);padding:16px;color:var(--muted)}
+.slider-teach{border:1px solid var(--line);background:rgba(16,16,24,.72);padding:16px;margin:20px 0}.slider-row{display:grid;grid-template-columns:160px 1fr 150px;gap:12px;align-items:center}.meter{height:12px;background:#0d0d14;border:1px solid var(--line);position:relative}.meter i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--cyan),var(--mag));width:50%}.metatext{font:12px var(--mono);color:var(--muted)}
+.drawer-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.drawer{border:1px solid var(--line);background:rgba(16,16,24,.72);padding:16px;min-height:150px;cursor:pointer}.drawer h3{margin-top:0}.drawer .hidden{display:none;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.drawer.open{border-color:var(--cyan)}.drawer.open .hidden{display:block}.bridge-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.cmd{border:1px solid var(--line);background:rgba(16,16,24,.72);padding:14px}.cmd p{font-size:14px;color:var(--muted);margin-top:8px}.series{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.series article{padding:18px;border:1px solid var(--line);background:rgba(16,16,24,.7)}.series h3{margin-top:0}.trybox{border:1px solid rgba(134,239,172,.25);background:rgba(134,239,172,.045);padding:18px;margin-top:22px}.trybox ol{margin:8px 0 0 20px;padding:0;color:var(--muted)}
+@media(max-width:900px){.layout{display:block;padding:28px 18px 72px}.toc{position:relative;top:0;max-height:none;margin-bottom:28px}main{max-width:none}.controlbar,.grid2,.grid3,.lens-grid,.split-panel,.mode-board,.picker-lab,.pipeline,.slider-row,.drawer-grid,.bridge-grid,.series{grid-template-columns:1fr}.arrowbox,.pipe:after{display:none}}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Table of contents">
+  <h2>Part 1</h2>
+  <a href="#transfer"><span class="n">01</span>Transfer Map</a>
+  <a href="#vocab"><span class="n">02</span>Vocabulary Layers</a>
+  <a href="#translate"><span class="n">03</span>Translation Console</a>
+  <a href="#picker"><span class="n">04</span>Picker Lab</a>
+  <a href="#obsidian"><span class="n">05</span>Bridge Plugin</a>
+  <a href="#next"><span class="n">06</span>Series Map</a>
+  <div class="mini">Last-read section is stored locally. Everything else is plain offline HTML.</div>
+</nav>
+<main>
+<header class="hero">
+  <div class="eyebrow">Offline Interactive Page · Narrative Learning Artifact</div>
+  <h1>Neovim,<br>Translated from Obsidian</h1>
+  <p class="subtitle">Part 1 for the Obsidian power user who already understands vaults, linked thinking, quick switch, backlinks, plugins, and daily notes — and now needs Neovim to stop feeling like a wall of strange keybindings.</p>
+  <div class="controlbar">
+    <div class="control"><label>Reading lens</label><div class="seg" id="lensSeg"><button class="active" data-lens="both">Both</button><button data-lens="obsidian">Obsidian</button><button data-lens="neovim">Neovim</button></div></div>
+    <div class="control"><label>Density</label><input id="density" type="range" min="80" max="125" value="100" /></div>
+    <div class="control"><label>Resume</label><button class="ghost" id="resumeBtn">Jump to last-read</button></div>
+  </div>
+</header>
+
+<section id="transfer" data-title="Transfer Map">
+  <div class="section-head"><div class="num">01</div><div><h2>What You Already Know That Transfers</h2><p class="deck">The first move is not memorization. It is mapping familiar intentions to unfamiliar mechanisms.</p></div></div>
+  <div class="mapwrap">
+    <svg viewBox="0 0 900 360" role="img" aria-label="Interactive concept map">
+      <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto"><polygon points="0 0,8 3.5,0 7" fill="rgba(229,231,235,.55)"/></marker></defs>
+      <g class="hotnode active" data-map="vault"><rect class="node" x="40" y="48" width="190" height="70"/><text class="svgy" x="66" y="80">Vault</text><text class="svgmuted" x="66" y="100">workspace as memory</text></g>
+      <g class="hotnode" data-map="picker"><rect class="node2" x="355" y="48" width="190" height="70"/><text class="svgy" x="381" y="80">Picker</text><text class="svgmuted" x="381" y="100">searchable intention list</text></g>
+      <g class="hotnode" data-map="grammar"><rect class="node" x="670" y="48" width="190" height="70"/><text class="svgy" x="696" y="80">Grammar</text><text class="svgmuted" x="696" y="100">verbs + targets</text></g>
+      <line class="arrow" x1="230" y1="83" x2="355" y2="83"/><line class="arrow" x1="545" y1="83" x2="670" y2="83"/>
+      <g class="hotnode" data-map="daily"><rect class="node" x="90" y="218" width="170" height="70"/><text class="svgtext" x="116" y="249">Daily Notes</text><text class="svgmuted" x="116" y="269">stable floor</text></g>
+      <g class="hotnode" data-map="links"><rect class="node2" x="365" y="218" width="170" height="70"/><text class="svgtext" x="391" y="249">Links</text><text class="svgmuted" x="391" y="269">edges as text</text></g>
+      <g class="hotnode" data-map="plugins"><rect class="node" x="640" y="218" width="170" height="70"/><text class="svgtext" x="666" y="249">Plugins</text><text class="svgmuted" x="666" y="269">curated ecosystem</text></g>
+      <line class="arrow" x1="175" y1="118" x2="175" y2="218"/><line class="arrow" x1="450" y1="118" x2="450" y2="218"/><line class="arrow" x1="765" y1="118" x2="725" y2="218"/>
+    </svg>
+    <div class="map-pop show" id="mapPop"><button class="close" id="mapClose">×</button><h3>Vault</h3><p>Obsidian taught you that a folder can become a thinking environment. Neovim keeps the folder, but exposes lower-level primitives: files, buffers, windows, searches, and commands.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card obsidian-copy"><span class="label">Obsidian instinct</span><p>You already trust search more than folder browsing. Quick switch, backlinks, and command palette made navigation feel like recall.</p></div>
+    <div class="card neovim-copy"><span class="label">Neovim translation</span><p>Neovim turns those recall surfaces into pickers: searchable lists that can open files, jump to grep matches, run commands, show keymaps, or preview backlinks.</p></div>
+  </div>
+  <div class="layers">
+    <div class="layer open"><button>Layer 1 — same material <span>markdown</span></button><div class="body"><p>The unit is still text. A note is still a markdown file. Links are still characters on disk. This matters because the work is not being moved into a foreign database or locked app surface.</p></div></div>
+    <div class="layer"><button>Layer 2 — different control surface <span>modal editing</span></button><div class="body"><p>Obsidian gives polished app commands. Neovim gives composable editor commands. The difference shows up when a one-off note edit becomes a repeated transformation across many notes.</p></div></div>
+    <div class="layer"><button>Layer 3 — new payoff <span>repeatable changes</span></button><div class="body"><p>The prize is not being a keyboard wizard. The prize is repeatability: change the current word, repeat it; search the vault, preview before opening; select a paragraph, transform it.</p></div></div>
+  </div>
+  <p>The rosetta for the rest of this artifact is simple: Obsidian gave you the mental model for a markdown knowledge environment; Neovim gives you the grammar for moving through and rewriting that environment. You are not starting from zero. You are translating a mature workflow into a lower-level, more composable interface.</p>
+</section>
+
+<section id="vocab" data-title="Vocabulary Layers">
+  <div class="section-head"><div class="num">02</div><div><h2>Neovim Vocabulary You Need First</h2><p class="deck">This section is deliberately layered. Open only what you need, then come back when a word starts appearing everywhere.</p></div></div>
+  <h3>Modes are states of intention.</h3>
+  <div class="mode-board" id="modeBoard">
+    <div class="mode-card active" data-mode="normal"><b>Normal</b><small>compose actions</small><p>Delete, change, yank, jump, repeat.</p></div>
+    <div class="mode-card" data-mode="insert"><b>Insert</b><small>write text</small><p>The closest mode to ordinary typing.</p></div>
+    <div class="mode-card" data-mode="visual"><b>Visual</b><small>select text</small><p>Make a range visible, then act on it.</p></div>
+    <div class="mode-card" data-mode="command"><b>Command</b><small>invoke editor</small><p>Run commands, searches, substitutions.</p></div>
+  </div>
+  <div class="mode-output" id="modeOutput">Normal mode is where editing becomes compositional: <span class="key" data-source="Vim/Neovim modal grammar">daw</span> means delete a word; <span class="key" data-source="Vim/Neovim modal grammar">ci(</span> means change inside parentheses. The point is not memorizing letters; the point is forming editable sentences.</div>
+  <div class="slider-teach">
+    <span class="label">Composition slider</span>
+    <div class="slider-row"><span class="metatext">one command</span><input id="composeRange" type="range" min="1" max="4" value="1"><span class="metatext" id="composeLabel">operator</span></div>
+    <div class="meter"><i id="composeMeter"></i></div>
+    <p id="composeText" class="metatext" style="margin-top:12px">Start with an operator: <span class="key" data-source="Vim operator grammar">d</span> means delete, but by itself it is waiting for a target.</p>
+  </div>
+  <div class="drawer-grid">
+    <article class="drawer"><h3>Buffer ≠ window</h3><p>A buffer is an open file-like object.</p><div class="hidden">A window is a viewport onto a buffer. Closing a window is like closing a pane, not necessarily destroying the file or buffer. This distinction is why splits become powerful instead of chaotic.</div></article>
+    <article class="drawer"><h3>Split ≠ tab</h3><p>A split is a layout decision.</p><div class="hidden">Tabs in Vim-like editors are closer to layout pages than browser tabs. Splits are the normal way to see multiple buffers at once: daily note left, source note right, search below.</div></article>
+    <article class="drawer"><h3>Leader ≈ command namespace</h3><p>Leader keys organize custom actions.</p><div class="hidden"><span class="key" data-source="Vim mapleader convention">&lt;leader&gt;</span> is commonly Space in modern configs. Think of it as a command palette prefix that can become muscle memory.</div></article>
+    <article class="drawer"><h3>Lua ≈ editable ecosystem</h3><p>Modern Neovim plugins are usually Lua-first.</p><div class="hidden">Vimscript powered the old ecosystem. Lua made Neovim configuration and plugins feel more like ordinary programming, which is why tools such as Telescope, Snacks, and modern UI plugins feel cohesive.</div></article>
+  </div>
+</section>
+
+<section id="translate" data-title="Translation Console">
+  <div class="section-head"><div class="num">03</div><div><h2>The Translation Console</h2><p class="deck">Choose an Obsidian habit. The page rewrites it into a Neovim mechanism, then shows the felt difference.</p></div></div>
+  <div class="lens-grid">
+    <div class="lens-list" id="conceptList"></div>
+    <div class="lens-stage" id="translationCard"></div>
+  </div>
+  <p>The point of this console is not to flatten Neovim into Obsidian. It is to preserve the intention while changing the machinery. Quick switch is still “open the thing I mean.” Vault search is still “find where I said this.” Backlinks are still “show incoming edges.” The Neovim version feels different because the surface is more primitive and more chainable.</p>
+  <div class="callout"><b>Use this as a diagnostic</b>When Neovim feels alien, ask: what Obsidian action am I trying to perform? Then identify whether the Neovim shape is a picker, buffer move, split action, mode change, or plugin command.</div>
+</section>
+
+<section id="picker" data-title="Picker Lab">
+  <div class="section-head"><div class="num">04</div><div><h2>The Picker Pattern — Protagonist of Part 1</h2><p class="deck">A picker is not just a search box. It is a reusable interface for turning vague intent into a selected object.</p></div></div>
+  <div class="picker-lab">
+    <div class="terminal">
+      <div class="prompt">Telescope-style picker simulation</div>
+      <input class="searchbox" id="pickerInput" value="daily" aria-label="Search candidates" />
+      <div class="candidates" id="candidates"></div>
+    </div>
+    <div class="preview" id="preview"><h3>Preview</h3><p>Type in the picker. Select a result. Notice the sequence: candidates appear, ranking changes, preview gives context, then one object becomes the target.</p></div>
+  </div>
+  <div class="pipeline">
+    <div class="pipe active" data-pipe="finder"><b>Finder</b><p>what list?</p></div>
+    <div class="pipe" data-pipe="sorter"><b>Sorter</b><p>what rises?</p></div>
+    <div class="pipe" data-pipe="previewer"><b>Previewer</b><p>what context?</p></div>
+    <div class="pipe" data-pipe="actions"><b>Actions</b><p>what happens?</p></div>
+  </div>
+  <div class="pipe-detail" id="pipeDetail">Finder: the part that says “what are we searching over?” Files, buffers, grep results, commands, backlinks, templates, and keymaps all become candidate lists.</div>
+  <h3>Why pickers become everywhere</h3>
+  <div class="grid3">
+    <div class="card"><span class="label">Quick switch</span><p><span class="key" data-source="Telescope README / common Neovim convention">:Telescope find_files</span> or a LazyVim-style file picker replaces browsing.</p></div>
+    <div class="card"><span class="label">Vault search</span><p>Live grep turns the whole vault into a searchable candidate stream, not just a results page.</p></div>
+    <div class="card"><span class="label">Command palette</span><p>Commands, keymaps, recent files, buffers, and diagnostics all share the same interaction pattern.</p></div>
+  </div>
+  <p>Telescope became one of the defining Lua-era Neovim plugins because it made this pattern explicit: picker, finder, sorter, previewer. Snacks.picker, fzf-lua, mini.pick, and native <code>vim.ui.select</code> all orbit the same idea from different angles. Once this clicks, Neovim stops feeling like a pile of unrelated plugins and starts feeling like a set of reusable surfaces.</p>
+</section>
+
+<section id="obsidian" data-title="Bridge Plugin">
+  <div class="section-head"><div class="num">05</div><div><h2>obsidian.nvim — The Bridge Plugin</h2><p class="deck">The bridge plugin matters because it lets your vault remain your vault while Neovim becomes the editing surface.</p></div></div>
+  <div class="bridge-grid">
+    <div class="cmd"><span class="key" data-source="obsidian.nvim README/example mapping pattern">&lt;leader&gt;oo</span><p>Open an Obsidian command/menu surface. The grouping says: all Obsidian actions live under the same mnemonic namespace.</p></div>
+    <div class="cmd"><span class="key" data-source="obsidian.nvim README/example mapping pattern">&lt;leader&gt;oq</span><p>Quick switch notes. The habit maps directly to Obsidian’s quick switch, but the implementation usually routes through your picker.</p></div>
+    <div class="cmd"><span class="key" data-source="obsidian.nvim README/example mapping pattern">&lt;leader&gt;os</span><p>Search the vault. Same intent as Obsidian search; different feel because the result can be previewed and opened as part of editor flow.</p></div>
+    <div class="cmd"><span class="key" data-source="obsidian.nvim README/example mapping pattern">&lt;leader&gt;od</span><p>Open today’s daily note. The daily note remains the starting node, but now it can sit beside source notes in splits.</p></div>
+    <div class="cmd"><span class="key" data-source="obsidian.nvim README/example mapping pattern">&lt;leader&gt;on</span><p>Create a new note. This keeps note creation in the editor instead of breaking flow to reach for another app surface.</p></div>
+    <div class="cmd"><span class="key" data-source="obsidian.nvim README/example mapping pattern">&lt;leader&gt;ob</span><p>Backlinks. Incoming edges become a navigable list rather than a side panel you visually scan.</p></div>
+    <div class="cmd"><span class="key" data-source="obsidian.nvim README/example mapping pattern">&lt;leader&gt;ot</span><p>Templates. Template insertion becomes one part of a larger editing grammar: insert, jump, modify, repeat.</p></div>
+    <div class="cmd"><span class="key" data-source="obsidian.nvim README/example mapping pattern">&lt;leader&gt;ol</span><p>Link under cursor or link selection, depending on mode/config. The important concept is link action follows cursor context.</p></div>
+  </div>
+  <div class="callout"><b>Source posture</b>Treat these as README/example/common-pattern bindings, not universal law. The stable concept is the <span class="key" data-source="Common obsidian.nvim namespace pattern">&lt;leader&gt;o</span> namespace: Obsidian actions grouped together so which-key and muscle memory can both find them.</div>
+</section>
+
+<section id="next" data-title="Series Map">
+  <div class="section-head"><div class="num">06</div><div><h2>What’s Next</h2><p class="deck">This artifact is Part 1. The restraint is intentional. You now have the translation layer; later pieces can go deeper without drowning the first contact.</p></div></div>
+  <div class="series">
+    <article><h3>Picker family tree</h3><p>Telescope, Snacks.picker, fzf-lua, mini.pick, and <code>vim.ui.select</code> deserve their own focused artifact because pickers become the shared UI grammar of modern Neovim.</p></article>
+    <article><h3>Motions and text objects for notes</h3><p>The next editing piece should teach motions through markdown realities: headings, links, code fences, paragraphs, bullets, quotes, and repeated note cleanup.</p></article>
+    <article><h3>Harpoon and the marks-stack idea</h3><p>You will meet Harpoon, and it is simple enough to grok on first contact: keep a tiny set of important files one jump away. It is less “search everything” and more “pin the working set.”</p></article>
+    <article><h3>Vim → Neovim → Lua lineage</h3><p>The history deserves its own page: vi lineage, Vim’s extension culture, Neovim’s architecture, Lua plugins, and why modern configs feel like programmable workbenches.</p></article>
+  </div>
+  <div class="trybox"><span class="label">Next move</span><ol><li>Open Neovim inside a markdown vault.</li><li>Run a file picker or note quick switch.</li><li>Open today’s daily note in one split and another note in a second split.</li><li>Use one operator + motion edit, then repeat it with <span class="key" data-source="Vim repeat command">.</span>.</li></ol></div>
+</section>
+</main>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const sections=$$('section');const links=$$('.toc a');
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const id=e.target.id;localStorage.setItem('neoObsLast',id);links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));}})},{rootMargin:'-30% 0px -62% 0px'});sections.forEach(s=>obs.observe(s));
+$('#resumeBtn').onclick=()=>{const id=localStorage.getItem('neoObsLast')||'transfer';document.getElementById(id)?.scrollIntoView({behavior:'smooth'});};
+$('#density').oninput=e=>document.documentElement.style.setProperty('--density',e.target.value/100);
+$('#lensSeg').onclick=e=>{if(e.target.tagName!=='BUTTON')return; $$('#lensSeg button').forEach(b=>b.classList.remove('active')); e.target.classList.add('active'); const lens=e.target.dataset.lens; document.body.classList.toggle('lens-obsidian',lens==='obsidian'); document.body.classList.toggle('lens-neovim',lens==='neovim'); $$('.obsidian-copy').forEach(x=>x.style.opacity=(lens==='neovim'?'.35':'1')); $$('.neovim-copy').forEach(x=>x.style.opacity=(lens==='obsidian'?'.35':'1'));};
+const mapData={vault:['Vault','Obsidian taught you that a folder can become a thinking environment. Neovim keeps the folder, but exposes lower-level primitives: files, buffers, windows, searches, and commands.'],picker:['Picker','A picker is the Neovim version of “show me the thing I mean.” It can search files, notes, grep results, buffers, commands, keymaps, templates, and backlinks.'],grammar:['Grammar','Modal editing gives actions a sentence-like shape: operator, motion, text object, repeat. That is why modes exist: editing becomes composable.'],daily:['Daily Notes','Daily notes transfer cleanly. The difference is placement: today’s note can live beside project notes, grep results, and source material inside splits.'],links:['Links','In Obsidian links are conceptual edges. In Neovim they are also editable text targets: jumpable, searchable, transformable, and rename-aware with the right tools.'],plugins:['Plugins','Obsidian plugin fluency transfers emotionally. You already understand curated systems. Neovim adds Lua configuration and sharper responsibility for how pieces fit.']};
+$$('.hotnode').forEach(n=>n.addEventListener('click',()=>{$$('.hotnode').forEach(x=>x.classList.remove('active'));n.classList.add('active');const d=mapData[n.dataset.map];$('#mapPop').innerHTML='<button class="close" id="mapClose">×</button><h3>'+d[0]+'</h3><p>'+d[1]+'</p>';$('#mapPop').classList.add('show');$('#mapClose').onclick=()=>$('#mapPop').classList.remove('show');}));$('#mapClose').onclick=()=>$('#mapPop').classList.remove('show');
+$$('.layer button').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('open'));
+const modeText={normal:'Normal mode is where editing becomes compositional: <span class="key" data-source="Vim/Neovim modal grammar">daw</span> means delete a word; <span class="key" data-source="Vim/Neovim modal grammar">ci(</span> means change inside parentheses. The point is forming editable sentences.',insert:'Insert mode is where letters become text. It is intentionally narrower than the whole editor so ordinary typing and structural editing do not fight for the same keys.',visual:'Visual mode is a visible range. For Obsidian users, it feels closest to selecting text with the mouse, except the next step can be a command: link it, indent it, extract it, surround it, or delete it.',command:'Command-line mode is the editor’s command surface: searches, substitutions, plugin commands, file writes, and one-off operations that do not need a permanent keybinding.'};
+$$('.mode-card').forEach(c=>c.onclick=()=>{$$('.mode-card').forEach(x=>x.classList.remove('active'));c.classList.add('active');$('#modeOutput').innerHTML=modeText[c.dataset.mode];});
+const comp=[['operator','Start with an operator: <span class="key" data-source="Vim operator grammar">d</span> means delete, but by itself it is waiting for a target.'],['operator + motion','Add a motion: <span class="key" data-source="Vim operator grammar">dw</span> means delete forward through a word.'],['operator + text object','Use a text object: <span class="key" data-source="Vim text-object grammar">di(</span> means delete inside parentheses, regardless of cursor position inside them.'],['repeatable edit','Now repeat: after a change, <span class="key" data-source="Vim repeat command">.</span> replays the last change. This is where tiny edits become leverage.']];
+$('#composeRange').oninput=e=>{const i=e.target.value-1;$('#composeLabel').textContent=comp[i][0];$('#composeText').innerHTML=comp[i][1];$('#composeMeter').style.width=(25*(i+1))+'%';};
+$$('.drawer').forEach(d=>d.onclick=()=>d.classList.toggle('open'));
+const concepts=[
+{name:'Quick switch',obs:'Open the note by name before you remember where it lives.',neo:'A file or note picker, often Telescope, Snacks.picker, fzf-lua, mini.pick, or obsidian.nvim using the installed picker.',why:'Obsidian feels like opening a note. Neovim feels like selecting a target that can be opened, previewed, split, or acted on.',tags:['picker','files','preview']},
+{name:'Vault search',obs:'Search across every note for an idea, phrase, name, or forgotten fragment.',neo:'Live grep, ripgrep-backed search, or an obsidian.nvim search command routed through a picker.',why:'The result is not just a list. It is a navigable stream with previews and editor actions.',tags:['grep','rg','search']},
+{name:'Backlinks',obs:'See what points at the current note.',neo:'A backlinks command that produces candidates, often displayed through a picker-like UI.',why:'The backlink panel becomes a jump list. You move from visual scanning to target selection.',tags:['links','graph','picker']},
+{name:'Daily notes',obs:'Open today as the default capture and reflection surface.',neo:'A daily-note command that opens or creates a date-based file, usually with template support.',why:'The daily note can stay open beside related notes, search results, and code in splits.',tags:['daily','template','split']},
+{name:'Follow link',obs:'Click or command-open a wikilink.',neo:'Put the cursor on a link and invoke a follow-link action, or use completion/pickers to create links.',why:'The cursor becomes the mouse. Link actions follow text position and mode.',tags:['cursor','link','jump']},
+{name:'Templates',obs:'Insert a reusable note structure.',neo:'Plugin template commands, snippets, Lua functions, or plain markdown files inserted into the buffer.',why:'Templates become part of editing grammar, not only app-level insertion.',tags:['template','snippet','Lua']},
+{name:'Workspaces',obs:'Keep a context of panes, notes, and project surfaces.',neo:'Project roots, sessions, tabs, splits, buffers, and workspace switching.',why:'Neovim decomposes workspace into primitives. More moving parts, more control.',tags:['session','split','buffer']}
+];
+const list=$('#conceptList'),card=$('#translationCard');function renderConcept(i){const c=concepts[i];$$('#conceptList button').forEach((b,j)=>b.classList.toggle('active',i===j));card.innerHTML='<span class="label">'+c.name+'</span><div class="split-panel"><div class="pane obsidian-copy"><b>Obsidian habit</b><p>'+c.obs+'</p></div><div class="arrowbox">→</div><div class="pane neovim-copy"><b>Neovim mechanism</b><p>'+c.neo+'</p></div></div><p style="margin-top:16px"><strong>Why it feels different:</strong> '+c.why+'</p><div class="chips">'+c.tags.map(t=>'<span class="chip">'+t+'</span>').join('')+'</div>';}
+concepts.forEach((c,i)=>{const b=document.createElement('button');b.textContent=c.name;b.onclick=()=>renderConcept(i);list.appendChild(b)});renderConcept(0);
+const candidates=[
+{t:'2026-05-18 Daily Note.md',type:'daily',p:'Today’s note. Use this when the intention is capture, reflection, or a landing pad before deeper work.'},
+{t:'Neovim Picker Pattern.md',type:'concept',p:'Explains finder → sorter → previewer → action. This is the conceptual center of Part 1.'},
+{t:'Obsidian.nvim Setup Notes.md',type:'plugin',p:'Bridge-plugin setup notes: workspace path, daily notes, templates, completion, and picker integration.'},
+{t:'LazyVim Keymap Friction Log.md',type:'debug',p:'A living log of mappings that felt duplicated, surprising, or worth changing after real use.'},
+{t:'Daily Note Template.md',type:'template',p:'The reusable structure that makes daily notes consistent without requiring the user to think about format.'},
+{t:'Backlinks as Jump Lists.md',type:'concept',p:'Reframes backlinks from graph panel to navigable candidate list.'}
+];
+function renderPicker(){const q=$('#pickerInput').value.toLowerCase();let rows=candidates.map(c=>({...c,score:(c.t.toLowerCase().includes(q)?2:0)+(c.p.toLowerCase().includes(q)?1:0)+(c.type.includes(q)?1:0)})).filter(c=>!q||c.score>0).sort((a,b)=>b.score-a.score);if(!rows.length)rows=[{t:'No exact match — try “note”, “daily”, “picker”, “link”',type:'empty',p:'A real fuzzy sorter would still try to rank partial patterns. This simplified lab shows the concept, not the full algorithm.'}];$('#candidates').innerHTML=rows.map((c,i)=>'<div class="cand '+(i===0?'active':'')+'" data-i="'+i+'"><strong>'+c.t+'</strong><br><span>'+c.type+'</span></div>').join('');const set=(c)=>{$('#preview').innerHTML='<h3>'+c.t+'</h3><p>'+c.p+'</p><div class="chips"><span class="chip">finder output</span><span class="chip">sorted candidate</span><span class="chip">previewable target</span></div>';};set(rows[0]);$$('.cand').forEach((el,i)=>el.onclick=()=>{$$('.cand').forEach(x=>x.classList.remove('active'));el.classList.add('active');set(rows[i]);});}
+$('#pickerInput').oninput=renderPicker;renderPicker();
+const pipe={finder:'Finder: the list source. Files, buffers, grep results, commands, backlinks, templates, and keymaps can all become candidates.',sorter:'Sorter: the ranking layer. It lets “dly” or “obs set” become intent instead of exact filename recall.',previewer:'Previewer: the context pane. It lets you inspect before committing, which is why pickers feel safer than blind jumps.',actions:'Actions: the selected candidate can open, split, tab-open, yank, edit, delete, or feed another command. This is where picker becomes workflow.'};
+$$('.pipe').forEach(p=>p.onclick=()=>{$$('.pipe').forEach(x=>x.classList.remove('active'));p.classList.add('active');$('#pipeDetail').textContent=pipe[p.dataset.pipe];});
+</script>
+</body>
+</html>
