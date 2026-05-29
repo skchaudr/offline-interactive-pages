@@ -49,8 +49,59 @@
             color: var(--text-color);
             line-height: 1.6;
             padding: 2rem 1rem;
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .toc-container {
+            position: sticky;
+            top: 2rem;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .toc-container h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-list a {
+            text-decoration: none;
+            color: var(--secondary-color);
+            font-size: 0.95rem;
+            transition: color 0.2s, border-left-color 0.2s;
+            display: block;
+            padding-left: 0.5rem;
+            border-left: 2px solid transparent;
+        }
+
+        .toc-list a:hover {
+            color: var(--text-color);
+        }
+
+        .toc-list a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            font-weight: 600;
         }
 
         h1, h2, h3 {
@@ -238,20 +289,35 @@
         }
 
         /* Responsive Design */
-        @media (max-width: 768px) {
-            body { padding: 1rem; }
+        @media (max-width: 900px) {
+            body {
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+            }
             h1 { font-size: 2rem; }
             h2 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>NeoVim & LazyVim Interactive Lab</h1>
-        <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
-    </header>
+    <nav class="toc-container" aria-label="Table of Contents">
+        <h3>You are here</h3>
+        <ul class="toc-list">
+            <li><a href="#mental-model">Mental Model</a></li>
+            <li><a href="#lazyvim-layer">LazyVim Layer</a></li>
+            <li><a href="#workflows">Core Workflows</a></li>
+            <li><a href="#friction-points">Friction Points</a></li>
+            <li><a href="#interactive-troubleshooting">Interactive Troubleshooting</a></li>
+        </ul>
+    </nav>
+    <div class="content-wrapper">
+        <header>
+            <h1>NeoVim & LazyVim Interactive Lab</h1>
+            <p style="color: var(--secondary-color); font-size: 1.1rem;">Master your editor through mental models and interactive troubleshooting.</p>
+        </header>
 
-    <main id="content">
+        <main id="content">
         <section id="mental-model" class="card">
             <h2>The NeoVim Mental Model</h2>
             <p>Unlike many modern editors that use a simple "one file = one tab" model, NeoVim separates the concepts of what you are editing from how you are viewing it.</p>
@@ -377,7 +443,8 @@
             </div>
         </section>
 
-    </main>
+        </main>
+    </div>
 
     <script>
         // Accordion Logic
@@ -492,6 +559,34 @@
 
             // Init
             loadScenario(0);
+
+            // TOC Intersection Observer
+            const sections = document.querySelectorAll('main#content section[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px 0px -60% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        tocLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
         });
     </script>
 </body>
