@@ -214,6 +214,12 @@
     }
 
     .accordion-header {
+      width: 100%;
+      text-align: left;
+      border: none;
+      font-family: inherit;
+      font-size: 1rem;
+      color: inherit;
       padding: 1rem 1.5rem;
       background: var(--surface-color);
       cursor: pointer;
@@ -245,11 +251,14 @@
     }
 
     .accordion-icon {
-      transition: transform 0.3s ease;
-    }
-
-    .accordion.open .accordion-icon {
-      transform: rotate(180deg);
+      font-size: 0.85rem;
+      font-weight: normal;
+      color: var(--text-muted);
+      background-color: var(--chip-bg);
+      padding: 0.2rem 0.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
     }
 
     /* Responsive */
@@ -317,51 +326,51 @@
         <p>Key terms you need to know before rewriting history.</p>
 
         <div class="accordion">
-          <div class="accordion-header">
+          <button class="accordion-header" aria-expanded="false" aria-controls="panel-head">
             <span>HEAD</span>
-            <span class="accordion-icon">▼</span>
-          </div>
-          <div class="accordion-content">
+            <span class="accordion-icon" aria-hidden="true">Open</span>
+          </button>
+          <div class="accordion-content" id="panel-head">
             <p>A pointer to the current commit you are viewing or working on. Usually, it points to the latest commit of your current branch.</p>
           </div>
         </div>
 
         <div class="accordion">
-          <div class="accordion-header">
+          <button class="accordion-header" aria-expanded="false" aria-controls="panel-rebase">
             <span>Rebase</span>
-            <span class="accordion-icon">▼</span>
-          </div>
-          <div class="accordion-content">
+            <span class="accordion-icon" aria-hidden="true">Open</span>
+          </button>
+          <div class="accordion-content" id="panel-rebase">
             <p>The process of moving or combining a sequence of commits to a new base commit. It rewrites history by creating new commits.</p>
           </div>
         </div>
 
         <div class="accordion">
-          <div class="accordion-header">
+          <button class="accordion-header" aria-expanded="false" aria-controls="panel-merge">
             <span>Merge</span>
-            <span class="accordion-icon">▼</span>
-          </div>
-          <div class="accordion-content">
+            <span class="accordion-icon" aria-hidden="true">Open</span>
+          </button>
+          <div class="accordion-content" id="panel-merge">
             <p>Combining multiple sequences of commits into one unified history, typically preserving the history of both branches via a "merge commit."</p>
           </div>
         </div>
 
         <div class="accordion">
-          <div class="accordion-header">
+          <button class="accordion-header" aria-expanded="false" aria-controls="panel-fast-forward">
             <span>Fast-forward</span>
-            <span class="accordion-icon">▼</span>
-          </div>
-          <div class="accordion-content">
+            <span class="accordion-icon" aria-hidden="true">Open</span>
+          </button>
+          <div class="accordion-content" id="panel-fast-forward">
             <p>A type of merge where the target branch has no additional commits compared to the source branch. Git simply moves the branch pointer forward without creating a new merge commit.</p>
           </div>
         </div>
 
         <div class="accordion">
-          <div class="accordion-header">
+          <button class="accordion-header" aria-expanded="false" aria-controls="panel-reflog">
             <span>Reflog</span>
-            <span class="accordion-icon">▼</span>
-          </div>
-          <div class="accordion-content">
+            <span class="accordion-icon" aria-hidden="true">Open</span>
+          </button>
+          <div class="accordion-content" id="panel-reflog">
             <p>A mechanism to record when the tip of branches are updated. It's your safety net to recover lost commits after a bad rebase or reset.</p>
           </div>
         </div>
@@ -588,11 +597,11 @@
             <h3 style="margin-bottom: 1rem;">Drill 1: What Happens Next?</h3>
             <p>You are on branch <code>feature</code>. You run <code>git rebase main</code>. What happens to the commits on <code>feature</code>?</p>
             <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
-              <button class="quiz-option" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">They are moved exactly as they are to the tip of main.</button>
-              <button class="quiz-option" data-correct="true" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">New commits are created at the tip of main with the same changes.</button>
-              <button class="quiz-option" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">A merge commit is created combining main and feature.</button>
+              <button class="quiz-option" aria-pressed="false" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">They are moved exactly as they are to the tip of main.</button>
+              <button class="quiz-option" aria-pressed="false" data-correct="true" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">New commits are created at the tip of main with the same changes.</button>
+              <button class="quiz-option" aria-pressed="false" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">A merge commit is created combining main and feature.</button>
             </div>
-            <div class="quiz-feedback" style="display: none; padding: 1rem; border-radius: var(--radius-sm); font-weight: 500;"></div>
+            <div class="quiz-feedback" tabindex="-1" style="display: none; padding: 1rem; border-radius: var(--radius-sm); font-weight: 500;"></div>
           </div>
 
           <!-- Drill 2 -->
@@ -600,11 +609,11 @@
             <h3 style="margin-bottom: 1rem;">Drill 2: Recovering</h3>
             <p>You accidentally dropped a commit during an interactive rebase. The rebase finished. How do you get it back?</p>
             <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
-              <button class="quiz-option" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">git revert HEAD</button>
-              <button class="quiz-option" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">It is gone forever.</button>
-              <button class="quiz-option" data-correct="true" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">Use git reflog to find the old state and reset to it.</button>
+              <button class="quiz-option" aria-pressed="false" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">git revert HEAD</button>
+              <button class="quiz-option" aria-pressed="false" data-correct="false" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">It is gone forever.</button>
+              <button class="quiz-option" aria-pressed="false" data-correct="true" style="padding: 1rem; text-align: left; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s;">Use git reflog to find the old state and reset to it.</button>
             </div>
-            <div class="quiz-feedback" style="display: none; padding: 1rem; border-radius: var(--radius-sm); font-weight: 500;"></div>
+            <div class="quiz-feedback" tabindex="-1" style="display: none; padding: 1rem; border-radius: var(--radius-sm); font-weight: 500;"></div>
           </div>
         </div>
 
@@ -650,7 +659,10 @@
       accordions.forEach(header => {
         header.addEventListener('click', () => {
           const accordion = header.parentElement;
-          accordion.classList.toggle('open');
+          const isOpen = accordion.classList.toggle('open');
+          header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          const icon = header.querySelector('.accordion-icon');
+          if (icon) icon.textContent = isOpen ? 'Close' : 'Open';
         });
       });
 
@@ -771,7 +783,9 @@
           card.querySelectorAll('.quiz-option').forEach(b => {
             b.style.backgroundColor = 'var(--surface-color)';
             b.style.borderColor = 'var(--border-color)';
+            b.setAttribute('aria-pressed', 'false');
           });
+          e.target.setAttribute('aria-pressed', 'true');
 
           if (isCorrect) {
             e.target.style.backgroundColor = '#e6ffe6';
@@ -788,6 +802,7 @@
 
             // Disable options
             card.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+            feedback.focus();
           } else {
             e.target.style.backgroundColor = '#ffe6e6';
             e.target.style.borderColor = 'var(--error-color)';
@@ -795,6 +810,7 @@
             feedback.style.backgroundColor = '#ffe6e6';
             feedback.style.color = '#cc0000';
             feedback.style.display = 'block';
+            feedback.focus();
           }
         });
       });
@@ -812,6 +828,7 @@
                         btn.disabled = false;
                         btn.style.backgroundColor = 'var(--surface-color)';
                         btn.style.borderColor = 'var(--border-color)';
+                        btn.setAttribute('aria-pressed', 'false');
                     });
                     const feedback = card.querySelector('.quiz-feedback');
                     if(feedback) feedback.style.display = 'none';
