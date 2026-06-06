@@ -1,0 +1,314 @@
+{
+  "meta": {
+    "profile": "ssd-primary",
+    "description": "Sab's primary Neovim lane: ~/.config/nvim → ~/.dotfiles/nvim/.config/nvim. NOT nvim-sab-pi (vd), NOT nvchad (vl), NOT mini (vm).",
+    "leader": "Space",
+    "lane_file": "~/.config/sab/small.lane",
+    "lane_primary_command": "nvim",
+    "config_root": "~/.dotfiles/nvim/.config/nvim",
+    "colorscheme": "cyberdream",
+    "picker": "snacks.pick",
+    "obsidian_plugin": "obsidian-nvim/obsidian.nvim",
+    "extracted_at": "2026-06-06",
+    "lovable_g1_preview": "https://id-preview--0cfcc316-762a-4cca-ad4c-edeaaead86d0.lovable.app/",
+    "lovable_g1_project_id": "0cfcc316-762a-4cca-ad4c-edeaaead86d0",
+    "lovable_publish_url": "https://space-obsidian-guide.lovable.app",
+    "lovable_g1_route": "/",
+    "lovable_g2_route": "/picker-lab",
+    "source_files": [
+      "lua/config/keymaps.lua",
+      "lua/config/command_center.lua",
+      "lua/config/vaults.lua",
+      "lua/config/workflow.lua",
+      "lua/plugins/obsidian.lua",
+      "lua/plugins/dashboard.lua",
+      "docs/neovim-field-guide.md"
+    ]
+  },
+  "vault": {
+    "resolution_order": [
+      "OBSIDIAN_VAULT",
+      "SOLO_VAULT",
+      "~/obsidian/SSD",
+      "~/Obsidian/SoloDeveloper"
+    ],
+    "primary_mac": "/Users/saboor/Obsidian/SoloDeveloper",
+    "workspaces": [
+      { "name": "SSD", "path_from_config": "vaults.primary (resolved)" },
+      { "name": "llm-wiki", "candidates": ["~/obsidian/llm-wiki", "~/Obsidian/LLM-Wiki"] }
+    ],
+    "daily_notes": {
+      "folder": "04 Periodic/00 Dailys",
+      "date_format": "YYYY.MM.DD",
+      "template": "Templates/daily-note.md",
+      "example_file": "2026.06.06.md"
+    },
+    "templates_folder": "Templates"
+  },
+  "entry_surfaces": {
+    "ssd_command_center": {
+      "id": "ssd_cc",
+      "keys": ["<leader><leader>"],
+      "display_name": "SSD Command Center",
+      "mechanism": "vim.ui.select → Snacks picker UI",
+      "prompt": "SSD Command Center",
+      "when_to_use": "You know the action name but not the keymap. Type to filter (e.g. obsidian, markdown, git).",
+      "screenshot_ref": "image-71b55f5f / image-8b540a49"
+    },
+    "obsidian_which_key": {
+      "id": "which_key_o",
+      "keys": ["<leader>o", "then pause"],
+      "display_name": "which-key o-namespace",
+      "mechanism": "which-key.nvim floating menu after leader+o",
+      "when_to_use": "You remember the second letter (d= daily, q= quick switch) but not the full chord.",
+      "note": "Image 1 in screenshots is THIS menu — letter on left is the second key after <leader>o, not a standalone hotkey inside Obsidian menu.",
+      "screenshot_ref": "image-00a34b2b"
+    },
+    "obsidian_direct_chords": {
+      "id": "direct_o",
+      "keys": ["<leader>o", "<letter>"],
+      "display_name": "Direct Obsidian chords",
+      "mechanism": "Lazy.nvim keymaps in plugins/obsidian.lua",
+      "when_to_use": "Muscle memory — fastest path once learned.",
+      "mode": "normal"
+    },
+    "obsidian_command_menu": {
+      "id": "obsidian_menu",
+      "keys": ["<leader>oo"],
+      "command": ":Obsidian",
+      "display_name": "Obsidian command menu",
+      "mechanism": "vim.ui.select over all :Obsidian subcommands (context-filtered)",
+      "when_to_use": "Discoverability — shows commands not mapped to a direct chord.",
+      "mode": "normal"
+    },
+    "picker_modal": {
+      "id": "picker",
+      "display_name": "Snacks picker modal",
+      "mechanism": "Opens after quick_switch, search, backlinks, SSD CC, templates, etc.",
+      "when_to_use": "Shared UI for any searchable list — type to filter, preview, confirm.",
+      "screenshot_ref": "embedded in SSD CC and search flows"
+    }
+  },
+  "picker_keys": {
+    "source": "snacks.nvim defaults + docs/neovim-field-guide.md",
+    "confirm_open": "<CR>",
+    "pick_window": "<S-CR>",
+    "horizontal_split": "<C-s>",
+    "vertical_split": "<C-v>",
+    "new_tab": "<C-t>",
+    "toggle_preview": "<M-p>",
+    "cancel": "<Esc>",
+    "list_down": "<C-j> / j",
+    "list_up": "<C-k> / k",
+    "file_picker_confirm_o": "o (custom in dashboard.lua for files/recent/git_files)"
+  },
+  "obsidian_bindings": [
+    { "letter": "o", "keys": "<leader>oo", "command": "Obsidian", "desc": "Obsidian Menu", "mode": "n" },
+    { "letter": "c", "keys": "<leader>oc", "command": "Obsidian check", "desc": "Check Vault", "mode": "n" },
+    { "letter": "d", "keys": "<leader>od", "command": "Obsidian today", "desc": "Daily Note", "mode": "n" },
+    { "letter": "y", "keys": "<leader>oy", "command": "Obsidian yesterday", "desc": "Yesterday's Note", "mode": "n" },
+    { "letter": "n", "keys": "<leader>on", "command": "Obsidian new", "desc": "New Note", "mode": "n" },
+    { "letter": "q", "keys": "<leader>oq", "command": "Obsidian quick_switch", "desc": "Quick Switch", "mode": "n", "opens_picker": true },
+    { "letter": "s", "keys": "<leader>os", "command": "Obsidian search", "desc": "Search Vault", "mode": "n", "opens_picker": true },
+    { "letter": "t", "keys": "<leader>ot", "command": "Obsidian template", "desc": "Insert Template", "mode": "n", "opens_picker": true },
+    { "letter": "b", "keys": "<leader>ob", "command": "Obsidian backlinks", "desc": "Backlinks", "mode": "n", "opens_picker": true, "requires_note_buffer": true },
+    { "letter": "l", "keys": "<leader>ol", "command": "Obsidian links", "desc": "Links (outgoing)", "mode": "n", "requires_note_buffer": true },
+    { "letter": "w", "keys": "<leader>ow", "command": "Obsidian workspace", "desc": "Switch Workspace", "mode": "n", "opens_picker": true },
+    { "letter": "l", "keys": "<leader>ol", "command": "Obsidian link", "desc": "Link Selection", "mode": "v" },
+    { "letter": "e", "keys": "<leader>oe", "command": "Obsidian extract_note", "desc": "Extract Selection", "mode": "v" }
+  ],
+  "obsidian_buffer_local": {
+    "smart_action": {
+      "keys": "<CR>",
+      "mode": "n",
+      "scope": "markdown buffers only (obsidian.nvim autocmd)",
+      "behavior": "On wiki-link → follow_link; on tag → tags picker; on heading → fold toggle; on checkbox → toggle; else plain Enter"
+    },
+    "follow_link_explicit": {
+      "command": "Obsidian follow_link",
+      "note": "No global keymap — use <CR> on link in markdown buffer, or run command"
+    }
+  },
+  "command_center_obsidian_items": [
+    { "label": "Obsidian: menu", "command": "Obsidian" },
+    { "label": "Obsidian: daily note", "command": "Obsidian today" },
+    { "label": "Obsidian: quick switch", "command": "Obsidian quick_switch" },
+    { "label": "Obsidian: search vault", "command": "Obsidian search" },
+    { "label": "Obsidian: backlinks", "command": "Obsidian backlinks" },
+    { "label": "Obsidian: new note", "command": "Obsidian new" }
+  ],
+  "workflows": [
+    {
+      "id": "W1",
+      "intention": "Open today's daily note",
+      "best_entry": "direct",
+      "prerequisites": { "mode": "normal" },
+      "steps": [
+        { "action": "press", "keys": "<leader>od" },
+        { "action": "expect", "detail": "Opens or creates 04 Periodic/00 Dailys/YYYY.MM.DD.md from template" }
+      ],
+      "alternates": [
+        { "entry": "which_key_o", "keys": "<leader>o → d" },
+        { "entry": "ssd_cc", "keys": "<leader><leader> → type 'daily' → Enter" },
+        { "entry": "obsidian_menu", "keys": "<leader>oo → select 'today'" }
+      ],
+      "side_swipes": [
+        "In INSERT mode — leader keys do not fire. Press Esc first.",
+        "Wrong vault — check statusline path; use <leader>ow if needed.",
+        "Expecting Obsidian app UI — Neovim opens the raw markdown file."
+      ]
+    },
+    {
+      "id": "W2",
+      "intention": "Recall and open a note by title",
+      "best_entry": "direct",
+      "prerequisites": { "mode": "normal" },
+      "steps": [
+        { "action": "press", "keys": "<leader>oq" },
+        { "action": "type", "detail": "Few letters of note title" },
+        { "action": "press", "keys": "<CR>", "detail": "Open selected note" }
+      ],
+      "alternates": [
+        { "entry": "which_key_o", "keys": "<leader>o → q" },
+        { "entry": "ssd_cc", "keys": "<leader><leader> → 'quick switch'" }
+      ],
+      "side_swipes": [
+        "Confusing with <leader>os (full-text search) — use oq for filename/title, os for phrase in body.",
+        "Confusing with <leader>ff (project files) — oq searches vault only."
+      ]
+    },
+    {
+      "id": "W3",
+      "intention": "Find a phrase across the vault",
+      "best_entry": "direct",
+      "prerequisites": { "mode": "normal" },
+      "steps": [
+        { "action": "press", "keys": "<leader>os" },
+        { "action": "type", "detail": "Search term" },
+        { "action": "navigate", "keys": "j/k", "detail": "Preview match context" },
+        { "action": "press", "keys": "<CR>", "detail": "Jump to match" }
+      ],
+      "side_swipes": [
+        "Use <C-s> in picker to open in horizontal split instead of replacing buffer."
+      ]
+    },
+    {
+      "id": "W4",
+      "intention": "Follow a wiki-link under cursor",
+      "best_entry": "buffer_local",
+      "prerequisites": { "mode": "normal", "cursor": "on [[wiki-link]]" },
+      "steps": [
+        { "action": "press", "keys": "<CR>", "detail": "smart_action → Obsidian follow_link" }
+      ],
+      "side_swipes": [
+        "gf fails on [[Note]] — it expects filesystem paths, not wiki-links.",
+        "In INSERT mode Enter inserts newline — Esc to Normal first.",
+        "Link to non-existent note — picker prompts to create."
+      ]
+    },
+    {
+      "id": "W5",
+      "intention": "See notes linking to current note",
+      "best_entry": "direct",
+      "prerequisites": { "mode": "normal", "buffer": "vault markdown note" },
+      "steps": [
+        { "action": "press", "keys": "<leader>ob" },
+        { "action": "navigate", "keys": "j/k" },
+        { "action": "press", "keys": "<CR>", "detail": "Jump to backlink" }
+      ],
+      "side_swipes": [
+        "No always-visible backlinks pane — on-demand only (ripgrep-based).",
+        "Empty list if note was never saved after adding links."
+      ]
+    },
+    {
+      "id": "W6",
+      "intention": "Create a new note",
+      "best_entry": "direct",
+      "prerequisites": { "mode": "normal" },
+      "steps": [
+        { "action": "press", "keys": "<leader>on" },
+        { "action": "type", "detail": "Note title in prompt" },
+        { "action": "press", "keys": "<CR>" }
+      ],
+      "side_swipes": [
+        "on is NEW note, od is DAILY — common confusion."
+      ]
+    },
+    {
+      "id": "W7",
+      "intention": "Link selected text to a note",
+      "best_entry": "direct",
+      "prerequisites": { "mode": "visual", "selection": "text to link" },
+      "steps": [
+        { "action": "select", "detail": "Visual mode over text (v then motion)" },
+        { "action": "press", "keys": "<leader>ol" },
+        { "action": "pick", "detail": "Choose or create target note in picker" }
+      ],
+      "side_swipes": [
+        "Normal mode <leader>ol shows outgoing links, NOT link selection — mode matters."
+      ]
+    },
+    {
+      "id": "W8",
+      "intention": "Extract selection into its own note",
+      "best_entry": "direct",
+      "prerequisites": { "mode": "visual" },
+      "steps": [
+        { "action": "select", "detail": "Visual mode over paragraph or section" },
+        { "action": "press", "keys": "<leader>oe" },
+        { "action": "type", "detail": "New note name" }
+      ],
+      "side_swipes": [
+        "Must be Visual mode — Normal mode mapping does not exist."
+      ]
+    },
+    {
+      "id": "W9",
+      "intention": "Switch vault workspace",
+      "best_entry": "direct",
+      "prerequisites": { "mode": "normal" },
+      "steps": [
+        { "action": "press", "keys": "<leader>ow" },
+        { "action": "select", "detail": "SSD or llm-wiki" }
+      ],
+      "side_swipes": [
+        "Obsidian 'workspace' (layout) ≠ obsidian.nvim workspace (vault directory)."
+      ]
+    },
+    {
+      "id": "W10",
+      "intention": "Open yesterday's daily note",
+      "best_entry": "direct",
+      "prerequisites": { "mode": "normal" },
+      "steps": [
+        { "action": "press", "keys": "<leader>oy" }
+      ],
+      "alternates": [
+        { "entry": "which_key_o", "keys": "<leader>o → y" }
+      ]
+    }
+  ],
+  "side_swipes_global": [
+    {
+      "symptom": "Leader key does nothing",
+      "cause": "INSERT or Terminal mode",
+      "fix": "Esc to Normal (or Esc twice from Terminal)"
+    },
+    {
+      "symptom": "Explorer shows project, buffer is vault path",
+      "cause": "Snacks explorer roots at cwd; vault notes opened via Obsidian commands",
+      "fix": "Use <leader>wr to reveal current file; or cd to vault; explorer is project nav, Obsidian keys are vault nav"
+    },
+    {
+      "symptom": "Picker closed accidentally",
+      "cause": "Esc in picker",
+      "fix": "Re-run the command; Esc is cancel by design"
+    },
+    {
+      "symptom": "Used wrong lane (nvchad / mini / sab-pi)",
+      "cause": "Launched vd/vl/vm instead of n/nvim",
+      "fix": "Use n or nvim (primary lane per small.lane); config at ~/.config/nvim"
+    }
+  ]
+}

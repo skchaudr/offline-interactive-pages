@@ -81,6 +81,29 @@ Tool-fluency apps you'd open daily while practicing. Each series is three comple
   **Pedagogy:** You can't tune what you can't see. Most people accumulate hotkeys over years and have no idea what their layout actually looks like or where the gaps are.
   **Creative invitation:** SVG keyboard, color gradient by category. Hover any key for its full chord stack. Filter chips for modifier sets (⌘, ⌘⇧, ⌘⌥, etc.). A "suggested rebinds" panel that flags conflicts. The keyboard layout *is* the dashboard.
 
+### Series G — Obsidian-Neovim SSD Workflows
+
+Ground truth: `pages/010-obsidian-neovim-fluency/bindings.json` extracted from `~/.dotfiles/nvim/.config/nvim` (primary `nvim` lane, NOT nvchad/mini/nvim-sab-pi).
+
+- **G1. SSD Entry Surface Explorer** — `shipped 2026-06-06`
+  **Scope:** Click/type through four simulated surfaces: SSD Command Center (`Space Space`), which-key o-namespace (`Space o` pause), direct `Space o` chords, and picker modal footnotes. Filter SSD CC by typing "obsidian". Click any action → sidebar shows mode, keys, expected UI, one side-swipe.
+  **Pedagogy:** Four overlapping doors into the same vault verbs; each door has different rules. Image 1 is which-key, not the `:Obsidian` menu.
+  **Creative invitation:** Cyberdream terminal aesthetic (cyan keys, magenta actions). Screenshot-accurate floating panels. View Transitions between surfaces. `localStorage` for surfaces visited.
+  **Prompt:** `pages/010-obsidian-neovim-fluency/lovable-prompts/G1-entry-surface-explorer.md`
+  **Don't:** Generic LazyVim defaults or vim grammar decoder.
+
+- **G2. Picker Lifecycle Simulator** — `shipped 2026-06-06`
+  **Scope:** Fake Snacks picker with mock vault (`04 Periodic/00 Dailys/2026.06.06.md` + frontmatter). Scenarios: quick switch, content search, backlinks. Live filter, preview pane, foot bar with Enter/Ctrl-s/Esc.
+  **Pedagogy:** Picker = Finder → Sorter → Previewer → Action. The missing doc piece for W2/W3/W5.
+  **Creative invitation:** Split-pane picker replica; scenario toggle chips; highlight matched lines in preview.
+  **Don't:** Telescope branding — config uses `snacks.pick`.
+
+- **G3. Workflow Scenario Runner** — `queued`
+  **Scope:** Eight scenario cards (W1–W8 from bindings.json). Stepper animates key sequence + mock Neovim frame. Side-swipe accordion per workflow. Progress checkboxes → localStorage.
+  **Pedagogy:** One intention → one entry surface → one predictable outcome.
+  **Creative invitation:** Step-through with highlighted `<kbd>` chords; optional screenshot thumbnails as state backgrounds.
+  **Don't:** Drill format without justification — this is scenario replay, not random quiz.
+
 ### Series D — Zed Fluency
 
 - **D1. Zed Multi-Buffer + Splits Playground** — `queued`
@@ -151,6 +174,17 @@ Standalone explainers, not series.
 
 ## Used
 (burned entries move here as: `**<id>. <name>** — used YYYY-MM-DD — <url> — <1-line retro>`)
+
+- **G1. SSD Entry Surface Explorer** — used 2026-06-06
+  - **Preview:** https://id-preview--0cfcc316-762a-4cca-ad4c-edeaaead86d0.lovable.app/
+  - **Project ID:** `0cfcc316-762a-4cca-ad4c-edeaaead86d0`
+  - **Credits spent:** ~2 (initial build)
+  - **Retro:** Four surface tabs, SSD CC filter, detail sidebar, 1/27 progress — landed. Readability pass (larger type, higher contrast) successful.
+  - **Published:** https://space-obsidian-guide.lovable.app (preview + live)
+
+- **G2. Picker Lifecycle Simulator** — used 2026-06-06
+  - **Deploy:** https://space-obsidian-guide.lovable.app/picker-lab
+  - **Retro:** Three scenarios (oq/os/ob), 4-stage pipeline strip, floating Snacks picker with live preview + wired keys (Enter, Shift-Enter, Ctrl-s/v, Alt-p, Esc, j/k). Mock vault 14 notes; daily `2026.06.06` with frontmatter + Saturday Plan. Split toast on Ctrl-s/v. localStorage last scenario. Link back to G1 entry surfaces.
 
 - **E1. Git Object Model Visualizer** — used 2026-05-18
   - **GitHub source:** https://github.com/skchaudr/git-object-explorer-v1

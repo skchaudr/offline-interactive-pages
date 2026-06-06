@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAB // SSD — Obsidian Workflows in Neovim</title>
+<style>
+:root{
+  --bg:#0b0b10;--panel:#101018;--ink:#e5e7eb;--muted:#a1a1aa;--faint:#71717a;
+  --lav:#d8b4fe;--cyan:#7dd3fc;--yellow:#fde047;--mag:#e879f9;--green:#86efac;--line:rgba(216,180,254,.14);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--sans)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:radial-gradient(circle at 12% 5%,rgba(216,180,254,.1),transparent 28rem),
+  radial-gradient(circle at 90% 30%,rgba(125,211,252,.06),transparent 30rem)}
+.layout{max-width:900px;margin:0 auto;padding:32px 20px 80px}
+.hero{border:1px solid var(--line);background:linear-gradient(135deg,rgba(216,180,254,.08),rgba(125,211,252,.04));padding:28px;margin-bottom:28px}
+.eyebrow{font:700 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:12px}
+h1{font-size:clamp(28px,5vw,42px);line-height:1.05;color:var(--lav);margin:0 0 12px;letter-spacing:-.04em}
+.sub{color:var(--muted);margin:0;font-size:16px}
+.links{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.links a{color:var(--cyan);font:600 12px var(--mono);text-decoration:none;border:1px solid rgba(125,211,252,.25);padding:6px 10px}
+.links a:hover{border-color:var(--cyan)}
+section{margin:36px 0;padding-bottom:36px;border-bottom:1px solid var(--line)}
+h2{color:var(--lav);font-size:22px;margin:0 0 8px;letter-spacing:-.02em}
+.deck{color:var(--muted);margin:0 0 18px;font-size:15px}
+.kbd{font:700 .9em var(--mono);border:2px solid var(--mag);padding:2px 8px;background:rgba(232,121,249,.06);color:var(--ink);white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:15px;margin:12px 0}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--cyan);font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.wf{border:1px solid var(--line);background:rgba(16,16,24,.75);margin:10px 0}
+.wf summary{cursor:pointer;padding:16px 18px;font-weight:600;list-style:none;display:flex;align-items:center;gap:12px}
+.wf summary::-webkit-details-marker{display:none}
+.wf summary::before{content:"▸";color:var(--mag);font-family:var(--mono)}
+.wf[open] summary::before{content:"▾"}
+.wf .body{padding:0 18px 18px;color:var(--muted);font-size:15px}
+.wf .body ol{margin:8px 0 0 20px;padding:0}
+.wf .body li{margin:6px 0}
+.mode{display:inline-block;font:700 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--line);color:var(--yellow)}
+.swipe{margin-top:12px;padding:12px;border-left:3px solid var(--mag);background:rgba(232,121,249,.05);font-size:14px}
+.swipe b{color:var(--mag);font:700 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:6px}
+.alt{font-size:13px;color:var(--faint);margin-top:10px}
+.check{display:flex;align-items:flex-start;gap:10px;margin:8px 0;cursor:pointer;font-size:15px}
+.check input{accent-color:var(--mag);margin-top:4px;width:18px;height:18px}
+.foot{font:12px var(--mono);color:var(--faint);margin-top:24px}
+@media(max-width:600px){table{font-size:14px}th,td{padding:8px}}
+</style>
+</head>
+<body>
+<div class="layout">
+<header class="hero">
+  <div class="eyebrow">Part 2 · Do this in Neovim</div>
+  <h1>SAB // SSD<br>Obsidian workflows</h1>
+  <p class="sub">Exact sequences for SoloDeveloper vault. Leader = <span class="kbd">Space</span>. Lane = <span class="kbd">nvim</span> (not vd / vl / vm).</p>
+  <div class="links">
+    <a href="https://space-obsidian-guide.lovable.app/" target="_blank" rel="noopener">Interactive: commands</a>
+    <a href="https://space-obsidian-guide.lovable.app/picker-lab" target="_blank" rel="noopener">Interactive: picker</a>
+    <a href="https://space-obsidian-guide.lovable.app/workflow-lab" target="_blank" rel="noopener">Interactive: walkthrough</a>
+    <a href="neovim-translated-from-obsidian-v3.html">Part 1: concepts</a>
+  </div>
+</header>
+
+<section id="before">
+  <h2>Before any workflow</h2>
+  <p class="deck">Leader keys only work in Normal mode. If nothing happens, press <span class="kbd">Esc</span> first.</p>
+  <table>
+    <tr><th>Symptom</th><th>Fix</th></tr>
+    <tr><td>Leader does nothing</td><td><span class="kbd">Esc</span> — you are in Insert or Terminal mode</td></tr>
+    <tr><td><span class="kbd">gf</span> fails on <code>[[link]]</code></td><td>Use <span class="kbd">Enter</span> on the link (markdown buffers only)</td></tr>
+    <tr><td><span class="kbd">Space o l</span> did the wrong thing</td><td>Normal = outgoing links list. Visual = link selection</td></tr>
+    <tr><td><span class="kbd">Space o n</span> vs <span class="kbd">Space o d</span></td><td><span class="kbd">on</span> = new note. <span class="kbd">od</span> = today's daily</td></tr>
+    <tr><td><span class="kbd">Space o q</span> vs <span class="kbd">Space o s</span></td><td><span class="kbd">oq</span> = find by title. <span class="kbd">os</span> = search inside note text</td></tr>
+  </table>
+</section>
+
+<section id="workflows">
+  <h2>The eight workflows</h2>
+  <p class="deck">Open one. Do it in <span class="kbd">nvim</span> on a real note. Check off when done.</p>
+  <div id="wf-list"></div>
+</section>
+
+<section id="picker">
+  <h2>Inside the search popup</h2>
+  <p class="deck">Opens after quick switch, vault search, backlinks, templates.</p>
+  <table>
+    <tr><th>Key</th><th>Does</th></tr>
+    <tr><td><span class="kbd">Enter</span></td><td>Open selection</td></tr>
+    <tr><td><span class="kbd">Shift Enter</span></td><td>Pick which window</td></tr>
+    <tr><td><span class="kbd">Ctrl s</span></td><td>Open in horizontal split</td></tr>
+    <tr><td><span class="kbd">Ctrl v</span></td><td>Open in vertical split</td></tr>
+    <tr><td><span class="kbd">Alt p</span></td><td>Toggle preview</td></tr>
+    <tr><td><span class="kbd">j</span> / <span class="kbd">k</span></td><td>Move selection</td></tr>
+    <tr><td><span class="kbd">Esc</span></td><td>Close (re-run command to reopen)</td></tr>
+  </table>
+</section>
+
+<section id="keys">
+  <h2>Quick key reference</h2>
+  <table>
+    <tr><th>Keys</th><th>Action</th></tr>
+    <tr><td><span class="kbd">Space Space</span></td><td>SSD Command Center — type to filter</td></tr>
+    <tr><td><span class="kbd">Space o</span> pause</td><td>which-key menu (then letter)</td></tr>
+    <tr><td><span class="kbd">Space o d</span></td><td>Today's daily note</td></tr>
+    <tr><td><span class="kbd">Space o y</span></td><td>Yesterday's daily</td></tr>
+    <tr><td><span class="kbd">Space o q</span></td><td>Quick switch (by title)</td></tr>
+    <tr><td><span class="kbd">Space o s</span></td><td>Search vault (by text)</td></tr>
+    <tr><td><span class="kbd">Space o n</span></td><td>New note</td></tr>
+    <tr><td><span class="kbd">Space o b</span></td><td>Backlinks</td></tr>
+    <tr><td><span class="kbd">Space o t</span></td><td>Insert template</td></tr>
+    <tr><td><span class="kbd">Space o w</span></td><td>Switch vault workspace</td></tr>
+    <tr><td><span class="kbd">Enter</span> on link</td><td>Follow wiki-link</td></tr>
+    <tr><td>Visual <span class="kbd">Space o l</span></td><td>Link selection</td></tr>
+    <tr><td>Visual <span class="kbd">Space o e</span></td><td>Extract to new note</td></tr>
+    <tr><td><span class="kbd">Ctrl s</span></td><td>Save</td></tr>
+  </table>
+  <p class="foot">Daily folder: <code>04 Periodic/00 Dailys/YYYY.MM.DD.md</code> · Vault: SoloDeveloper</p>
+</section>
+</div>
+
+<script>
+const WORKFLOWS = [
+  { id:"W1", title:"Open today's daily note", mode:"normal",
+    steps:["<span class=\"kbd\">Esc</span> if unsure of mode","<span class=\"kbd\">Space o d</span>","Write","<span class=\"kbd\">Ctrl s</span> to save"],
+    alt:"Or <span class=\"kbd\">Space Space</span> → type <code>daily</code> → Enter",
+    swipe:"INSERT mode blocks leader keys. Esc first." },
+  { id:"W2", title:"Open a note by title", mode:"normal",
+    steps:["<span class=\"kbd\">Space o q</span>","Type a few letters of the title","<span class=\"kbd\">j</span>/<span class=\"kbd\">k</span> to move","<span class=\"kbd\">Enter</span> to open"],
+    alt:"Not <span class=\"kbd\">Space o s</span> — that's search inside note bodies",
+    swipe:"<span class=\"kbd\">oq</span> = title. <span class=\"kbd\">os</span> = phrase in text." },
+  { id:"W3", title:"Find a phrase in the vault", mode:"normal",
+    steps:["<span class=\"kbd\">Space o s</span>","Type search term","Preview match on the right","<span class=\"kbd\">Enter</span> to jump"],
+    alt:"<span class=\"kbd\">Ctrl s</span> in picker opens split instead of replacing buffer",
+    swipe:"Different from quick switch — this searches note content." },
+  { id:"W4", title:"Follow a wiki-link", mode:"normal",
+    steps:["Move cursor onto <code>[[Note Title]]</code>","<span class=\"kbd\">Enter</span>"],
+    alt:"Only in markdown vault buffers",
+    swipe:"<span class=\"kbd\">gf</span> does not understand wiki-links. Use Enter." },
+  { id:"W5", title:"See backlinks", mode:"normal",
+    steps:["Open the note you care about","<span class=\"kbd\">Space o b</span>","<span class=\"kbd\">j</span>/<span class=\"kbd\">k</span>","<span class=\"kbd\">Enter</span> to jump to a backlink"],
+    alt:"No always-on backlinks pane like Obsidian app",
+    swipe:"Save the note first or new links won't show up." },
+  { id:"W6", title:"Create a new note", mode:"normal",
+    steps:["<span class=\"kbd\">Space o n</span>","Type note title","<span class=\"kbd\">Enter</span>","Write","<span class=\"kbd\">Ctrl s</span>"],
+    alt:"<span class=\"kbd\">on</span> = new. <span class=\"kbd\">od</span> = daily. Don't mix them.",
+    swipe:"on is NEW. od is DAILY." },
+  { id:"W7", title:"Link selected text", mode:"visual",
+    steps:["<span class=\"kbd\">v</span> + motion to select text","<span class=\"kbd\">Space o l</span>","Pick or create target note in picker"],
+    alt:"Must be Visual mode",
+    swipe:"In Normal mode, <span class=\"kbd\">Space o l</span> shows outgoing links — not link selection." },
+  { id:"W8", title:"Extract selection to its own note", mode:"visual",
+    steps:["<span class=\"kbd\">v</span> + motion to select paragraph","<span class=\"kbd\">Space o e</span>","Name the new note"],
+    alt:"Visual mode only — no Normal mode mapping",
+    swipe:"If nothing happens, you are not in Visual mode." }
+];
+
+const KEY = "ssd-wf-done";
+const done = JSON.parse(localStorage.getItem(KEY) || "{}");
+const list = document.getElementById("wf-list");
+
+WORKFLOWS.forEach(w => {
+  const d = document.createElement("details");
+  d.className = "wf";
+  d.open = false;
+  const checked = done[w.id] ? "checked" : "";
+  d.innerHTML = `
+    <summary>
+      <span class="mode">${w.mode}</span>
+      <span>${w.id}: ${w.title}</span>
+    </summary>
+    <div class="body">
+      <label class="check"><input type="checkbox" data-id="${w.id}" ${checked}> Done in real Neovim</label>
+      <ol>${w.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+      <p class="alt">${w.alt}</p>
+      <div class="swipe"><b>Side-swipe</b>${w.swipe}</div>
+    </div>`;
+  list.appendChild(d);
+});
+
+list.addEventListener("change", e => {
+  if (e.target.type !== "checkbox") return;
+  const id = e.target.dataset.id;
+  done[id] = e.target.checked;
+  localStorage.setItem(KEY, JSON.stringify(done));
+});
+</script>
+</body>
+</html>

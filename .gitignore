@@ -8,6 +8,26 @@ build/
 coverage/
 .tmp/
 
+# ── Jules (Google AI agent) droppings ──
+# Jules dumps screenshots/videos/test-scripts at repo root for self-verification.
+# These rules target the root only so legit images inside pages/ stay tracked.
+
+# Screenshots and videos (root only)
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.webm
+/*.mp4
+/videos/
+
+# Test scripts Jules generates to validate its own changes (root only)
+/test_script.py
+/test_script.js
+
+# Misc Jules artifact directories (root only)
+/snapshots/
+
 # Lovable-built projects live in pages/ but are managed by their own .git + GitHub remote.
 # Outer repo tracks only the sibling .md marker (e.g. pages/011-git-object-explorer.md).
 pages/011-git-object-explorer/

@@ -189,14 +189,15 @@
             <div class="grid grid-2">
                 <div class="card" style="margin:0; padding:1.25rem;">
                     <h3>Daily Notes &amp; Templates</h3>
-                    <div class="chip"><code>&lt;leader&gt;on</code> New daily note</div>
+                    <div class="chip"><code>&lt;leader&gt;od</code> Today's daily note</div>
+                    <div class="chip"><code>&lt;leader&gt;oy</code> Yesterday's note</div>
                     <div class="chip"><code>&lt;leader&gt;ot</code> Templates</div>
                     <p style="font-size:0.95rem; margin-top:0.75rem;">One keystroke for perfectly templated daily notes.</p>
                 </div>
                 <div class="card" style="margin:0; padding:1.25rem;">
                     <h3>Search &amp; Navigation</h3>
-                    <div class="chip"><code>&lt;leader&gt;os</code> Quick Switch</div>
-                    <div class="chip"><code>&lt;leader&gt;of</code> Find files / notes</div>
+                    <div class="chip"><code>&lt;leader&gt;oq</code> Quick Switch</div>
+                    <div class="chip"><code>&lt;leader&gt;os</code> Search vault</div>
                     <div class="chip"><code>&lt;leader&gt;ob</code> Backlinks</div>
                     <p style="font-size:0.95rem; margin-top:0.75rem;">Telescope + obsidian.nvim = Obsidian search with full Neovim power.</p>
                 </div>
@@ -269,7 +270,7 @@
         const mappings = [
             { obsidian: "Quick Switch / Open note", basic: "<Space> <Space> or Telescope", power: "<leader>os (obsidian.nvim) + Telescope", why: "Same speed as Obsidian, stays in modal flow" },
             { obsidian: "Search in vault", basic: "<Space> s g (live grep)", power: "obsidian.nvim search + flash/leap jumps", why: "Find + jump inside note in < 1s" },
-            { obsidian: "Create new daily note", basic: "Manual file creation", power: "<leader>on + template expansion", why: "One key, perfect structure every day" },
+            { obsidian: "Create new daily note", basic: "Manual file creation", power: "<leader>od (opens/creates from template)", why: "One key, perfect structure every day" },
             { obsidian: "Follow link / Open linked note", basic: "gx or manual", power: "obsidian follow + leap to any heading", why: "Feels like clicking but faster navigation" },
             { obsidian: "Backlinks / Unlinked mentions", basic: "Manual search", power: "<leader>ob (obsidian backlinks) + Telescope", why: "Instant graph-like view without leaving editor" },
             { obsidian: "Insert link to note", basic: "Type [[ manually", power: "obsidian completion on [[ + Telescope picker", why: "Autocomplete that understands your vault" },

@@ -55,3 +55,11 @@ learning path, and a small command surface. Leader is `Space`.
 
 Vault resolution: `OBSIDIAN_VAULT`, then `SOLO_VAULT`, then
 `~/obsidian/SSD`, then `~/Obsidian/SoloDeveloper`.
+
+**Config lane:** primary `nvim` → `~/.config/nvim` (symlink to
+`~/.dotfiles/nvim/.config/nvim`). Not `vd` / `vl` / `vm`.
+
+**Workflow source of truth:** [`bindings.json`](bindings.json) — extracted
+bindings, picker keys, W1–W10 workflows, side-swipe FAQ.
+
+**Do this in Neovim:** [`obsidian-workflow-playbook.html`](obsidian-workflow-playbook.html)

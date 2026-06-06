@@ -1,0 +1,9 @@
+# Lovable Prompt — G1 SSD Entry Surface Explorer
+
+Build a single-page React app that teaches an Obsidian power user how to navigate their custom Neovim SSD setup through four overlapping entry surfaces. The user is not learning generic LazyVim — they are learning Sab's primary lane: leader is Space, picker is Snacks, vault is SoloDeveloper, theme is Cyberdream (near-black background, cyan key hints, magenta action labels, monospace UI).
+
+The user clicks or types through four simulated surfaces in one viewport: (1) SSD Command Center opened by Space+Space — a fuzzy list with prompt "SSD Command Center", filterable by typing (show obsidian items at top when filtering "obsidian"); (2) which-key o-namespace — appears after Space+o pause, showing single-letter second keys (b=Backlinks, c=Check Vault, d=Daily Note, l=Links, n=New Note, o=Obsidian Menu, q=Quick Switch, s=Search Vault, t=Insert Template, w=Switch Workspace, y=Yesterday); (3) direct chord reference panel for Space+o+letter; (4) a note that picker modals open after quick switch, search, backlinks, templates. Clicking any action opens a right sidebar: required mode (Normal vs Visual), exact keys, what appears on screen, and one "side-swipe" mistake.
+
+Use localStorage to track which surfaces the user has visited. Hardcode bindings from the provided data — do not invent LazyVim defaults. Cyberdream terminal aesthetic: dark panels, thin borders, floating modal with ESC close hint. Animate surface transitions with CSS or View Transitions API.
+
+Do not build a generic vim trainer, vim grammar decoder, or theme picker. Do not use LazyVim/Tokyonight branding. One opinionated visual system only.
